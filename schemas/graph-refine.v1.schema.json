@@ -1,0 +1,386 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://taste2.local/schemas/graph-refine.v1.schema.json",
+  "title": "taste2 graph-refine.v1",
+  "description": "Shared schema for thought-graph refinement payloads and model responses.",
+  "type": "object",
+  "required": [
+    "protocol",
+    "request",
+    "response"
+  ],
+  "properties": {
+    "protocol": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "schema_path"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "graph-refine.v1"
+        },
+        "schema_path": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "session",
+        "window",
+        "graph_snapshot",
+        "candidate_nodes",
+        "instructions"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "graph-refine.v1"
+        },
+        "session": {
+          "type": "object",
+          "required": [
+            "session_id",
+            "request_id"
+          ],
+          "properties": {
+            "session_id": { "type": "string" },
+            "request_id": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "window": {
+          "type": "object",
+          "required": [
+            "raw_text",
+            "segments"
+          ],
+          "properties": {
+            "raw_text": { "type": "string" },
+            "segments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/windowSegment"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "graph_snapshot": {
+          "type": "object",
+          "required": [
+            "node_count",
+            "edge_count",
+            "nodes",
+            "edges"
+          ],
+          "properties": {
+            "node_count": { "type": "integer", "minimum": 0 },
+            "edge_count": { "type": "integer", "minimum": 0 },
+            "nodes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/graphNode"
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/graphEdge"
+              }
+            },
+            "focus_cluster": {
+              "type": "object",
+              "properties": {
+                "focus_node": { "type": "string" },
+                "display_children": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "candidate_nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/candidateNode"
+          }
+        },
+        "instructions": {
+          "type": "object",
+          "required": [
+            "goal",
+            "allowed_operations"
+          ],
+          "properties": {
+            "goal": { "type": "string" },
+            "allowed_operations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "merge_node",
+                  "set_node_type",
+                  "add_pending_node",
+                  "rename_node",
+                  "update_node_description",
+                  "assign_parent",
+                  "add_edge",
+                  "remove_edge",
+                  "mark_revisited",
+                  "set_focus"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "request_id",
+        "summary",
+        "operations"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "graph-refine.v1"
+        },
+        "request_id": { "type": "string" },
+        "summary": {
+          "type": "object",
+          "required": [
+            "reasoning_mode",
+            "operation_count"
+          ],
+          "properties": {
+            "reasoning_mode": { "type": "string" },
+            "operation_count": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/operation"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "nodeRef": {
+      "type": "object",
+      "required": [
+        "by",
+        "value"
+      ],
+      "properties": {
+        "by": {
+          "type": "string",
+          "enum": ["id", "label"]
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "windowSegment": {
+      "type": "object",
+      "required": [
+        "id",
+        "text",
+        "focus"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "focus": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "graphNode": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "node_type",
+        "tags",
+        "description"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "node_type": { "type": "string" },
+        "display_parent": { "type": ["string", "null"] },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "graphEdge": {
+      "type": "object",
+      "required": [
+        "source",
+        "target"
+      ],
+      "properties": {
+        "source": { "type": "string" },
+        "target": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "candidateNode": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "role_hint",
+        "tags"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "role_hint": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "pendingNode": {
+      "type": "object",
+      "required": [
+        "label",
+        "description"
+      ],
+      "properties": {
+        "label": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "operation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["op", "from", "to"],
+          "properties": {
+            "op": { "const": "merge_node" },
+            "from": { "$ref": "#/$defs/nodeRef" },
+            "to": { "$ref": "#/$defs/nodeRef" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "target", "node_type"],
+          "properties": {
+            "op": { "const": "set_node_type" },
+            "target": { "$ref": "#/$defs/nodeRef" },
+            "node_type": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "node", "connect_to"],
+          "properties": {
+            "op": { "const": "add_pending_node" },
+            "node": { "$ref": "#/$defs/pendingNode" },
+            "connect_to": { "$ref": "#/$defs/nodeRef" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "target", "new_label"],
+          "properties": {
+            "op": { "const": "rename_node" },
+            "target": { "$ref": "#/$defs/nodeRef" },
+            "new_label": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "target", "description"],
+          "properties": {
+            "op": { "const": "update_node_description" },
+            "target": { "$ref": "#/$defs/nodeRef" },
+            "description": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "child", "parent"],
+          "properties": {
+            "op": { "const": "assign_parent" },
+            "child": { "$ref": "#/$defs/nodeRef" },
+            "parent": { "$ref": "#/$defs/nodeRef" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "source", "target"],
+          "properties": {
+            "op": { "const": "add_edge" },
+            "source": { "$ref": "#/$defs/nodeRef" },
+            "target": { "$ref": "#/$defs/nodeRef" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "source", "target"],
+          "properties": {
+            "op": { "const": "remove_edge" },
+            "source": { "$ref": "#/$defs/nodeRef" },
+            "target": { "$ref": "#/$defs/nodeRef" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "target"],
+          "properties": {
+            "op": { "const": "mark_revisited" },
+            "target": { "$ref": "#/$defs/nodeRef" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "target"],
+          "properties": {
+            "op": { "const": "set_focus" },
+            "target": { "$ref": "#/$defs/nodeRef" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

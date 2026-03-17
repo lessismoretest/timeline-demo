@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D 视角相机 - nano Banana Pro</title>
+  <link rel="stylesheet" href="/assets/shared-nav.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="/assets/shared-nav.js" defer></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --primary: #007aff;
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --text: #1d1d1f;
+      --secondary: #86868b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      color: var(--text);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+    }
+    .control-panel {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, .06);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-height: calc(100vh - 120px);
+    }
+    .preview-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: sticky;
+      top: 24px;
+    }
+    #viewport-container {
+      width: 100%;
+      height: 450px;
+      background: #111;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    #prompt-overlay {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.75);
+      padding: 10px 16px;
+      border-radius: 12px;
+      color: #00ff88;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      pointer-events: none;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      backdrop-filter: blur(8px);
+      word-break: break-all;
+      text-align: center;
+    }
+    .upload-area {
+      border: 2px dashed #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .upload-area:hover {
+      border-color: var(--primary);
+      background: rgba(0, 122, 255, 0.02);
+    }
+    .gallery-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .gallery-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .gallery-item.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .gallery-item .remove-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(255, 59, 48, 0.8);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 18px;
+      height: 18px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .gallery-item:hover .remove-btn {
+      opacity: 1;
+    }
+    .btn-generate {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .btn-generate:hover { transform: scale(1.02); }
+    .btn-generate:active { transform: scale(0.98); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    #result-image {
+      width: 100%;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, .06);
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+      padding: 24px;
+    }
+    #result-image img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    .loading-spinner {
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 3px solid var(--primary);
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .ratio-btn, .view-btn {
+      padding: 8px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ratio-btn.active, .view-btn.active {
+      border-color: var(--primary);
+      background: rgba(0, 122, 255, 0.05);
+      color: var(--primary);
+    }
+    .ratio-btn:hover, .view-btn:hover {
+      border-color: var(--primary);
+    }
+    .hint {
+      font-size: 13px;
+      color: var(--secondary);
+    }
+  </style>
+</head>
+<body data-nav-page="3d-camera" data-page-title="3D 视角相机" data-page-subtitle="通过 3D 罗盘交互，改变照片的拍摄视角。" style="--page-max-width:1280px">
+  <div data-shared-nav-root></div>
+  <div data-shared-page-header-root></div>
+
+  <main class="page-shell__body">
+    <div class="container">
+      <div class="control-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 class="section-title">1. 上传参考图</h2>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="remove-bg-check" /> 开启抠图
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="three-view-check" /> 三视图
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="remove-watermark-check" /> 去除水印
+            </label>
+          </div>
+        </div>
+        
+        <div class="upload-area" id="drop-zone">
+          <input type="file" id="file-input" hidden accept="image/*" multiple />
+          <div id="upload-hint">点击或拖拽多张图片到此处</div>
+        </div>
+        <div id="image-gallery" class="gallery-container"></div>
+
+        <div style="margin-top:8px;">
+          <h2 class="section-title" style="margin-bottom:12px;">2. 图片比例</h2>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;" id="ratio-selector">
+            <button class="ratio-btn active" data-ratio="original">原比例</button>
+            <button class="ratio-btn" data-ratio="16:9">16:9</button>
+            <button class="ratio-btn" data-ratio="9:16">9:16</button>
+            <button class="ratio-btn" data-ratio="1:1">正方形</button>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <h2 class="section-title">3. 调节相机视角</h2>
+          <span class="hint">🟢水平 🩷仰角 🟠距离</span>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-bottom:12px;" id="view-shortcuts">
+          <button class="view-btn" data-az="0" data-el="0">正面</button>
+          <button class="view-btn" data-az="45" data-el="0">前右</button>
+          <button class="view-btn" data-az="90" data-el="0">右侧</button>
+          <button class="view-btn" data-az="180" data-el="0">背面</button>
+          <button class="view-btn" data-az="270" data-el="0">左侧</button>
+          
+          <button class="view-btn" data-az="0" data-el="90" style="background:rgba(0,122,255,0.03);">顶视</button>
+          <button class="view-btn" data-az="0" data-el="-90" style="background:rgba(0,122,255,0.03);">底视</button>
+          <button class="view-btn" data-az="45" data-el="45" style="background:rgba(0,122,255,0.03);">俯视(斜)</button>
+          <button class="view-btn" data-az="225" data-el="45" style="background:rgba(0,122,255,0.03);">俯视(后)</button>
+          <button class="view-btn" data-az="0" data-el="0" onclick="resetCamera()" style="background:#fef2f2; color:#ef4444; border-color:#fee2e2;">重置</button>
+        </div>
+
+        <div id="viewport-container">
+          <div id="prompt-overlay">加载场景中...</div>
+        </div>
+
+        <button class="btn-generate" id="generate-btn">
+          <div class="loading-spinner" id="btn-spinner"></div>
+          <span id="btn-text">🚀 立即生成</span>
+        </button>
+      </div>
+
+      <div class="preview-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 class="section-title">4. 生成结果</h2>
+          <div style="display:flex; gap:8px;">
+            <button id="download-all-btn" class="view-btn" style="display:none; padding: 4px 12px; border-radius: 20px; color: #10b981; border-color: #10b981; background: rgba(16, 185, 129, 0.05);">
+              📦 下载全部
+            </button>
+            <button id="download-btn" class="view-btn" style="display:none; padding: 4px 12px; border-radius: 20px; color: var(--primary); border-color: var(--primary);">
+              📥 下载图片
+            </button>
+          </div>
+        </div>
+        <div id="result-image">
+          <span style="color:#6b7280;">等待生成结果...</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // --- State & Constants ---
+    let azimuthAngle = 0;
+    let elevationAngle = 0;
+    let distanceFactor = 1.0;
+    let uploadedImages = [];
+    let activeImageIndex = -1;
+    let isGenerating = false;
+    let currentRatio = 'original';
+
+    const AZIMUTH_MAP = {
+      0: "front view", 45: "front-right quarter view", 90: "right side view",
+      135: "back-right quarter view", 180: "back view", 225: "back-left quarter view",
+      270: "left side view", 315: "front-left quarter view"
+    };
+    const ELEVATION_MAP = { 
+      '-90': 'bottom-up view (worm-eye view)',
+      '-60': 'low-angle shot',
+      '-30': 'low-angle shot', 
+      '0': 'eye-level shot', 
+      '30': 'elevated shot', 
+      '60': 'high-angle shot',
+      '90': 'top-down view (bird-eye view)'
+    };
+    const DISTANCE_MAP = { '0.6': 'close-up', '1.0': 'medium shot', '1.4': 'wide shot' };
+    const RATIO_MAP = { 'original': 'keep original aspect ratio', '16:9': '16:9 cinematic aspect ratio', '9:16': '9:16 vertical mobile aspect ratio', '1:1': '1:1 square aspect ratio' };
+    
+    const snapToNearest = (val, steps) => steps.reduce((prev, curr) => Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev);
+
+    // --- Global functions defined early to be accessible ---
+    // --- Global functions defined early to be accessible ---
+    function updateUI() {
+      if (typeof window.internalUpdateUI === 'function') {
+        window.internalUpdateUI();
+      }
+    }
+
+    function selectImage(index) {
+      if (index < 0 || index >= uploadedImages.length) return;
+      activeImageIndex = index;
+      if (window.updateSceneTexture) {
+        window.updateSceneTexture(uploadedImages[index].url);
+      }
+      renderGallery();
+    }
+
+    function removeImage(e, id) {
+      e.stopPropagation();
+      const index = uploadedImages.findIndex(img => img.id === id);
+      if (index === -1) return;
+      uploadedImages.splice(index, 1);
+      if (uploadedImages.length === 0) {
+        activeImageIndex = -1;
+        if (window.updateSceneTexture) window.updateSceneTexture(null);
+      } else if (activeImageIndex === index) {
+        selectImage(Math.max(0, index - 1));
+      } else if (activeImageIndex > index) {
+        activeImageIndex--;
+      }
+      renderGallery();
+    }
+
+    function renderGallery() {
+      const gallery = document.getElementById('image-gallery');
+      const hint = document.getElementById('upload-hint');
+      const genBtn = document.getElementById('generate-btn');
+      const btnText = document.getElementById('btn-text');
+
+      if (uploadedImages.length === 0) {
+        gallery.innerHTML = '';
+        hint.style.display = 'block';
+        genBtn.disabled = true;
+        btnText.textContent = '🚀 立即生成';
+        return;
+      }
+      hint.style.display = 'none';
+      genBtn.disabled = false;
+      gallery.innerHTML = uploadedImages.map((img, i) => `
+        <div class="gallery-item ${i === activeImageIndex ? 'active' : ''}" onclick="selectImage(${i})">
+          <img src="${img.url}" />
+          <button class="remove-btn" onclick="removeImage(event, '${img.id}')">✕</button>
+        </div>
+      `).join('');
+      btnText.textContent = uploadedImages.length > 1 ? `🚀 批量生成 (${uploadedImages.length} 张)` : '🚀 立即生成';
+    }
+
+    function downloadImage(url, name) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name || `camera_view_${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function handleFiles(files) {
+      if (!files || files.length === 0) return;
+      const newImages = Array.from(files);
+      let loadedCount = 0;
+      newImages.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const id = Date.now() + Math.random().toString(36).substr(2, 9);
+          uploadedImages.push({ id, url: e.target.result, name: file.name });
+          loadedCount++;
+          if (loadedCount === newImages.length) {
+            if (activeImageIndex === -1) selectImage(0);
+            renderGallery();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // --- Three.js Implementation ---
+    function initThreeJS() {
+      const container = document.getElementById('viewport-container');
+      const overlay = document.getElementById('prompt-overlay');
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x111111);
+      const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(4.5, 3, 4.5);
+      camera.lookAt(0, 0.75, 0);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+      dirLight.position.set(5, 10, 5);
+      scene.add(dirLight);
+      scene.add(new THREE.GridHelper(8, 16, 0x222222, 0x1a1a1a));
+      const CENTER = new THREE.Vector3(0, 0.75, 0);
+      const BASE_DISTANCE = 1.6;
+      const AZIMUTH_RADIUS = 2.4;
+      const ELEVATION_RADIUS = 1.8;
+      
+      function createPlaceholder() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#222'; ctx.fillRect(0,0,256,256);
+        ctx.strokeStyle = '#333'; ctx.lineWidth = 10; ctx.strokeRect(0,0,256,256);
+        ctx.fillStyle = '#444'; ctx.textAlign = 'center'; ctx.font = '24px sans-serif';
+        ctx.fillText('等待上传图片', 128, 138);
+        return new THREE.CanvasTexture(canvas);
+      }
+      
+      const planeMaterial = new THREE.MeshBasicMaterial({ map: createPlaceholder(), side: THREE.DoubleSide });
+      let targetPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5), planeMaterial);
+      targetPlane.position.copy(CENTER);
+      scene.add(targetPlane);
+
+      // Camera Object (Camera Icon Shape)
+      const camGroup = new THREE.Group();
+      
+      // Camera Body
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(0.35, 0.25, 0.2), 
+        new THREE.MeshStandardMaterial({color: 0x333333, roughness: 0.2})
+      );
+      
+      // Lens (Cylinder)
+      const lens = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.1, 0.15, 32), 
+        new THREE.MeshStandardMaterial({color: 0x111111, metalness: 0.8, roughness: 0.1})
+      );
+      lens.rotation.x = Math.PI / 2;
+      lens.position.z = 0.12;
+      
+      // Top Button (Shutter)
+      const shutter = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04, 0.04, 0.05, 16),
+        new THREE.MeshStandardMaterial({color: 0xcc0000})
+      );
+      shutter.position.set(0.1, 0.15, 0);
+      
+      // Flash or Viewfinder box
+      const topBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.08, 0.1),
+        new THREE.MeshStandardMaterial({color: 0x444444})
+      );
+      topBox.position.y = 0.15;
+      topBox.position.x = -0.05;
+
+      camGroup.add(body, lens, shutter, topBox);
+      scene.add(camGroup);
+
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(AZIMUTH_RADIUS, 0.03, 16, 64), new THREE.MeshBasicMaterial({color:0x00ff88, transparent:true, opacity:0.3}));
+      ring.rotation.x = Math.PI/2; ring.position.y = 0.05;
+      scene.add(ring);
+
+      const elRing = new THREE.Mesh(new THREE.TorusGeometry(ELEVATION_RADIUS, 0.03, 16, 64), new THREE.MeshBasicMaterial({color:0xff69b4, transparent:true, opacity:0.3}));
+      elRing.rotation.y = Math.PI/2;
+      elRing.position.set(-0.8, CENTER.y, 0);
+      scene.add(elRing);
+      
+      const azHandle = new THREE.Mesh(new THREE.SphereGeometry(0.18), new THREE.MeshStandardMaterial({color:0x00ff88, emissive:0x00ff88, emissiveIntensity:0.5}));
+      const elHandle = new THREE.Mesh(new THREE.SphereGeometry(0.18), new THREE.MeshStandardMaterial({color:0xff69b4, emissive:0xff69b4, emissiveIntensity:0.5}));
+      const distHandle = new THREE.Mesh(new THREE.SphereGeometry(0.18), new THREE.MeshStandardMaterial({color:0xffa500, emissive:0xffa500, emissiveIntensity:0.5}));
+      scene.add(azHandle, elHandle, distHandle);
+
+      const distanceLineGeo = new THREE.BufferGeometry();
+      const distanceLine = new THREE.Line(distanceLineGeo, new THREE.LineBasicMaterial({color:0xffa500, transparent:true, opacity:0.5}));
+      scene.add(distanceLine);
+
+      function updateUI() {
+        const d = BASE_DISTANCE * distanceFactor;
+        const azRad = THREE.MathUtils.degToRad(azimuthAngle);
+        const elRad = THREE.MathUtils.degToRad(elevationAngle);
+        const x = d * Math.sin(azRad) * Math.cos(elRad);
+        const y = d * Math.sin(elRad) + CENTER.y;
+        const z = d * Math.cos(azRad) * Math.cos(elRad);
+        camGroup.position.set(x, y, z);
+        camGroup.lookAt(CENTER);
+        azHandle.position.set(AZIMUTH_RADIUS * Math.sin(azRad), 0.05, AZIMUTH_RADIUS * Math.cos(azRad));
+        elHandle.position.set(-0.8, ELEVATION_RADIUS * Math.sin(elRad) + CENTER.y, ELEVATION_RADIUS * Math.cos(elRad));
+        const orangeDist = d - 0.5;
+        distHandle.position.set(orangeDist * Math.sin(azRad) * Math.cos(elRad), orangeDist * Math.sin(elRad) + CENTER.y, orangeDist * Math.cos(azRad) * Math.cos(elRad));
+        distanceLineGeo.setFromPoints([camGroup.position.clone(), CENTER.clone()]);
+        const azSnap = snapToNearest(azimuthAngle, [0,45,90,135,180,225,270,315]);
+        const elSnap = snapToNearest(elevationAngle, [-90,-60,-30,0,30,60,90]);
+        const distSnap = snapToNearest(distanceFactor, [0.6, 1.0, 1.4]);
+        const azName = AZIMUTH_MAP[azSnap] || "front view";
+        const elName = ELEVATION_MAP[String(elSnap)] || "eye-level shot";
+        const distName = DISTANCE_MAP[distSnap.toFixed(1)] || "medium shot";
+        
+        let html = `<span style="color:#00ff88;">&lt;sks&gt;</span> <span style="color:#60a5fa;">${azName} ${elName} ${distName}</span>`;
+        
+        if (document.getElementById('remove-bg-check').checked) {
+          html += ' <span style="color:#888;">|</span> <span style="color:#fb923c;">remove background</span>';
+        }
+        if (document.getElementById('remove-watermark-check').checked) {
+          html += ' <span style="color:#888;">|</span> <span style="color:#fb923c;">remove watermark</span>';
+        }
+        if (document.getElementById('three-view-check').checked) {
+          html += ' <span style="color:#888;">|</span> <span style="color:#f472b6;">(THREE-VIEW-MODE)</span>';
+        }
+        if (currentRatio !== 'original') {
+          html += ` <span style="color:#888;">|</span> <span style="color:#a78bfa;">${RATIO_MAP[currentRatio]}</span>`;
+        }
+        overlay.innerHTML = html;
+      }
+      window.internalUpdateUI = updateUI;
+
+      // Drag Logic
+      let dragTarget = null, dragStartMouseY = 0, dragStartDist = 1.0;
+      const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2(), canvas = renderer.domElement;
+      canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const hit = raycaster.intersectObjects([azHandle, elHandle, distHandle]);
+        if (hit.length > 0) { dragTarget = hit[0].object; dragStartMouseY = mouse.y; dragStartDist = distanceFactor; document.body.style.cursor = 'grabbing'; }
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!dragTarget) return;
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        if (dragTarget === azHandle) {
+          const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.05);
+          const intersect = new THREE.Vector3();
+          if (raycaster.ray.intersectPlane(plane, intersect)) { azimuthAngle = (THREE.MathUtils.radToDeg(Math.atan2(intersect.x, intersect.z)) + 360) % 360; }
+        } else if (dragTarget === elHandle) {
+          const plane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0.8);
+          const intersect = new THREE.Vector3();
+          if (raycaster.ray.intersectPlane(plane, intersect)) { elevationAngle = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(Math.atan2(intersect.y - CENTER.y, intersect.z)), -89, 89); }
+        } else if (dragTarget === distHandle) {
+          const deltaY = mouse.y - dragStartMouseY;
+          distanceFactor = THREE.MathUtils.clamp(dragStartDist - deltaY * 1.5, 0.6, 1.4);
+        }
+        window.internalUpdateUI();
+      });
+      window.addEventListener('mouseup', () => {
+        if (!dragTarget) return; dragTarget = null; document.body.style.cursor = 'default';
+        const targetAz = snapToNearest(azimuthAngle, [0,45,90,135,180,225,270,315]);
+        const targetEl = snapToNearest(elevationAngle, [-90,-60,-30,0,30,60,90]);
+        const targetDist = snapToNearest(distanceFactor, [0.6, 1.0, 1.4]);
+        const startAz = azimuthAngle, startEl = elevationAngle, startDist = distanceFactor, duration = 200, start = Date.now();
+        function animate() {
+          const p = Math.min((Date.now() - start) / duration, 1), ease = 1 - Math.pow(1-p, 3);
+          let azDiff = targetAz - startAz; if(azDiff > 180) azDiff -= 360; if(azDiff < -180) azDiff += 360;
+          azimuthAngle = (startAz + azDiff * ease + 360) % 360;
+          elevationAngle = startEl + (targetEl - startEl) * ease;
+          distanceFactor = startDist + (targetDist - startDist) * ease;
+          window.internalUpdateUI();
+          if (p < 1) requestAnimationFrame(animate);
+        }
+        animate();
+      });
+
+      function loop() { requestAnimationFrame(loop); renderer.render(scene, camera); }
+      loop(); window.internalUpdateUI();
+      new ResizeObserver(() => { camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); }).observe(container);
+
+      window.updateSceneTexture = (url) => {
+        if (!url) { planeMaterial.map = createPlaceholder(); planeMaterial.needsUpdate = true; return; }
+        new THREE.TextureLoader().load(url, (tex) => {
+          planeMaterial.map = tex; planeMaterial.needsUpdate = true;
+          const aspect = tex.image.width / tex.image.height;
+          scene.remove(targetPlane);
+          const size = 1.5;
+          targetPlane = new THREE.Mesh(new THREE.PlaneGeometry(aspect > 1 ? size : size * aspect, aspect > 1 ? size/aspect : size), planeMaterial);
+          targetPlane.position.copy(CENTER); scene.add(targetPlane);
+        });
+      };
+    }
+
+    // --- Start ---
+    window.addEventListener('load', () => {
+      initThreeJS();
+      const dropZone = document.getElementById('drop-zone');
+      const fileInput = document.getElementById('file-input');
+      const genBtn = document.getElementById('generate-btn');
+      const resPanel = document.getElementById('result-image');
+      const dlBtn = document.getElementById('download-btn');
+      const dlAllBtn = document.getElementById('download-all-btn');
+
+      if (dropZone) dropZone.onclick = () => fileInput.click();
+      if (fileInput) fileInput.onchange = (e) => handleFiles(e.target.files);
+      
+      if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--primary)'; dropZone.style.background = 'rgba(0,122,255,0.05)'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#e5e7eb'; dropZone.style.background = 'transparent'; });
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.style.borderColor = '#e5e7eb'; dropZone.style.background = 'transparent'; handleFiles(e.dataTransfer.files); });
+      }
+
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.onclick = () => { if(btn.dataset.az !== undefined) { azimuthAngle = parseInt(btn.dataset.az); elevationAngle = parseInt(btn.dataset.el); window.internalUpdateUI(); } };
+      });
+
+      document.querySelectorAll('.ratio-btn').forEach(btn => {
+        btn.onclick = () => { document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentRatio = btn.dataset.ratio; window.internalUpdateUI(); };
+      });
+
+      ['remove-bg-check', 'three-view-check', 'remove-watermark-check'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.onchange = () => window.internalUpdateUI();
+      });
+
+      genBtn.onclick = async () => {
+        if (uploadedImages.length === 0 || isGenerating) return;
+        isGenerating = true; genBtn.disabled = true; document.getElementById('btn-spinner').style.display = 'block';
+        const totalImages = uploadedImages.length;
+        resPanel.innerHTML = `
+          <div id="batch-progress" style="width:100%; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:14px; font-weight:600;">处理中</span><span id="progress-text" style="font-size:14px; color:var(--primary);">0 / ${totalImages}</span></div>
+            <div style="width:100%; height:6px; background:#eee; border-radius:3px; overflow:hidden;"><div id="progress-bar" style="width:0%; height:100%; background:var(--primary); transition:width 0.3s;"></div></div>
+          </div>
+          <div id="batch-results" style="display:grid; grid-template-columns:1fr; gap:24px; width:100%;"><div id="status-message" style="text-align:center; color:#6b7280; padding:40px 0;">准备中...</div></div>
+        `;
+        const batchResults = document.getElementById('batch-results');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const statusMessage = document.getElementById('status-message');
+        dlBtn.style.display = 'none'; dlAllBtn.style.display = 'none';
+        const basePrompt = document.getElementById('prompt-overlay').textContent.replace('<sks>', '').trim();
+        const isThreeView = document.getElementById('three-view-check').checked;
+        const allUrls = [];
+        try {
+          for (let i = 0; i < uploadedImages.length; i++) {
+            const img = uploadedImages[i];
+            statusMessage.textContent = `正在处理第 ${i+1} 张: ${img.name}...`;
+            if (i === 0) batchResults.innerHTML = '';
+            let tasks = isThreeView ? [
+              { name: '正面', p: basePrompt.replace(/front view|right side view|left side view|back view|front-right quarter view|back-right quarter view|back-left quarter view|front-left quarter view/g, 'front view') },
+              { name: '侧面', p: basePrompt.replace(/front view|right side view|left side view|back view|front-right quarter view|back-right quarter view|back-left quarter view|front-left quarter view/g, '90 degree side view') },
+              { name: '背面', p: basePrompt.replace(/front view|right side view|left side view|back view|front-right quarter view|back-right quarter view|back-left quarter view|front-left quarter view/g, '180 degree back view') }
+            ] : [{ name: '视角', p: basePrompt }];
+            batchResults.insertAdjacentHTML('beforeend', `<div class="result-group" style="border-bottom:1px solid #eee; padding-bottom:20px; margin-bottom:20px;"><div style="font-size:12px; color:#999; margin-bottom:12px;">${img.name}</div><div id="grid-${i}" style="display:grid; grid-template-columns:${isThreeView ? 'repeat(3, 1fr)' : '1fr'}; gap:12px;"></div></div>`);
+            const grid = document.getElementById(`grid-${i}`);
+            for (let j = 0; j < tasks.length; j++) {
+              const t = tasks[j];
+              const cellId = `cell-${i}-${j}`;
+              grid.insertAdjacentHTML('beforeend', `<div id="${cellId}" style="position:relative; aspect-ratio:1; background:#f8f9fa; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden;"><div class="loading-spinner" style="display:block; width:20px; height:20px;"></div></div>`);
+              const cell = document.getElementById(cellId);
+              try {
+                const res = await fetch('/api/camera-view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: img.url, prompt: t.p }) });
+                const data = await res.json();
+                if (data.ok) {
+                  cell.innerHTML = `<img src="${data.url}?t=${Date.now()}" style="width:100%; height:100%; object-fit:contain;" /><div style="position:absolute; top:4px; left:4px; font-size:10px; background:rgba(0,0,0,0.6); color:white; padding:2px 4px; border-radius:4px;">${t.name}</div><button onclick="window.downloadImage('${data.url}', '${img.name}_${t.name}.png')" style="position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.6); color:white; border:none; padding:4px 8px; border-radius:6px; font-size:10px; cursor:pointer;">📥</button>`;
+                  allUrls.push(data.url);
+                } else { 
+                  cell.innerHTML = `<div style="font-size:10px; color:#ef4444; padding:8px; text-align:center; overflow-y:auto; max-height:100%;">失败: ${data.error || '未知错误'}</div>`; 
+                }
+              } catch (err) { 
+                cell.innerHTML = `<div style="font-size:10px; color:#ef4444; padding:8px; text-align:center;">网络错误: ${err.message}</div>`; 
+              }
+            }
+            const progress = ((i + 1) / totalImages) * 100;
+            progressBar.style.width = `${progress}%`; progressText.textContent = `${i + 1} / ${totalImages}`;
+          }
+          if (allUrls.length > 0) { dlAllBtn.style.display = 'block'; dlAllBtn.onclick = () => allUrls.forEach((u, i) => setTimeout(() => downloadImage(u, `view_${i}.png`), i * 300)); }
+        } catch (e) { console.error(e); } finally { isGenerating = false; genBtn.disabled = false; document.getElementById('btn-spinner').style.display = 'none'; btnText.textContent = totalImages > 1 ? `🚀 批量生成 (${totalImages} 张)` : '🚀 立即生成'; }
+      };
+    });
+
+    window.downloadImage = downloadImage;
+    window.selectImage = selectImage;
+      window.removeImage = removeImage;
+
+      window.resetCamera = () => {
+        azimuthAngle = 0;
+        elevationAngle = 0;
+        distanceFactor = 1.0;
+        window.internalUpdateUI();
+      };
+
+  </script>
+</body>
+</html>

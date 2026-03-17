@@ -1,0 +1,2363 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>taste2 | 图片墙</title>
+  <link rel="stylesheet" href="/assets/shared-nav.css" />
+  <script src="/assets/shared-nav.js" defer></script>
+  <style>
+    :root{
+      color-scheme: light;
+      --page-max-width: 1440px;
+      --wall-bg: #f5f5f7;
+      --panel-bg: rgba(255,255,255,.78);
+      --panel-border: rgba(17,24,39,.08);
+      --text-main: #111827;
+      --text-soft: #6b7280;
+      --shadow-soft: 0 18px 48px rgba(15,23,42,.08);
+      --shadow-card: 0 10px 28px rgba(15,23,42,.08);
+      --accent: #111827;
+      --accent-soft: #eff1f4;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.92), transparent 36%),
+        radial-gradient(circle at top right, rgba(226,232,240,.88), transparent 30%),
+        linear-gradient(180deg, #fbfbfc 0%, var(--wall-bg) 42%, #eceef2 100%);
+      color:var(--text-main);
+      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    }
+    .page-shell__body{
+      padding-top:10px;
+      padding-bottom:44px;
+    }
+    .brand-wall{
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
+    .brand-wall.is-wallpaper-mode{
+      padding:14px;
+      border-radius:28px;
+      background:#fff;
+      box-shadow:var(--shadow-soft);
+    }
+    .toolbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      padding:14px;
+      border:1px solid var(--panel-border);
+      border-radius:22px;
+      background:var(--panel-bg);
+      backdrop-filter:blur(12px);
+      box-shadow:var(--shadow-soft);
+    }
+    .toolbar-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      width:100%;
+    }
+    .toolbar-main{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      flex:1 1 720px;
+      flex-wrap:wrap;
+    }
+    .toolbar-search-group{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      flex:1 1 480px;
+      min-width:260px;
+    }
+    .toolbar-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .display-mode{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:999px;
+      background:#fff;
+    }
+    .display-mode-btn{
+      border:0;
+      border-radius:999px;
+      padding:8px 12px;
+      background:transparent;
+      color:#4b5563;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:background-color .18s ease, color .18s ease;
+    }
+    .display-mode-btn.is-active{
+      background:#111827;
+      color:#fff;
+    }
+    .column-control{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:999px;
+      background:#fff;
+      color:#374151;
+      font-size:13px;
+      font-weight:600;
+    }
+    .column-control-label{
+      color:var(--text-soft);
+      font-size:12px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .column-control input[type="range"]{
+      width:108px;
+      accent-color:#111827;
+      cursor:pointer;
+    }
+    .column-control-value{
+      min-width:14px;
+      text-align:right;
+      color:#111827;
+      font-variant-numeric:tabular-nums;
+    }
+    .search{
+      width:100%;
+      min-width:0;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:999px;
+      padding:11px 16px;
+      background:#fff;
+      color:var(--text-main);
+      font-size:14px;
+      line-height:1.25;
+      outline:none;
+    }
+    .search:focus{
+      border-color:rgba(17,24,39,.24);
+      box-shadow:0 0 0 4px rgba(17,24,39,.06);
+    }
+    .pills{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .tag-suggestions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .tag-suggestions-label{
+      color:var(--text-soft);
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .pill{
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:999px;
+      padding:10px 14px;
+      background:#fff;
+      color:#374151;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease, color .18s ease;
+    }
+    .pill:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 20px rgba(15,23,42,.06);
+    }
+    .pill.is-active{
+      background:var(--accent);
+      border-color:var(--accent);
+      color:#fff;
+      box-shadow:0 12px 24px rgba(17,24,39,.16);
+    }
+    .pill.is-muted{
+      background:#f8fafc;
+    }
+    .pill.is-selection-active{
+      background:#111827;
+      border-color:#111827;
+      color:#f9fafb;
+      box-shadow:0 12px 24px rgba(17,24,39,.16);
+    }
+    .batch-panel{
+      display:none;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      padding:14px;
+      border:1px solid var(--panel-border);
+      border-radius:22px;
+      background:rgba(17,24,39,.96);
+      color:#fff;
+      box-shadow:var(--shadow-soft);
+    }
+    .batch-panel.is-visible{
+      display:flex;
+    }
+    .batch-count{
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .batch-tools{
+      display:flex;
+      flex:1 1 420px;
+      flex-direction:column;
+      gap:10px;
+      min-width:220px;
+    }
+    .batch-input{
+      width:100%;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      padding:12px 14px;
+      background:rgba(255,255,255,.1);
+      color:#fff;
+      font-size:14px;
+      outline:none;
+    }
+    .batch-input::placeholder{
+      color:rgba(255,255,255,.62);
+    }
+    .batch-suggestions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .batch-suggestions-label{
+      color:rgba(255,255,255,.7);
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .batch-action{
+      border-color:rgba(255,255,255,.18);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      box-shadow:none;
+    }
+    .batch-action.is-primary{
+      background:#fff;
+      color:#111827;
+      border-color:#fff;
+    }
+    .batch-action.is-danger{
+      background:rgba(248,113,113,.16);
+      border-color:rgba(248,113,113,.3);
+      color:#fee2e2;
+    }
+    .status-chip{
+      display:none;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+    .status-chip.is-visible{
+      display:inline-flex;
+      align-items:center;
+    }
+    .status-chip.is-success{
+      background:rgba(22,101,52,.12);
+      color:#166534;
+    }
+    .status-chip.is-error{
+      background:rgba(153,27,27,.12);
+      color:#991b1b;
+    }
+    .wall-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      color:var(--text-soft);
+      font-size:13px;
+      padding:0 4px;
+    }
+    .wall-count strong{
+      color:var(--text-main);
+      font-size:16px;
+    }
+    .wall{
+      column-count:var(--wall-columns, 5);
+      column-gap:16px;
+    }
+    .brand-card{
+      position:relative;
+      break-inside:avoid;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin:0 0 16px;
+      padding:14px;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:22px;
+      background:rgba(255,255,255,.86);
+      box-shadow:var(--shadow-card);
+      cursor:pointer;
+      transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .brand-card.is-selected{
+      border-color:#111827;
+      box-shadow:0 0 0 2px rgba(17,24,39,.08), 0 18px 40px rgba(15,23,42,.12);
+    }
+    .brand-card:hover{
+      transform:translateY(-4px);
+      border-color:rgba(17,24,39,.15);
+      box-shadow:0 18px 40px rgba(15,23,42,.12);
+    }
+    .brand-card.is-minimal{
+      padding:10px;
+      gap:0;
+    }
+    .brand-card.is-wallpaper{
+      padding:0;
+      gap:0;
+      border:0;
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
+    }
+    .select-check{
+      position:absolute;
+      top:12px;
+      right:12px;
+      z-index:2;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      width:26px;
+      height:26px;
+      border-radius:999px;
+      border:1px solid rgba(17,24,39,.12);
+      background:rgba(255,255,255,.94);
+      color:#111827;
+      font-size:14px;
+      font-weight:700;
+      box-shadow:0 8px 18px rgba(15,23,42,.08);
+    }
+    .wall.is-selection-mode .select-check{
+      display:inline-flex;
+    }
+    .select-check.is-selected{
+      background:#111827;
+      border-color:#111827;
+      color:#fff;
+    }
+    .brand-media{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:120px;
+      border-radius:16px;
+      overflow:hidden;
+      background:
+        linear-gradient(135deg, rgba(248,250,252,.98), rgba(226,232,240,.88)),
+        linear-gradient(45deg, rgba(255,255,255,.7), rgba(255,255,255,.2));
+    }
+    .brand-media img{
+      display:block;
+      width:100%;
+      height:auto;
+      max-height:280px;
+      object-fit:contain;
+    }
+    .brand-card.is-logo .brand-media{
+      min-height:88px;
+      padding:18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.98), rgba(243,244,246,.9)),
+        linear-gradient(90deg, rgba(17,24,39,.02), rgba(17,24,39,.04));
+    }
+    .brand-card.is-minimal .brand-media{
+      min-height:0;
+      border-radius:14px;
+    }
+    .brand-card.is-minimal.is-logo .brand-media{
+      padding:12px;
+    }
+    .brand-card.is-wallpaper .brand-media{
+      min-height:0;
+      border-radius:0;
+      background:transparent;
+    }
+    .brand-card.is-wallpaper.is-logo .brand-media{
+      padding:0;
+      background:transparent;
+    }
+    .brand-card.is-wallpaper .brand-media img{
+      border-radius:0;
+      box-shadow:none;
+      background:transparent;
+    }
+    .brand-body{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .brand-title{
+      font-size:15px;
+      font-weight:700;
+      line-height:1.35;
+      word-break:break-word;
+    }
+    .brand-tags{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .brand-tag{
+      display:inline-flex;
+      align-items:center;
+      padding:5px 8px;
+      border-radius:999px;
+      background:var(--accent-soft);
+      color:#374151;
+      font-size:11px;
+      font-weight:600;
+    }
+    .brand-tag.is-removable{
+      gap:6px;
+      cursor:pointer;
+      border:1px solid rgba(17,24,39,.08);
+      transition:background-color .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .brand-tag.is-removable:hover{
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
+    .brand-tag-remove{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:14px;
+      height:14px;
+      border-radius:999px;
+      background:rgba(17,24,39,.08);
+      font-size:10px;
+      line-height:1;
+    }
+    .brand-remarks{
+      color:#4b5563;
+      font-size:12px;
+      line-height:1.6;
+      word-break:break-word;
+    }
+    .brand-remarks.is-empty{
+      color:#9ca3af;
+      font-style:italic;
+    }
+    .empty{
+      display:none;
+      padding:36px 20px;
+      border:1px dashed rgba(17,24,39,.16);
+      border-radius:24px;
+      background:rgba(255,255,255,.68);
+      color:#4b5563;
+      text-align:center;
+      font-size:15px;
+      line-height:1.8;
+    }
+    .empty.is-visible{display:block}
+    .loading{
+      padding:28px 20px;
+      border-radius:24px;
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(17,24,39,.08);
+      color:#4b5563;
+      text-align:center;
+      box-shadow:var(--shadow-soft);
+    }
+    .lightbox{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      background:rgba(15,23,42,.7);
+      backdrop-filter:blur(16px);
+      z-index:120;
+    }
+    .lightbox.is-open{display:flex}
+    .lightbox-panel{
+      width:min(1100px, 100%);
+      max-height:100%;
+      overflow:auto;
+      display:grid;
+      grid-template-columns:minmax(0, 1.35fr) minmax(280px, .65fr);
+      gap:18px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:26px;
+      background:rgba(255,255,255,.95);
+      box-shadow:0 30px 80px rgba(0,0,0,.28);
+    }
+    .lightbox-media{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:420px;
+      border-radius:20px;
+      background:linear-gradient(135deg, #f8fafc, #e5e7eb);
+      overflow:hidden;
+    }
+    .lightbox-media img{
+      display:block;
+      max-width:100%;
+      max-height:min(78vh, 760px);
+      object-fit:contain;
+    }
+    .lightbox-nav{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      z-index:121;
+      width:42px;
+      height:42px;
+      border:0;
+      border-radius:999px;
+      background:rgba(17,24,39,.82);
+      color:#fff;
+      font-size:24px;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:0 12px 30px rgba(15,23,42,.18);
+    }
+    .lightbox-nav:hover{
+      background:#111827;
+    }
+    .lightbox-nav.is-prev{left:24px}
+    .lightbox-nav.is-next{right:24px}
+    .lightbox-nav:disabled{
+      opacity:.28;
+      cursor:not-allowed;
+    }
+    .lightbox-meta{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      min-width:0;
+    }
+    .lightbox-close{
+      align-self:flex-end;
+      border:0;
+      border-radius:999px;
+      width:40px;
+      height:40px;
+      background:#111827;
+      color:#fff;
+      font-size:20px;
+      cursor:pointer;
+    }
+    .lightbox-title{
+      margin:4px 0 0;
+      font-size:28px;
+      line-height:1.05;
+      letter-spacing:-.04em;
+      word-break:break-word;
+    }
+    .lightbox-title-button{
+      appearance:none;
+      border:0;
+      padding:0;
+      margin:4px 0 0;
+      background:transparent;
+      color:inherit;
+      font:inherit;
+      text-align:left;
+      cursor:text;
+    }
+    .lightbox-title-button:hover{
+      opacity:.82;
+    }
+    .lightbox-title-input{
+      width:100%;
+      border:1px solid rgba(17,24,39,.12);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+      color:#111827;
+      font-size:24px;
+      font-weight:700;
+      line-height:1.1;
+      letter-spacing:-.03em;
+      outline:none;
+    }
+    .lightbox-title-input:focus{
+      border-color:rgba(17,24,39,.24);
+      box-shadow:0 0 0 4px rgba(17,24,39,.06);
+    }
+    .inline-edit-hint{
+      color:var(--text-soft);
+      font-size:12px;
+      line-height:1.5;
+    }
+    .detail-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      padding-top:4px;
+    }
+    .detail-danger{
+      border:1px solid rgba(220,38,38,.16);
+      border-radius:999px;
+      padding:10px 14px;
+      background:rgba(254,242,242,.95);
+      color:#b91c1c;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .tag-panel{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding-top:12px;
+      border-top:1px solid rgba(17,24,39,.08);
+    }
+    .tag-panel-title{
+      color:var(--text-soft);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:700;
+    }
+    .tag-panel-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .tag-add-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:28px;
+      height:28px;
+      padding:0 8px;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:999px;
+      background:#fff;
+      color:#111827;
+      font-size:18px;
+      line-height:1;
+      cursor:pointer;
+      transition:background-color .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .tag-add-btn:hover,
+    .tag-add-btn.is-active{
+      background:#111827;
+      border-color:#111827;
+      color:#fff;
+    }
+    .tag-inline-editor{
+      display:none;
+      flex:0 1 auto;
+      min-width:0;
+      gap:0;
+      align-items:center;
+    }
+    .tag-inline-editor.is-open{
+      display:inline-flex;
+    }
+    .tag-secondary{
+      display:none;
+      flex-direction:column;
+      gap:8px;
+      padding-left:2px;
+    }
+    .tag-secondary.is-open{
+      display:flex;
+    }
+    .tag-composer{
+      display:flex;
+      flex-direction:row;
+      gap:8px;
+      align-items:center;
+      flex:0 1 auto;
+    }
+    .tag-input{
+      width:180px;
+      min-width:140px;
+      border:1px solid rgba(17,24,39,.1);
+      border-radius:999px;
+      padding:8px 12px;
+      background:#fff;
+      color:#111827;
+      font-size:13px;
+      outline:none;
+    }
+    .tag-list{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .tag-shortcuts{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      flex:1 1 100%;
+    }
+    .tag-shortcuts-label{
+      color:var(--text-soft);
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .tag-help{
+      color:var(--text-soft);
+      font-size:12px;
+      line-height:1.5;
+      flex:1 1 100%;
+    }
+    .remarks-panel{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding-top:12px;
+      border-top:1px solid rgba(17,24,39,.08);
+    }
+    .remarks-input{
+      width:100%;
+      min-height:120px;
+      resize:vertical;
+      border:1px solid rgba(17,24,39,.1);
+      border-radius:18px;
+      padding:12px 14px;
+      background:#fff;
+      color:#111827;
+      font-size:14px;
+      line-height:1.7;
+      outline:none;
+      font:inherit;
+    }
+    .remarks-input:focus{
+      border-color:rgba(17,24,39,.24);
+      box-shadow:0 0 0 4px rgba(17,24,39,.06);
+    }
+    .remarks-actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .remarks-help{
+      color:var(--text-soft);
+      font-size:12px;
+      line-height:1.5;
+    }
+    .remarks-save-btn{
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:999px;
+      padding:10px 14px;
+      background:#111827;
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      transition:opacity .18s ease, transform .18s ease;
+    }
+    .remarks-save-btn:hover{
+      opacity:.92;
+      transform:translateY(-1px);
+    }
+    .remarks-save-btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none;
+    }
+    .sr-only{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0, 0, 0, 0);
+      white-space:nowrap;
+      border:0;
+    }
+    @media (max-width: 1280px){
+      .wall{column-count:4}
+    }
+    @media (max-width: 1060px){
+      .lightbox-panel{
+        grid-template-columns:1fr;
+      }
+      .wall{column-count:3}
+    }
+    @media (max-width: 720px){
+      .page-shell__body{padding-bottom:28px}
+      .toolbar{padding:12px}
+      .search{flex-basis:100%}
+      .wall{column-count:2;column-gap:12px}
+      .brand-card{margin-bottom:12px;padding:12px;border-radius:18px}
+      .lightbox{padding:14px}
+      .lightbox-panel{padding:14px;border-radius:22px}
+      .lightbox-media{min-height:260px}
+      .lightbox-nav.is-prev{left:8px}
+      .lightbox-nav.is-next{right:8px}
+    }
+    @media (max-width: 520px){
+      .wall{column-count:1}
+    }
+  </style>
+</head>
+<body data-nav-page="brand-wall" data-page-title="图片墙" data-page-subtitle="把 /assets/image 里的图片素材集中陈列成一面可浏览、可筛选、可放大的墙。">
+  <div data-shared-nav-root></div>
+  <div data-shared-page-header-root></div>
+
+  <main class="page-shell__body">
+    <section class="brand-wall" aria-labelledby="brand-wall-title">
+      <section class="toolbar" aria-label="图片墙筛选">
+        <div class="toolbar-row">
+          <div class="toolbar-main">
+            <div class="toolbar-search-group">
+              <label class="sr-only" for="searchInput">搜索图片</label>
+              <input id="searchInput" class="search" type="search" placeholder="搜索品牌名、文件名或标签，例如 Apple / Nike / painting" />
+              <div class="tag-suggestions" aria-label="快捷标签添加">
+                <span class="tag-suggestions-label">已有标签</span>
+                <div id="tagPills" class="pills"></div>
+              </div>
+            </div>
+          </div>
+          <div class="toolbar-actions">
+            <div class="display-mode" aria-label="显示模式">
+              <button id="detailModeBtn" class="display-mode-btn is-active" type="button">详情模式</button>
+              <button id="minimalModeBtn" class="display-mode-btn" type="button">极简模式</button>
+              <button id="wallpaperModeBtn" class="display-mode-btn" type="button">壁纸模式</button>
+            </div>
+            <label class="column-control" for="columnCountRange">
+              <span class="column-control-label">列数</span>
+              <input id="columnCountRange" type="range" min="1" max="12" step="1" value="5" />
+              <span id="columnCountValue" class="column-control-value">5</span>
+            </label>
+            <button id="toggleSelectionBtn" class="pill is-muted" type="button">开启多选</button>
+            <div id="wallpaperExportGroup" style="display:none; gap:6px; margin-left:8px; align-items:center;">
+              <span class="column-control-label" style="margin-right:4px;">拼接导出:</span>
+              <button id="exportXhsBtn" class="pill" type="button">小红书</button>
+              <button id="exportMacBtn" class="pill" type="button">Mac</button>
+              <button id="exportIosBtn" class="pill" type="button">iPhone</button>
+            </div>
+            <span id="saveStatus" class="status-chip" aria-live="polite"></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="batchPanel" class="batch-panel" aria-label="批量标签编辑">
+        <div class="batch-count">已选择 <span id="selectedCount">0</span> 项</div>
+        <div class="batch-tools">
+          <input id="batchTagInput" class="batch-input" type="text" placeholder="输入标签，多个标签用逗号分隔" />
+          <div class="batch-suggestions" aria-label="批量标签快捷添加">
+            <span class="batch-suggestions-label">快捷添加</span>
+            <div id="batchTagPills" class="pills"></div>
+          </div>
+        </div>
+        <button id="applyBatchTagsBtn" class="pill batch-action is-primary" type="button">追加标签</button>
+        <button id="removeBatchTagsBtn" class="pill batch-action is-danger" type="button">移除标签</button>
+        <button id="clearSelectionBtn" class="pill batch-action" type="button">清空选择</button>
+      </section>
+
+      <div class="wall-meta">
+        <div class="wall-count">当前展示 <strong id="resultCount">0</strong> 张</div>
+        <div id="wallHint">点击任意卡片可查看大图和详细信息。</div>
+      </div>
+
+      <div id="loadingState" class="loading">正在加载图片墙素材…</div>
+      <div id="emptyState" class="empty">没有匹配到结果。可以试试换一个关键词，或者切回“全部”。</div>
+      <section id="wall" class="wall" aria-live="polite"></section>
+    </section>
+  </main>
+
+  <aside id="lightbox" class="lightbox" aria-hidden="true">
+    <button id="lightboxPrevBtn" class="lightbox-nav is-prev" type="button" aria-label="上一张">‹</button>
+    <div class="lightbox-panel" role="dialog" aria-modal="true" aria-labelledby="lightboxTitleButton">
+      <div class="lightbox-media">
+        <img id="lightboxImage" alt="" />
+      </div>
+      <div class="lightbox-meta">
+        <div class="detail-actions">
+          <button id="deleteAssetBtn" class="detail-danger" type="button">删除图片</button>
+          <button id="lightboxClose" class="lightbox-close" type="button" aria-label="关闭预览">×</button>
+        </div>
+        <div>
+          <button id="lightboxTitleButton" class="lightbox-title lightbox-title-button" type="button" aria-label="点击修改文件名"></button>
+          <input id="lightboxTitleInput" class="lightbox-title-input" type="text" hidden aria-label="编辑文件名" />
+          <div class="inline-edit-hint">点击标题即可重命名，回车保存，Esc 取消。</div>
+        </div>
+        <div class="tag-panel">
+          <span class="tag-panel-title">标签</span>
+          <div class="tag-panel-row">
+            <div id="lightboxTags" class="tag-list"></div>
+            <button id="singleTagToggleBtn" class="tag-add-btn" type="button" aria-label="新增标签">+</button>
+            <div id="singleTagInlineEditor" class="tag-inline-editor" aria-label="单张图片标签编辑">
+              <div id="singleTagComposer" class="tag-composer">
+                <input id="singleTagInput" class="tag-input" type="text" placeholder="输入标签" />
+              </div>
+            </div>
+          </div>
+          <div id="singleTagSecondary" class="tag-secondary">
+            <div class="tag-shortcuts">
+              <span class="tag-shortcuts-label">已有标签</span>
+              <div id="singleTagPills" class="pills"></div>
+            </div>
+            <div class="tag-help">回车保存，或再次点击右侧 + 按钮保存。点击现有标签可直接删除。</div>
+          </div>
+        </div>
+        <div class="remarks-panel">
+          <span class="tag-panel-title">备注</span>
+          <textarea id="lightboxRemarksInput" class="remarks-input" placeholder="给这张图片补一句备注，比如来源、用途、灵感点或你想记住的信息。"></textarea>
+          <div class="remarks-actions">
+            <div class="remarks-help">支持多行。按 Ctrl/Command + Enter 可快速保存。</div>
+            <button id="saveRemarksBtn" class="remarks-save-btn" type="button">保存备注</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button id="lightboxNextBtn" class="lightbox-nav is-next" type="button" aria-label="下一张">›</button>
+  </aside>
+
+  <aside id="exportModal" class="lightbox" aria-hidden="true">
+    <div class="lightbox-panel" style="grid-template-columns:1fr; max-width:800px; padding:24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+        <h2 id="exportModalTitle" style="margin:0; font-size:20px;">导出壁纸预览</h2>
+        <button id="exportModalCloseBtn" class="lightbox-close" type="button" aria-label="关闭预览" style="width:32px; height:32px; font-size:16px;">×</button>
+      </div>
+      <div id="exportPreviewContainer" style="display:flex; gap:16px; min-height:300px; max-height:50vh; background:#f0f2f5; border: 1px solid rgba(0,0,0,0.1); padding: 24px; overflow-x:auto;">
+        <!-- Canvases will be injected here -->
+      </div>
+      <div style="display:flex; gap:16px; align-items:center; margin-top: 16px; flex-wrap: wrap;">
+        <label class="column-control" for="exportColsRange" style="flex:1;">
+          <span class="column-control-label">列数</span>
+          <input id="exportColsRange" type="range" min="1" max="20" step="1" value="3" style="flex:1; width:auto;" />
+          <span id="exportColsValue" class="column-control-value">3</span>
+        </label>
+        <label class="column-control" for="exportRowsRange" style="flex:1;">
+          <span class="column-control-label">行数</span>
+          <input id="exportRowsRange" type="range" min="1" max="20" step="1" value="3" style="flex:1; width:auto;" />
+          <span id="exportRowsValue" class="column-control-value">3</span>
+        </label>
+        <label class="column-control" for="exportMarginRange" style="flex:1;">
+          <span class="column-control-label">边距</span>
+          <input id="exportMarginRange" type="range" min="0" max="200" step="2" value="0" style="flex:1; width:auto;" />
+          <span id="exportMarginValue" class="column-control-value">0</span>
+        </label>
+        <label class="column-control" for="exportGapRange" style="flex:1;">
+          <span class="column-control-label">间距</span>
+          <input id="exportGapRange" type="range" min="0" max="100" step="2" value="0" style="flex:1; width:auto;" />
+          <span id="exportGapValue" class="column-control-value">0</span>
+        </label>
+        <button id="exportDownloadBtn" class="remarks-save-btn" type="button">保存到本地</button>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    (function () {
+      const dataUrl = '/assets/image_data.json';
+      const columnCountStorageKey = 'taste2-image-wall-column-count';
+      const wallStateStorageKey = 'taste2-image-wall-ui-state';
+      const wallEl = document.getElementById('wall');
+      const loadingStateEl = document.getElementById('loadingState');
+      const emptyStateEl = document.getElementById('emptyState');
+      const searchInputEl = document.getElementById('searchInput');
+      const tagPillsEl = document.getElementById('tagPills');
+      const detailModeBtnEl = document.getElementById('detailModeBtn');
+      const minimalModeBtnEl = document.getElementById('minimalModeBtn');
+      const wallpaperModeBtnEl = document.getElementById('wallpaperModeBtn');
+      const columnCountRangeEl = document.getElementById('columnCountRange');
+      const columnCountValueEl = document.getElementById('columnCountValue');
+      const resultCountEl = document.getElementById('resultCount');
+      const wallHintEl = document.getElementById('wallHint');
+      const batchPanelEl = document.getElementById('batchPanel');
+      const selectedCountEl = document.getElementById('selectedCount');
+      const batchTagInputEl = document.getElementById('batchTagInput');
+      const batchTagPillsEl = document.getElementById('batchTagPills');
+      const applyBatchTagsBtnEl = document.getElementById('applyBatchTagsBtn');
+      const removeBatchTagsBtnEl = document.getElementById('removeBatchTagsBtn');
+      const clearSelectionBtnEl = document.getElementById('clearSelectionBtn');
+      const toggleSelectionBtnEl = document.getElementById('toggleSelectionBtn');
+      const wallpaperExportGroupEl = document.getElementById('wallpaperExportGroup');
+      const exportXhsBtnEl = document.getElementById('exportXhsBtn');
+      const exportMacBtnEl = document.getElementById('exportMacBtn');
+      const exportIosBtnEl = document.getElementById('exportIosBtn');
+      const exportModalEl = document.getElementById('exportModal');
+      const exportModalCloseBtnEl = document.getElementById('exportModalCloseBtn');
+      const exportPreviewContainerEl = document.getElementById('exportPreviewContainer');
+      const exportColsRangeEl = document.getElementById('exportColsRange');
+      const exportColsValueEl = document.getElementById('exportColsValue');
+      const exportRowsRangeEl = document.getElementById('exportRowsRange');
+      const exportRowsValueEl = document.getElementById('exportRowsValue');
+      const exportMarginRangeEl = document.getElementById('exportMarginRange');
+      const exportMarginValueEl = document.getElementById('exportMarginValue');
+      const exportGapRangeEl = document.getElementById('exportGapRange');
+      const exportGapValueEl = document.getElementById('exportGapValue');
+      const exportDownloadBtnEl = document.getElementById('exportDownloadBtn');
+      const saveStatusEl = document.getElementById('saveStatus');
+      const lightboxEl = document.getElementById('lightbox');
+      const lightboxImageEl = document.getElementById('lightboxImage');
+      const lightboxPrevBtnEl = document.getElementById('lightboxPrevBtn');
+      const lightboxNextBtnEl = document.getElementById('lightboxNextBtn');
+      const lightboxTitleButtonEl = document.getElementById('lightboxTitleButton');
+      const lightboxTitleInputEl = document.getElementById('lightboxTitleInput');
+      const lightboxTagsEl = document.getElementById('lightboxTags');
+      const lightboxRemarksInputEl = document.getElementById('lightboxRemarksInput');
+      const saveRemarksBtnEl = document.getElementById('saveRemarksBtn');
+      const lightboxCloseEl = document.getElementById('lightboxClose');
+      const deleteAssetBtnEl = document.getElementById('deleteAssetBtn');
+      const singleTagInputEl = document.getElementById('singleTagInput');
+      const singleTagToggleBtnEl = document.getElementById('singleTagToggleBtn');
+      const singleTagInlineEditorEl = document.getElementById('singleTagInlineEditor');
+      const singleTagSecondaryEl = document.getElementById('singleTagSecondary');
+      const singleTagComposerEl = document.getElementById('singleTagComposer');
+      const singleTagPillsEl = document.getElementById('singleTagPills');
+      const state = {
+        images: [],
+        search: '',
+        activeTag: 'all',
+        viewMode: 'detail',
+        columnCount: 5,
+        selectionMode: false,
+        selectedIds: new Set(),
+        currentImageId: null,
+        inlineRenameOpen: false,
+        inlineTagComposerOpen: false
+      };
+
+      function getMaxColumnsForViewport() {
+        const width = window.innerWidth || document.documentElement.clientWidth || 1440;
+        if (width <= 520) {
+          return 1;
+        }
+        if (width <= 720) {
+          return 2;
+        }
+        if (width <= 1060) {
+          return 4;
+        }
+        if (width <= 1280) {
+          return 6;
+        }
+        return 12;
+      }
+
+      function clampColumnCount(value) {
+        const numeric = Number(value);
+        const safeValue = Number.isFinite(numeric) ? numeric : 5;
+        const maxColumns = getMaxColumnsForViewport();
+        return Math.max(1, Math.min(maxColumns, safeValue));
+      }
+
+      function loadStoredColumnCount() {
+        try {
+          const stored = window.localStorage.getItem(columnCountStorageKey);
+          if (stored == null) {
+            return null;
+          }
+          return clampColumnCount(Number(stored));
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function persistColumnCount() {
+        try {
+          window.localStorage.setItem(columnCountStorageKey, String(state.columnCount));
+        } catch (error) {
+          // Ignore storage failures and keep the in-memory value.
+        }
+      }
+
+      function loadStoredWallState() {
+        try {
+          const stored = window.localStorage.getItem(wallStateStorageKey);
+          if (!stored) {
+            return null;
+          }
+          const parsed = JSON.parse(stored);
+          if (!parsed || typeof parsed !== 'object') {
+            return null;
+          }
+          return parsed;
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function persistWallState() {
+        try {
+          window.localStorage.setItem(
+            wallStateStorageKey,
+            JSON.stringify({
+              search: state.search,
+              activeTag: state.activeTag,
+              viewMode: state.viewMode
+            })
+          );
+        } catch (error) {
+          // Ignore storage failures and keep the in-memory state.
+        }
+      }
+
+      function normalizeText(value) {
+        return String(value || '')
+          .trim()
+          .toLowerCase();
+      }
+
+      function inferTitle(image) {
+        const fallback = String(image.filename || '')
+          .replace(/\.[^.]+$/, '')
+          .replace(/[_-]+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        return fallback || '未命名素材';
+      }
+
+      function getImageUrl(image) {
+        return '/assets/image/' + encodeURIComponent(image.filename);
+      }
+
+      function getTags(image) {
+        if (!Array.isArray(image.tags)) {
+          return [];
+        }
+        return image.tags
+          .map((tag) => String(tag || '').trim())
+          .filter(Boolean);
+      }
+
+      function getRemarks(image) {
+        return String(image && image.remarks ? image.remarks : '').trim();
+      }
+
+      function getImageById(id) {
+        return state.images.find((image) => String(image.id) === String(id)) || null;
+      }
+
+      function splitFilename(filename) {
+        const value = String(filename || '');
+        const dotIndex = value.lastIndexOf('.');
+        if (dotIndex <= 0) {
+          return { stem: value, ext: '' };
+        }
+        return {
+          stem: value.slice(0, dotIndex),
+          ext: value.slice(dotIndex)
+        };
+      }
+
+      function parseTags(value) {
+        return String(value || '')
+          .split(/[,，]/)
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+      }
+
+      function uniqueTags(tags) {
+        return Array.from(new Set(tags));
+      }
+
+      function setStatus(message, type) {
+        saveStatusEl.textContent = message || '';
+        saveStatusEl.className = 'status-chip';
+        if (message) {
+          saveStatusEl.classList.add('is-visible');
+          saveStatusEl.classList.add(type === 'error' ? 'is-error' : 'is-success');
+        }
+      }
+
+      function syncViewModeUi() {
+        document.querySelector('.brand-wall').classList.toggle('is-wallpaper-mode', state.viewMode === 'wallpaper');
+        detailModeBtnEl.classList.toggle('is-active', state.viewMode === 'detail');
+        minimalModeBtnEl.classList.toggle('is-active', state.viewMode === 'minimal');
+        wallpaperModeBtnEl.classList.toggle('is-active', state.viewMode === 'wallpaper');
+        wallpaperExportGroupEl.style.display = state.viewMode === 'wallpaper' ? 'flex' : 'none';
+      }
+
+      function syncColumnCount() {
+        state.columnCount = clampColumnCount(state.columnCount);
+        const nextValue = String(state.columnCount);
+        const maxColumns = getMaxColumnsForViewport();
+        document.documentElement.style.setProperty('--wall-columns', nextValue);
+        wallEl.style.columnCount = nextValue;
+        columnCountRangeEl.max = String(maxColumns);
+        columnCountRangeEl.value = nextValue;
+        columnCountValueEl.textContent = nextValue;
+      }
+
+      function updateSelectionUi() {
+        const count = state.selectedIds.size;
+        selectedCountEl.textContent = String(count);
+        batchPanelEl.classList.toggle('is-visible', state.selectionMode);
+        wallEl.classList.toggle('is-selection-mode', state.selectionMode);
+        toggleSelectionBtnEl.textContent = state.selectionMode ? '退出多选' : '开启多选';
+        toggleSelectionBtnEl.classList.toggle('is-selection-active', state.selectionMode);
+      }
+
+      function syncCardSelectionState(id) {
+        const key = String(id);
+        const card = wallEl.querySelector(`[data-image-id="${CSS.escape(key)}"]`);
+        if (!card) {
+          return;
+        }
+
+        const selected = state.selectedIds.has(key);
+        card.classList.toggle('is-selected', selected);
+
+        const check = card.querySelector('.select-check');
+        if (check) {
+          check.classList.toggle('is-selected', selected);
+          check.textContent = selected ? '✓' : '';
+        }
+      }
+
+      function syncVisibleCardSelections() {
+        wallEl.querySelectorAll('[data-image-id]').forEach((card) => {
+          const key = card.getAttribute('data-image-id') || '';
+          const selected = state.selectedIds.has(key);
+          card.classList.toggle('is-selected', selected);
+
+          const check = card.querySelector('.select-check');
+          if (check) {
+            check.classList.toggle('is-selected', selected);
+            check.textContent = selected ? '✓' : '';
+          }
+        });
+      }
+
+      async function saveAssets() {
+        const response = await fetch('/save-assets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ images: state.images })
+        });
+
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error || '保存标签失败');
+        }
+        return payload;
+      }
+
+      async function renameAsset(oldFilename, newFilename) {
+        const response = await fetch('/rename-asset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldFilename, newFilename })
+        });
+
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error || '重命名失败');
+        }
+        return payload;
+      }
+
+      async function deleteAsset(filename) {
+        const response = await fetch('/delete-asset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename })
+        });
+
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error || '删除失败');
+        }
+        return payload;
+      }
+
+      function closeInlineRename(resetValue) {
+        const image = getImageById(state.currentImageId);
+        state.inlineRenameOpen = false;
+        lightboxTitleInputEl.hidden = true;
+        lightboxTitleButtonEl.hidden = false;
+        if (resetValue && image) {
+          lightboxTitleInputEl.value = splitFilename(image.filename).stem;
+        }
+      }
+
+      function openInlineRename() {
+        const image = getImageById(state.currentImageId);
+        if (!image) {
+          setStatus('当前没有可编辑的素材', 'error');
+          return;
+        }
+        state.inlineRenameOpen = true;
+        lightboxTitleInputEl.value = splitFilename(image.filename).stem;
+        lightboxTitleButtonEl.hidden = true;
+        lightboxTitleInputEl.hidden = false;
+        lightboxTitleInputEl.focus();
+        lightboxTitleInputEl.select();
+      }
+
+      function closeSingleTagComposer(resetValue) {
+        state.inlineTagComposerOpen = false;
+        singleTagInlineEditorEl.classList.remove('is-open');
+        singleTagSecondaryEl.classList.remove('is-open');
+        singleTagToggleBtnEl.classList.remove('is-active');
+        if (resetValue) {
+          singleTagInputEl.value = '';
+        }
+      }
+
+      function openSingleTagComposer() {
+        state.inlineTagComposerOpen = true;
+        singleTagInlineEditorEl.classList.add('is-open');
+        singleTagSecondaryEl.classList.add('is-open');
+        singleTagToggleBtnEl.classList.add('is-active');
+        singleTagInputEl.focus();
+      }
+
+      async function commitInlineRename() {
+        const image = getImageById(state.currentImageId);
+        const nextStem = String(lightboxTitleInputEl.value || '').trim();
+
+        if (!image) {
+          setStatus('当前没有可编辑的素材', 'error');
+          closeInlineRename(true);
+          return;
+        }
+
+        if (!nextStem) {
+          setStatus('文件名不能为空', 'error');
+          return;
+        }
+
+        const parts = splitFilename(image.filename);
+        const nextFilename = nextStem + parts.ext;
+
+        if (nextFilename === image.filename) {
+          closeInlineRename(true);
+          return;
+        }
+
+        try {
+          const payload = await renameAsset(image.filename, nextFilename);
+          image.filename = payload.newFilename;
+          setStatus('文件名已更新', 'success');
+          closeInlineRename(false);
+          render();
+          openLightbox(image);
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : '重命名失败', 'error');
+        }
+      }
+
+      async function commitSingleTagAdd() {
+        const image = getImageById(state.currentImageId);
+        const tagsToAdd = parseTags(singleTagInputEl.value);
+
+        if (!image) {
+          setStatus('当前没有可编辑的素材', 'error');
+          closeSingleTagComposer(true);
+          return;
+        }
+
+        if (!tagsToAdd.length) {
+          closeSingleTagComposer(true);
+          return;
+        }
+
+        addTagsToImage(image, tagsToAdd);
+        try {
+          await persistAndRefresh('标签已更新');
+          closeSingleTagComposer(true);
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : '保存标签失败', 'error');
+        }
+      }
+
+      async function maybeCommitSingleTagAddFromOutsideClick(target) {
+        if (!state.inlineTagComposerOpen) {
+          return false;
+        }
+
+        if (!(target instanceof Element)) {
+          return false;
+        }
+
+        const ignoreTarget = (
+          singleTagInlineEditorEl.contains(target) ||
+          singleTagToggleBtnEl.contains(target) ||
+          singleTagPillsEl.contains(target)
+        );
+
+        if (ignoreTarget) {
+          return false;
+        }
+
+        await commitSingleTagAdd();
+        return true;
+      }
+
+      async function commitRemarks() {
+        const image = getImageById(state.currentImageId);
+        const nextRemarks = String(lightboxRemarksInputEl.value || '').trim();
+
+        if (!image) {
+          setStatus('当前没有可编辑的素材', 'error');
+          return;
+        }
+
+        if (getRemarks(image) === nextRemarks) {
+          return;
+        }
+
+        image.remarks = nextRemarks;
+        try {
+          await persistAndRefresh(nextRemarks ? '备注已保存' : '备注已清空');
+          lightboxRemarksInputEl.value = nextRemarks;
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : '保存备注失败', 'error');
+        }
+      }
+
+      function isLogoAsset(filename) {
+        return /\.(svg)$/i.test(filename);
+      }
+
+      function createTagPill(tag, label, isActive) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'pill' + (isActive ? ' is-active' : '');
+        button.textContent = label;
+        button.dataset.tag = tag;
+        button.addEventListener('click', () => {
+          state.activeTag = tag;
+          persistWallState();
+          render();
+        });
+        return button;
+      }
+
+      function appendTagToBatchInput(tag) {
+        const current = parseTags(batchTagInputEl.value);
+        if (!current.includes(tag)) {
+          current.push(tag);
+        }
+        batchTagInputEl.value = current.join(', ');
+      }
+
+      function appendTagToSingleInput(tag) {
+        const current = parseTags(singleTagInputEl.value);
+        if (!current.includes(tag)) {
+          current.push(tag);
+        }
+        singleTagInputEl.value = current.join(', ');
+      }
+
+      function removeTagsFromImage(image, tagsToRemove) {
+        const removeSet = new Set(tagsToRemove);
+        image.tags = getTags(image).filter((tag) => !removeSet.has(tag));
+      }
+
+      function addTagsToImage(image, tagsToAdd) {
+        image.tags = uniqueTags([...getTags(image), ...tagsToAdd]);
+      }
+
+      async function persistAndRefresh(successMessage) {
+        await saveAssets();
+        setStatus(successMessage, 'success');
+        render();
+        const current = getImageById(state.currentImageId);
+        if (current && lightboxEl.classList.contains('is-open')) {
+          openLightbox(current);
+        }
+      }
+
+      function createQuickAddTagPill(tag) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'pill';
+        button.textContent = tag;
+        button.addEventListener('click', () => {
+          appendTagToBatchInput(tag);
+          if (!state.selectionMode) {
+            state.selectionMode = true;
+            updateSelectionUi();
+          }
+          batchTagInputEl.focus();
+        });
+        return button;
+      }
+
+      function createSingleQuickAddTagPill(tag) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'pill';
+        button.textContent = tag;
+        button.addEventListener('click', () => {
+          appendTagToSingleInput(tag);
+          singleTagInputEl.focus();
+        });
+        return button;
+      }
+
+      function renderLightboxTags(image) {
+        const tags = getTags(image);
+        lightboxTagsEl.innerHTML = '';
+
+        if (!tags.length) {
+          lightboxTagsEl.innerHTML = '<span class="brand-tag">暂无标签</span>';
+          return;
+        }
+
+        tags.forEach((tag) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'brand-tag is-removable';
+          button.innerHTML = `<span>${tag}</span><span class="brand-tag-remove">×</span>`;
+          button.addEventListener('click', async () => {
+            const current = getImageById(state.currentImageId);
+            if (!current) {
+              setStatus('当前没有可编辑的素材', 'error');
+              return;
+            }
+            removeTagsFromImage(current, [tag]);
+            try {
+              await persistAndRefresh('标签已移除');
+            } catch (error) {
+              setStatus(error instanceof Error ? error.message : '移除标签失败', 'error');
+            }
+          });
+          lightboxTagsEl.appendChild(button);
+        });
+      }
+
+      function renderTagPills(images) {
+        const counts = new Map();
+
+        images.forEach((image) => {
+          getTags(image).forEach((tag) => {
+            counts.set(tag, (counts.get(tag) || 0) + 1);
+          });
+        });
+
+        const tags = Array.from(counts.entries())
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hans-CN'))
+          .slice(0, 24);
+
+        tagPillsEl.innerHTML = '';
+        batchTagPillsEl.innerHTML = '';
+        singleTagPillsEl.innerHTML = '';
+        tagPillsEl.appendChild(createTagPill('all', '全部', state.activeTag === 'all'));
+        tags.forEach(([tag, count]) => {
+          tagPillsEl.appendChild(
+            createTagPill(tag, tag + ' · ' + count, state.activeTag === tag)
+          );
+          batchTagPillsEl.appendChild(createQuickAddTagPill(tag));
+          singleTagPillsEl.appendChild(createSingleQuickAddTagPill(tag));
+        });
+      }
+
+      function filterImages() {
+        const search = normalizeText(state.search);
+        return state.images.filter((image) => {
+          const tags = getTags(image);
+          const matchesTag = state.activeTag === 'all' || tags.includes(state.activeTag);
+          if (!matchesTag) {
+            return false;
+          }
+
+          if (!search) {
+            return true;
+          }
+
+          const haystack = [
+            inferTitle(image),
+            image.filename,
+            tags.join(' '),
+            getRemarks(image)
+          ].map(normalizeText).join(' ');
+
+          return haystack.includes(search);
+        });
+      }
+
+      function getLightboxSequence() {
+        return filterImages();
+      }
+
+      function getCurrentLightboxIndex() {
+        const sequence = getLightboxSequence();
+        const index = sequence.findIndex((image) => String(image.id) === String(state.currentImageId));
+        return { sequence, index };
+      }
+
+      function syncLightboxNavigation() {
+        const { sequence, index } = getCurrentLightboxIndex();
+        const hasPrev = index > 0;
+        const hasNext = index >= 0 && index < sequence.length - 1;
+        lightboxPrevBtnEl.disabled = !hasPrev;
+        lightboxNextBtnEl.disabled = !hasNext;
+      }
+
+      function openAdjacentLightbox(direction) {
+        const { sequence, index } = getCurrentLightboxIndex();
+        if (index < 0) {
+          return;
+        }
+        const nextIndex = index + direction;
+        if (nextIndex < 0 || nextIndex >= sequence.length) {
+          return;
+        }
+        openLightbox(sequence[nextIndex]);
+      }
+
+      function buildCard(image) {
+        const article = document.createElement('article');
+        const title = inferTitle(image);
+        const tags = getTags(image);
+        const imageUrl = getImageUrl(image);
+        const logoAsset = isLogoAsset(image.filename);
+        const selected = state.selectedIds.has(String(image.id));
+        const isMinimal = state.viewMode === 'minimal';
+        const isWallpaper = state.viewMode === 'wallpaper';
+        const remarks = getRemarks(image);
+        const remarksSummary = remarks.length > 72 ? remarks.slice(0, 72) + '…' : remarks;
+
+        article.className = 'brand-card' + (logoAsset ? ' is-logo' : '') + (selected ? ' is-selected' : '') + (isMinimal ? ' is-minimal' : '') + (isWallpaper ? ' is-wallpaper' : '');
+        article.dataset.imageId = String(image.id);
+        article.tabIndex = 0;
+        article.setAttribute('role', 'button');
+        article.setAttribute('aria-label', '查看 ' + title);
+        article.innerHTML = `
+          <span class="select-check${selected ? ' is-selected' : ''}">${selected ? '✓' : ''}</span>
+          <div class="brand-media">
+            <img src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" />
+          </div>
+          ${(isMinimal || isWallpaper) ? '' : `
+            <div class="brand-body">
+              <div class="brand-title">${title}</div>
+              <div class="brand-tags">
+                ${tags.length ? tags.map((tag) => `<span class="brand-tag">${tag}</span>`).join('') : '<span class="brand-tag">untagged</span>'}
+              </div>
+              <div class="brand-remarks${remarksSummary ? '' : ' is-empty'}">${remarksSummary || '暂无备注'}</div>
+            </div>
+          `}
+        `;
+
+        const open = () => {
+          if (state.selectionMode) {
+            toggleSelection(image.id);
+            return;
+          }
+          openLightbox(image);
+        };
+        article.addEventListener('click', open);
+        article.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            open();
+          }
+        });
+
+        return article;
+      }
+
+      function updateCounters(total, visible) {
+        resultCountEl.textContent = String(visible);
+        wallHintEl.textContent = visible === total
+          ? '点击任意卡片可查看大图和详细信息。'
+          : '筛选已生效，点击卡片可放大查看。';
+      }
+
+      function toggleSelection(id) {
+        const key = String(id);
+        if (state.selectedIds.has(key)) {
+          state.selectedIds.delete(key);
+        } else {
+          state.selectedIds.add(key);
+        }
+        updateSelectionUi();
+        syncCardSelectionState(key);
+      }
+
+      function openLightbox(image) {
+        const title = inferTitle(image);
+        const tags = getTags(image);
+        state.currentImageId = String(image.id);
+        state.inlineRenameOpen = false;
+        state.inlineTagComposerOpen = false;
+
+        lightboxImageEl.src = getImageUrl(image);
+        lightboxImageEl.alt = title;
+        lightboxTitleButtonEl.textContent = title;
+        lightboxTitleButtonEl.hidden = false;
+        lightboxTitleInputEl.hidden = true;
+        lightboxTitleInputEl.value = splitFilename(image.filename).stem;
+        lightboxRemarksInputEl.value = getRemarks(image);
+        singleTagInputEl.value = '';
+        closeSingleTagComposer(true);
+        renderLightboxTags(image);
+        syncLightboxNavigation();
+
+        lightboxEl.classList.add('is-open');
+        lightboxEl.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeLightbox() {
+        lightboxEl.classList.remove('is-open');
+        lightboxEl.setAttribute('aria-hidden', 'true');
+        lightboxImageEl.src = '';
+        state.currentImageId = null;
+        state.inlineRenameOpen = false;
+        state.inlineTagComposerOpen = false;
+        lightboxPrevBtnEl.disabled = true;
+        lightboxNextBtnEl.disabled = true;
+        document.body.style.overflow = '';
+      }
+
+      function render() {
+        renderTagPills(state.images);
+
+        const filtered = filterImages();
+
+        wallEl.innerHTML = '';
+        filtered.forEach((image) => {
+          wallEl.appendChild(buildCard(image));
+        });
+
+        loadingStateEl.style.display = 'none';
+        emptyStateEl.classList.toggle('is-visible', filtered.length === 0);
+        updateCounters(state.images.length, filtered.length);
+        updateSelectionUi();
+        syncViewModeUi();
+      }
+
+      async function init() {
+        try {
+          const response = await fetch(dataUrl, { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error('加载图片数据失败：' + response.status);
+          }
+
+          const payload = await response.json();
+          const images = Array.isArray(payload.images) ? payload.images : [];
+
+          state.images = images.slice().sort((a, b) => {
+            return inferTitle(a).localeCompare(inferTitle(b), 'zh-Hans-CN');
+          });
+
+          const storedWallState = loadStoredWallState();
+          if (storedWallState) {
+            if (typeof storedWallState.search === 'string') {
+              state.search = storedWallState.search;
+              searchInputEl.value = storedWallState.search;
+            }
+            if (typeof storedWallState.activeTag === 'string') {
+              state.activeTag = storedWallState.activeTag;
+            }
+            if (storedWallState.viewMode === 'detail' || storedWallState.viewMode === 'minimal' || storedWallState.viewMode === 'wallpaper') {
+              state.viewMode = storedWallState.viewMode;
+            }
+          }
+
+          const storedColumnCount = loadStoredColumnCount();
+          if (storedColumnCount != null) {
+            state.columnCount = storedColumnCount;
+          }
+          syncColumnCount();
+          updateCounters(state.images.length, state.images.length);
+          render();
+        } catch (error) {
+          loadingStateEl.textContent = error instanceof Error
+            ? error.message
+            : '加载图片墙失败。';
+        }
+      }
+
+      searchInputEl.addEventListener('input', (event) => {
+        state.search = event.target.value || '';
+        persistWallState();
+        render();
+      });
+      detailModeBtnEl.addEventListener('click', () => {
+        if (state.viewMode === 'detail') {
+          return;
+        }
+        state.viewMode = 'detail';
+        persistWallState();
+        render();
+      });
+      minimalModeBtnEl.addEventListener('click', () => {
+        if (state.viewMode === 'minimal') {
+          return;
+        }
+        state.viewMode = 'minimal';
+        persistWallState();
+        render();
+      });
+      wallpaperModeBtnEl.addEventListener('click', () => {
+        if (state.viewMode === 'wallpaper') {
+          return;
+        }
+        state.viewMode = 'wallpaper';
+        persistWallState();
+        render();
+      });
+
+      columnCountRangeEl.addEventListener('input', (event) => {
+        const nextValue = Number(event.target.value || 5);
+        state.columnCount = clampColumnCount(nextValue);
+        syncColumnCount();
+        persistColumnCount();
+      });
+      window.addEventListener('resize', () => {
+        const previous = state.columnCount;
+        syncColumnCount();
+        if (state.columnCount !== previous) {
+          persistColumnCount();
+        }
+      });
+
+      toggleSelectionBtnEl.addEventListener('click', () => {
+        state.selectionMode = !state.selectionMode;
+        if (!state.selectionMode) {
+          state.selectedIds.clear();
+        }
+        updateSelectionUi();
+        syncVisibleCardSelections();
+      });
+
+      clearSelectionBtnEl.addEventListener('click', () => {
+        state.selectedIds.clear();
+        updateSelectionUi();
+        syncVisibleCardSelections();
+      });
+
+      applyBatchTagsBtnEl.addEventListener('click', async () => {
+        const tagsToAdd = parseTags(batchTagInputEl.value);
+        if (!state.selectedIds.size) {
+          setStatus('请先选择至少一项', 'error');
+          return;
+        }
+        if (!tagsToAdd.length) {
+          setStatus('请输入至少一个标签', 'error');
+          return;
+        }
+
+        const selected = state.images.filter((image) => state.selectedIds.has(String(image.id)));
+        selected.forEach((image) => {
+          addTagsToImage(image, tagsToAdd);
+        });
+
+        try {
+          await saveAssets();
+          batchTagInputEl.value = '';
+          setStatus('批量标签已保存', 'success');
+          render();
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : '保存标签失败', 'error');
+        }
+      });
+
+      removeBatchTagsBtnEl.addEventListener('click', async () => {
+        const tagsToRemove = parseTags(batchTagInputEl.value);
+        if (!state.selectedIds.size) {
+          setStatus('请先选择至少一项', 'error');
+          return;
+        }
+        if (!tagsToRemove.length) {
+          setStatus('请输入至少一个要移除的标签', 'error');
+          return;
+        }
+
+        const selected = state.images.filter((image) => state.selectedIds.has(String(image.id)));
+        selected.forEach((image) => {
+          removeTagsFromImage(image, tagsToRemove);
+        });
+
+        try {
+          await saveAssets();
+          batchTagInputEl.value = '';
+          setStatus('批量移除标签已保存', 'success');
+          render();
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : '移除标签失败', 'error');
+        }
+      });
+
+      lightboxCloseEl.addEventListener('click', closeLightbox);
+      lightboxPrevBtnEl.addEventListener('click', () => {
+        openAdjacentLightbox(-1);
+      });
+      lightboxNextBtnEl.addEventListener('click', () => {
+        openAdjacentLightbox(1);
+      });
+      lightboxTitleButtonEl.addEventListener('click', openInlineRename);
+      lightboxTitleInputEl.addEventListener('keydown', async (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          await commitInlineRename();
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeInlineRename(true);
+        }
+      });
+      lightboxTitleInputEl.addEventListener('blur', async () => {
+        if (!state.inlineRenameOpen) {
+          return;
+        }
+        await commitInlineRename();
+      });
+      saveRemarksBtnEl.addEventListener('click', async () => {
+        await commitRemarks();
+      });
+      lightboxRemarksInputEl.addEventListener('keydown', async (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+          event.preventDefault();
+          await commitRemarks();
+        }
+      });
+      singleTagToggleBtnEl.addEventListener('click', async () => {
+        if (!state.inlineTagComposerOpen) {
+          openSingleTagComposer();
+          return;
+        }
+        await commitSingleTagAdd();
+      });
+      singleTagInputEl.addEventListener('keydown', async (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          await commitSingleTagAdd();
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeSingleTagComposer(true);
+        }
+      });
+      deleteAssetBtnEl.addEventListener('click', async () => {
+        const image = getImageById(state.currentImageId);
+        if (!image) {
+          setStatus('当前没有可删除的素材', 'error');
+          return;
+        }
+
+        const confirmed = window.confirm(`确认删除图片“${inferTitle(image)}”吗？`);
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          await deleteAsset(image.filename);
+          state.images = state.images.filter((item) => String(item.id) !== String(image.id));
+          state.selectedIds.delete(String(image.id));
+          closeLightbox();
+          setStatus('图片已删除', 'success');
+          render();
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : '删除失败', 'error');
+        }
+      });
+      lightboxEl.addEventListener('click', async (event) => {
+        await maybeCommitSingleTagAddFromOutsideClick(event.target);
+        if (event.target === lightboxEl) {
+          closeLightbox();
+        }
+      });
+
+      exportModalEl.addEventListener('click', (event) => {
+        if (event.target === exportModalEl) {
+          exportModalEl.classList.remove('is-open');
+        }
+      });
+
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          if (exportModalEl.classList.contains('is-open')) {
+            exportModalEl.classList.remove('is-open');
+            return;
+          }
+          if (lightboxEl.classList.contains('is-open')) {
+            if (state.inlineRenameOpen) {
+              closeInlineRename(true);
+              return;
+            }
+            if (state.inlineTagComposerOpen) {
+              closeSingleTagComposer(true);
+              return;
+            }
+            closeLightbox();
+          }
+        }
+        if (!lightboxEl.classList.contains('is-open')) {
+          return;
+        }
+        if (document.activeElement === lightboxRemarksInputEl) {
+          return;
+        }
+        if (state.inlineRenameOpen || state.inlineTagComposerOpen) {
+          return;
+        }
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          openAdjacentLightbox(-1);
+          return;
+        }
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          openAdjacentLightbox(1);
+        }
+      });
+
+      exportXhsBtnEl.addEventListener('click', () => openExportModal('xhs'));
+      exportMacBtnEl.addEventListener('click', () => openExportModal('mac'));
+      exportIosBtnEl.addEventListener('click', () => openExportModal('iphone'));
+
+      let currentExportState = {
+        validImages: [],
+        preset: null,
+        cols: 3,
+        rows: 3,
+        margin: 0,
+        gap: 0,
+        page: 0
+      };
+
+      async function openExportModal(ratioName) {
+        const filtered = filterImages();
+        if (filtered.length === 0) {
+          setStatus('当前没有可导出的图片', 'error');
+          return;
+        }
+        
+        const presets = {
+          'mac': { w: 2560, h: 1440, name: 'Mac壁纸' },
+          'xhs': { w: 1080, h: 1440, name: '小红书比例' },
+          'iphone': { w: 1320, h: 2868, name: 'iPhone17ProMax壁纸' }
+        };
+        const preset = presets[ratioName];
+        if (!preset) return;
+        
+        setStatus('正在生成预览，请稍候...', 'success');
+        
+        try {
+          const loadedImages = await Promise.all(filtered.map(image => {
+            return new Promise((resolve) => {
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.onload = () => resolve(img);
+              img.onerror = () => resolve(null);
+              img.src = getImageUrl(image);
+            });
+          }));
+          
+          const validImages = loadedImages.filter(img => img !== null);
+          const N = validImages.length;
+          const aspect = preset.w / preset.h;
+          
+          let initialRows = Math.max(1, Math.round(Math.sqrt(N / aspect)));
+          let initialCols = Math.ceil(N / initialRows);
+          if (initialCols * initialRows < N) {
+            if ((initialCols + 1) * initialRows >= N && initialCols * (initialRows + 1) >= N) {
+              if (Math.abs((initialCols+1)/initialRows - aspect) < Math.abs(initialCols/(initialRows+1) - aspect)) initialCols++;
+              else initialRows++;
+            } else if ((initialCols + 1) * initialRows >= N) {
+              initialCols++;
+            } else {
+              initialRows++;
+            }
+          }
+          
+          initialCols = Math.min(20, initialCols);
+          initialRows = Math.min(20, initialRows);
+          
+          currentExportState = {
+            validImages,
+            preset,
+            cols: initialCols,
+            rows: initialRows,
+            margin: 0,
+            gap: 0,
+            page: 0
+          };
+
+          exportColsRangeEl.max = "20";
+          exportColsRangeEl.value = String(initialCols);
+          exportColsValueEl.textContent = String(initialCols);
+
+          exportRowsRangeEl.max = "20";
+          exportRowsRangeEl.value = String(initialRows);
+          exportRowsValueEl.textContent = String(initialRows);
+
+          exportMarginRangeEl.value = "0";
+          exportMarginValueEl.textContent = "0";
+
+          exportGapRangeEl.value = "0";
+          exportGapValueEl.textContent = "0";
+          
+          document.getElementById('exportModalTitle').textContent = `导出${preset.name}预览`;
+          
+          drawExportPreview();
+          
+          exportModalEl.classList.add('is-open');
+          setStatus('', '');
+          
+        } catch (err) {
+          console.error(err);
+          setStatus('生成预览失败', 'error');
+        }
+      }
+
+      function drawExportPreview() {
+        const { validImages, preset, cols, rows, margin, gap } = currentExportState;
+        if (!preset || !validImages.length) return;
+        
+        const pageSize = cols * rows;
+        const totalPages = Math.max(1, Math.ceil(validImages.length / pageSize));
+        
+        exportPreviewContainerEl.innerHTML = '';
+        
+        const W = preset.w;
+        const H = preset.h;
+        
+        for (let p = 0; p < totalPages; p++) {
+          const startIndex = p * pageSize;
+          const pageImages = validImages.slice(startIndex, startIndex + pageSize);
+          
+          const wrapper = document.createElement('div');
+          wrapper.style.display = 'flex';
+          wrapper.style.flexDirection = 'column';
+          wrapper.style.alignItems = 'center';
+          wrapper.style.gap = '8px';
+          wrapper.style.flexShrink = '0';
+          wrapper.style.minWidth = '240px';
+          
+          const title = document.createElement('div');
+          title.textContent = totalPages > 1 ? `第 ${p + 1} / ${totalPages} 页` : '预览图';
+          title.style.fontSize = '13px';
+          title.style.color = '#6b7280';
+          title.style.fontWeight = '600';
+          
+          const canvas = document.createElement('canvas');
+          canvas.style.maxWidth = '100%';
+          canvas.style.maxHeight = 'calc(100% - 24px)';
+          canvas.style.objectFit = 'contain';
+          canvas.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+          canvas.style.background = '#fff';
+          
+          canvas.width = W;
+          canvas.height = H;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, W, H);
+          
+          const totalGapW = gap * (cols - 1);
+          const totalGapH = gap * (rows - 1);
+          const innerW = W - margin * 2 - totalGapW;
+          const innerH = H - margin * 2 - totalGapH;
+          const cellW = innerW / cols;
+          const cellH = innerH / rows;
+          
+          pageImages.forEach((img, index) => {
+            const col = index % cols;
+            const row = Math.floor(index / cols);
+            const x = margin + col * (cellW + gap);
+            const y = margin + row * (cellH + gap);
+            
+            const imgAspect = img.width / img.height;
+            const cellAspect = cellW / cellH;
+            let drawW, drawH, drawX, drawY;
+            
+            if (imgAspect > cellAspect) {
+              drawW = cellW;
+              drawH = cellW / imgAspect;
+              drawX = x;
+              drawY = y + (cellH - drawH) / 2;
+            } else {
+              drawH = cellH;
+              drawW = cellH * imgAspect;
+              drawX = x + (cellW - drawW) / 2;
+              drawY = y;
+            }
+            
+            ctx.drawImage(img, drawX, drawY, drawW, drawH);
+          });
+          
+          wrapper.appendChild(title);
+          wrapper.appendChild(canvas);
+          exportPreviewContainerEl.appendChild(wrapper);
+        }
+      }
+
+      exportColsRangeEl.addEventListener('input', (event) => {
+        const cols = Number(event.target.value);
+        exportColsValueEl.textContent = String(cols);
+        currentExportState.cols = cols;
+        drawExportPreview();
+      });
+
+      exportRowsRangeEl.addEventListener('input', (event) => {
+        const rows = Number(event.target.value);
+        exportRowsValueEl.textContent = String(rows);
+        currentExportState.rows = rows;
+        drawExportPreview();
+      });
+
+      exportMarginRangeEl.addEventListener('input', (event) => {
+        const margin = Number(event.target.value);
+        exportMarginValueEl.textContent = String(margin);
+        currentExportState.margin = margin;
+        drawExportPreview();
+      });
+
+      exportGapRangeEl.addEventListener('input', (event) => {
+        const gap = Number(event.target.value);
+        exportGapValueEl.textContent = String(gap);
+        currentExportState.gap = gap;
+        drawExportPreview();
+      });
+
+      exportModalCloseBtnEl.addEventListener('click', () => {
+        exportModalEl.classList.remove('is-open');
+      });
+
+      async function exportPageToBlob(validImages, preset, cols, rows, margin, gap, pageIndex) {
+        return new Promise((resolve, reject) => {
+          const pageSize = cols * rows;
+          const startIndex = pageIndex * pageSize;
+          const pageImages = validImages.slice(startIndex, startIndex + pageSize);
+          
+          const canvas = document.createElement('canvas');
+          const W = preset.w;
+          const H = preset.h;
+          canvas.width = W;
+          canvas.height = H;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, W, H);
+          
+          const totalGapW = gap * (cols - 1);
+          const totalGapH = gap * (rows - 1);
+          const innerW = W - margin * 2 - totalGapW;
+          const innerH = H - margin * 2 - totalGapH;
+          const cellW = innerW / cols;
+          const cellH = innerH / rows;
+          
+          pageImages.forEach((img, index) => {
+            const col = index % cols;
+            const row = Math.floor(index / cols);
+            const x = margin + col * (cellW + gap);
+            const y = margin + row * (cellH + gap);
+            
+            const imgAspect = img.width / img.height;
+            const cellAspect = cellW / cellH;
+            let drawW, drawH, drawX, drawY;
+            
+            if (imgAspect > cellAspect) {
+              drawW = cellW;
+              drawH = cellW / imgAspect;
+              drawX = x;
+              drawY = y + (cellH - drawH) / 2;
+            } else {
+              drawH = cellH;
+              drawW = cellH * imgAspect;
+              drawX = x + (cellW - drawW) / 2;
+              drawY = y;
+            }
+            
+            ctx.drawImage(img, drawX, drawY, drawW, drawH);
+          });
+          
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Canvas to Blob failed'));
+          }, 'image/jpeg', 0.92);
+        });
+      }
+
+      exportDownloadBtnEl.addEventListener('click', async () => {
+        const { validImages, preset, cols, rows, margin, gap } = currentExportState;
+        if (!preset) return;
+        
+        setStatus('正在生成原图并下载...', 'success');
+        exportDownloadBtnEl.disabled = true;
+        
+        try {
+          const pageSize = cols * rows;
+          const totalPages = Math.ceil(validImages.length / pageSize);
+          
+          for (let i = 0; i < totalPages; i++) {
+            const blob = await exportPageToBlob(validImages, preset, cols, rows, margin, gap, i);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const pageSuffix = totalPages > 1 ? `_p${i + 1}` : '';
+            a.download = `拼接壁纸_${preset.name}${pageSuffix}_${Date.now()}.jpg`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            // brief delay between downloads to prevent browser blocking multiple downloads
+            if (i < totalPages - 1) {
+              await new Promise(r => setTimeout(r, 400));
+            }
+          }
+          
+          setStatus(`成功导出 ${totalPages} 张壁纸！`, 'success');
+          setTimeout(() => setStatus('', ''), 3000);
+          exportModalEl.classList.remove('is-open');
+        } catch (err) {
+          console.error(err);
+          setStatus('导出失败', 'error');
+        } finally {
+          exportDownloadBtnEl.disabled = false;
+        }
+      });
+
+      init();
+    })();
+  </script>
+</body>
+</html>

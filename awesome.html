@@ -1,0 +1,2956 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>taste2</title>
+  <link rel="stylesheet" href="/assets/shared-nav.css" />
+  <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/standalone/styles/vis-timeline-graph2d.min.css" />
+  <script src="/assets/shared-nav.js" defer></script>
+  <style>
+    body{margin:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:#1d1d1f}
+    .page-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .toolbar{display:flex;flex-direction:column;gap:10px;margin-bottom:10px;font-size:14px;color:#3a3a3c}
+    .toolbar-row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+    .toolbar-row.controls-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+    .toolbar-row.controls-row .toolbar-section{flex-wrap:nowrap}
+    .toolbar-section{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .toolbar-section.is-hidden{display:none}
+    #pestFiltersSection .toolbar-title,
+    #trackFiltersSection .toolbar-title{align-self:center}
+    #trackFiltersSection{align-items:flex-start}
+    #trackFilters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex:1}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e5e5ea;border-radius:999px;padding:6px 10px}
+    .toolbar-title{font-size:12px;font-weight:700;color:#6e6e73;letter-spacing:.04em;min-width:36px}
+    .toolbar-input{border:1px solid #d2d2d7;border-radius:999px;padding:7px 12px;font-size:13px;background:#fff;color:#1d1d1f}
+    .segmented{display:inline-flex;align-items:center;background:#fff;border:1px solid #d2d2d7;border-radius:999px;padding:3px}
+    .segmented button{border:0;background:transparent;border-radius:999px;padding:6px 10px;font-size:13px;color:#3a3a3c;cursor:pointer}
+    .segmented button.active{background:#1d1d1f;color:#fff}
+    .quick-range{display:inline-flex;align-items:center;gap:6px;border:1px solid #d2d2d7;border-radius:999px;padding:7px 12px;background:#fff;color:#1d1d1f;cursor:pointer}
+    .quick-range.active{background:#1d1d1f;color:#fff;border-color:#1d1d1f}
+    .lane-color-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    .lane-color-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid #e5e5ea;border-radius:999px;background:#fff}
+    .lane-color-swatch{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.08);flex:none}
+    .lane-color-name{font-size:12px;color:#1d1d1f}
+    .lane-color-input{width:18px;height:18px;padding:0;border:0;background:transparent;cursor:pointer;flex:none}
+    .lane-color-input::-webkit-color-swatch-wrapper{padding:0}
+    .lane-color-input::-webkit-color-swatch{border:1px solid #d2d2d7;border-radius:999px}
+    .lane-color-status{font-size:12px;color:#6e6e73}
+    .lane-color-status.error{color:#9f2a20}
+    .lane-color-status.success{color:#176642}
+    .card{background:#fff;border:1px solid #e5e5ea;border-radius:14px;padding:12px;overflow:visible}
+    .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+    .card-filters{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap}
+    .card-search{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+    #clearSearchBtn{display:none}
+    .status{padding:16px 8px;font-size:14px;color:#6e6e73}
+    .status.error{color:#9f2a20}
+    .save-status{font-size:12px;color:#6e6e73}
+    .save-status.error{color:#9f2a20}
+    .save-status.success{color:#176642}
+    #timeline{height:auto;min-height:160px;border:0;overflow:visible}
+    #timeline .vis-timeline{overflow:visible !important}
+    #timeline .vis-panel.vis-top{
+      position:sticky !important;
+      top:0 !important;
+      z-index:30 !important;
+      background:#fff;
+      border-bottom:1px solid #e5e5ea
+    }
+    .fullscreen-btn {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 9999;
+      width: 44px;
+      height: 44px;
+      background: #1d1d1f;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border: none;
+      transition: transform 0.2s;
+    }
+    .fullscreen-btn:hover {
+      transform: scale(1.05);
+    }
+    .fullscreen-btn:active {
+      transform: scale(0.95);
+    }
+    .wrap:fullscreen {
+      max-width: none !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      padding: 20px !important;
+      background: #f5f5f7 !important;
+      overflow-y: auto !important;
+    }
+    .node-content{display:flex;align-items:center;line-height:1}
+    .node-text{display:flex;flex-direction:column;gap:2px}
+    .node-title-line{display:flex;align-items:center;gap:5px;height:13px;line-height:13px}
+    .node-icon{width:13px;min-width:13px;max-width:13px;height:13px;min-height:13px;max-height:13px;display:inline-flex;align-items:center;justify-content:center;flex:none;overflow:hidden}
+    .node-logo{width:13px;min-width:13px;max-width:13px;height:13px;min-height:13px;max-height:13px;display:block;flex:none;object-fit:contain}
+    .node-title{font-size:12px;font-weight:700;line-height:12px;color:#fff}
+    .node-meta{font-size:7px;line-height:1.2;color:rgba(255,255,255,.9)}
+    .vis-item{border-width:1px;border-style:solid;background:#fff;border-radius:999px;padding:3px 7px}
+    .vis-item.vis-selected{box-shadow:0 0 0 3px rgba(0,113,227,.12)}
+    .vis-item .vis-item-content{color:inherit}
+    .vis-item .vis-item-content > div{
+      display:block !important;
+      line-height:1 !important
+    }
+    .vis-item .vis-item-content > div > span{
+      display:flex !important;
+      flex-direction:column !important;
+      gap:2px !important
+    }
+    .vis-item .vis-item-content > div > span > span:first-child{
+      display:inline-flex !important;
+      align-items:center !important;
+      gap:5px !important;
+      min-height:13px !important;
+      line-height:13px !important;
+      white-space:nowrap !important;
+      min-width:0 !important
+    }
+    .vis-item .vis-item-content > div > span > span:first-child > span{
+      white-space:nowrap !important;
+      min-width:0 !important
+    }
+    .vis-item .vis-item-content > div > span > span:first-child > span:last-child{
+      font-size:12px !important;
+      font-weight:700 !important;
+      line-height:13px !important;
+      color:inherit !important
+    }
+    .vis-item .vis-item-content > div > span > span:first-child > span:only-child{
+      font-size:12px !important;
+      font-weight:700 !important;
+      line-height:13px !important;
+      color:inherit !important;
+      display:inline-block !important;
+      min-width:0 !important
+    }
+    .vis-item .vis-item-content > div > span > span:first-child:not(:has(span)){
+      font-size:12px !important;
+      font-weight:700 !important;
+      line-height:13px !important;
+      color:inherit !important;
+      display:inline-block !important;
+      white-space:nowrap !important;
+      min-width:0 !important
+    }
+    .vis-item .vis-item-content > div > span > span:first-child > span:first-child{
+      width:13px !important;min-width:13px !important;max-width:13px !important;
+      height:13px !important;min-height:13px !important;max-height:13px !important;
+      display:inline-flex !important;align-items:center !important;justify-content:center !important;
+      overflow:hidden !important;flex:none !important
+    }
+    .vis-item .vis-item-content img[alt$=" logo"]{
+      width:13px !important;min-width:13px !important;max-width:13px !important;
+      height:13px !important;min-height:13px !important;max-height:13px !important;
+      display:block !important;flex:none !important;object-fit:contain !important;
+      vertical-align:middle !important
+    }
+    .vis-item .vis-item-content > div > span > span:last-child{
+      font-size:7px !important;
+      line-height:1.2 !important;
+      color:inherit !important
+    }
+    .vis-item.vis-selected .vis-item-content,
+    .vis-item.vis-selected .vis-item-content > div,
+    .vis-item.vis-selected .vis-item-content > div > span,
+    .vis-item.vis-selected .vis-item-content > div > span > span,
+    .vis-item.vis-selected .vis-item-content > div > span > span > span{
+      color:#111827 !important
+    }
+    .vis-item .node-title,
+    .vis-item .node-title-line,
+    .vis-item .node-text,
+    .vis-item .node-meta{color:#fff !important}
+    .vis-item.vis-selected .node-title{color:#111827 !important}
+    .vis-item.vis-selected .node-text{color:#111827 !important}
+    .vis-item.vis-selected .node-meta{color:#374151 !important}
+    .vis-labelset .vis-label{
+      display:flex;align-items:center;font-weight:700;font-size:12px;letter-spacing:.04em;overflow:visible !important;
+    }
+    .vis-time-axis .vis-text{font-size:12px;color:#3a3a3c}
+    .vis-tooltip{max-width:320px;white-space:normal;line-height:1.5}
+    .group-label{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;color:#fff;font-weight:700;cursor:pointer}
+    .group-dot{width:10px;height:10px;border-radius:50%}
+    .vis-item.vis-range{border-radius:18px}
+    .vis-item.market-series-item{background:transparent !important;border:0 !important;padding:0 !important;box-shadow:none !important}
+    .vis-item.market-series-item .vis-item-overflow,
+    .vis-item.market-series-item .vis-item-content{overflow:visible !important}
+    .vis-item.market-series-item .vis-item-content{
+      width:100% !important;
+      height:100% !important;
+      display:block !important
+    }
+    .market-series{position:relative;width:100%;height:78px;min-width:0}
+    .market-series-svg{position:absolute;inset:0;width:100%;height:100%}
+    .market-series-base{fill:none;stroke:rgba(148,163,184,.18);stroke-width:1}
+    .market-series-line{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+    .market-series-label{position:absolute;left:10px;top:8px;font-size:12px;font-weight:700;background:rgba(255,255,255,.92);border:1px solid rgba(226,232,240,.95);border-radius:999px;padding:3px 8px;color:#0f172a;backdrop-filter:blur(4px)}
+    .market-series-meta{position:absolute;right:10px;top:8px;font-size:11px;background:rgba(255,255,255,.92);border:1px solid rgba(226,232,240,.95);border-radius:999px;padding:3px 8px;color:#475569;backdrop-filter:blur(4px)}
+    .market-series-last{position:absolute;right:10px;bottom:8px;font-size:11px;font-weight:700;background:rgba(255,255,255,.92);border:1px solid rgba(226,232,240,.95);border-radius:999px;padding:3px 8px;color:#0f172a;backdrop-filter:blur(4px)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:9999}
+    .modal{width:min(680px,92vw);max-height:92vh;overflow:auto;background:#fff;border-radius:14px;border:1px solid #e5e5ea;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:16px}
+    .modal h3{margin:0 0 10px;font-size:18px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid .full{grid-column:1 / -1}
+    .modal label{font-size:12px;color:#6e6e73;display:block;margin-bottom:4px}
+    .modal input,.modal textarea,.modal select{width:100%;border:1px solid #d2d2d7;border-radius:10px;padding:8px 10px;font-size:14px;background:#fff;color:#1d1d1f}
+    .modal textarea{min-height:90px;resize:vertical}
+    .edit-hero{display:flex;flex-direction:column;gap:10px}
+    .edit-hero-preview-wrap{position:relative;display:flex;justify-content:center}
+    .logo-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .upload-file-input{width:auto !important;padding:0 !important;border:0 !important;background:transparent !important;font-size:13px;color:#3a3a3c}
+    .upload-file-input::file-selector-button{border:1px solid #e5e5ea;background:#fff;border-radius:999px;padding:6px 10px;font-size:13px;color:#1d1d1f;cursor:pointer;margin-right:8px}
+    .logo-preview{display:flex;align-items:center;justify-content:center;width:100%;min-height:220px;border:1px solid #d2d2d7;border-radius:16px;background:#f5f5f7;overflow:hidden}
+    .logo-preview img{max-width:100%;max-height:200px;object-fit:contain}
+    .logo-preview.is-empty{font-size:20px;color:#6e6e73}
+    .logo-preview-zoom{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:32px;background:rgba(17,24,39,.42);z-index:10020;pointer-events:none}
+    .logo-preview-zoom img{display:block;width:auto;height:auto;max-width:min(78vw,920px);max-height:calc(100vh - 64px);object-fit:contain;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+    .edit-hero-preview-wrap:hover .logo-preview-zoom:not(.is-empty){display:flex}
+    .actions{position:sticky;bottom:-16px;display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:12px;padding-bottom:4px;background:linear-gradient(to bottom, rgba(255,255,255,0), #fff 18px, #fff 100%)}
+    .favorite-wrap{position:relative}
+    .btn{border:1px solid #d2d2d7;background:#fff;border-radius:999px;padding:7px 12px;cursor:pointer}
+    .btn.primary{background:#0071e3;border-color:#0071e3;color:#fff}
+    .btn.danger{background:#fff5f5;border-color:#fecaca;color:#b91c1c}
+    .btn.favorite-active{background:#fff7cc;border-color:#f5c542;color:#7a5200}
+    .favorite-popover{position:absolute;right:0;bottom:calc(100% + 8px);width:260px;background:#fff;border:1px solid #e5e5ea;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.18);padding:12px;display:none;z-index:2}
+    .favorite-popover.open{display:block}
+    .favorite-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .favorite-popover-title{font-size:13px;font-weight:700;color:#1d1d1f}
+    .favorite-toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:#3a3a3c}
+    .favorite-folder-list{display:flex;flex-direction:column;gap:8px;max-height:180px;overflow:auto;margin-bottom:10px}
+    .favorite-folder-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#1d1d1f}
+    .favorite-folder-item input{width:auto}
+    .favorite-create{display:flex;gap:8px;align-items:center}
+    .favorite-create input{flex:1;min-width:0}
+    .favorite-hint{font-size:12px;color:#6e6e73;margin-top:8px}
+    .favorite-folder-pills{display:flex;gap:6px;flex-wrap:wrap}
+    .favorite-folder-pill{
+      display:inline-flex;align-items:center;gap:4px;
+      background:#fff;border:1px solid #e5e5ea;border-radius:999px;
+      padding:5px 10px;font-size:12px;color:#3a3a3c;cursor:pointer;white-space:nowrap
+    }
+    .favorite-folder-pill:hover{border-color:#d2d2d7;background:#f5f5f7}
+    .favorite-folder-pill.active{background:#0071e3;border-color:#0071e3;color:#fff}
+    .favorite-folder-actions{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #e5e5ea}
+    /* Custom Time Markers - override vis-timeline default blue */
+    .vis-timeline .vis-custom-time{
+      background-color:#f59e0b !important;
+    }
+    .vis-timeline .vis-custom-time::before{
+      content:'' !important;
+      position:absolute !important;
+      top:0 !important;
+      left:-5px !important;
+      width:12px !important;
+      height:12px !important;
+      background:#f59e0b !important;
+      border-radius:50% !important;
+      border:2px solid #fff !important;
+      box-shadow:0 1px 3px rgba(0,0,0,.2) !important;
+      display:block !important;
+    }
+    .vis-timeline .vis-custom-time .custom-time-label{
+      position:absolute;
+      top:14px;
+      left:4px;
+      background:#f59e0b;
+      color:#fff;
+      font-size:11px;
+      font-weight:600;
+      padding:2px 6px;
+      border-radius:4px;
+      white-space:nowrap;
+      pointer-events:none;
+    }
+    .vis-timeline .vis-custom-time:hover{
+      background-color:#d97706 !important;
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  
+  
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    .page-content.hidden { display: none !important; }
+    .tab-btn.active { background: white !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #111827 !important; }
+  </style>
+
+  <!-- UI & React Stack -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- React Flow (Complete Bundle) -->
+  <script src="https://cdn.jsdelivr.net/npm/reactflow@11.10.4/dist/umd/index.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reactflow@11.10.4/dist/style.css" />
+  
+  <!-- Tools -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    .page-content.hidden { display: none !important; }
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:100;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 24px;
+      background:rgba(255,255,255,.82);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid #e5e5ea;
+    }
+    .brand{
+      font-size:20px;
+      font-weight:700;
+      letter-spacing:-0.02em;
+      color:#111827;
+    }
+    .tabs{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px;
+      background:#f0f1f4;
+      border-radius:14px;
+    }
+    .tab{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:112px;
+      padding:10px 16px;
+      border-radius:10px;
+      color:#4b5563;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:600;
+      transition:background-color .2s ease,color .2s ease,box-shadow .2s ease;
+    }
+    .tab:hover{
+      color:#111827;
+      background:rgba(255,255,255,.7);
+    }
+    .tab.active{
+      background:#fff;
+      color:#111827;
+      box-shadow:0 1px 3px rgba(0,0,0,.1);
+    }
+    #awesome-root { position: relative; overflow: hidden; }
+  </style>
+</head>
+<body data-nav-page="awesome" data-page-title="Awesome Something" data-page-subtitle="交互式总览与探索视图。" style="--page-max-width:1240px">
+  <div data-shared-nav-root></div>
+  <div data-shared-page-header-root></div>
+  <div id="timeline-page" class="page-content hidden">
+
+<div class="page-shell__body">
+  <div class="page-toolbar-actions">
+    <button id="createEventBtn" class="pill" style="cursor:pointer">新增事件</button>
+    <button id="addMarkerBtn" class="pill" style="cursor:pointer">添加标记</button>
+    <button id="exportImageBtn" class="pill" style="cursor:pointer">导出图片</button>
+    <button id="exportBtn" class="pill" style="cursor:pointer">导出JSON</button>
+  </div>
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <div class="toolbar-section">
+        <span class="toolbar-title">分组视角</span>
+        <div class="segmented" id="perspectiveMode">
+          <button type="button" class="active" data-mode="none">不分组</button>
+          <button type="button" data-mode="pest">PEST</button>
+          <button type="button" data-mode="track">赛道</button>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar-row">
+      <div class="toolbar-section" id="pestFiltersSection">
+        <span class="toolbar-title">筛选</span>
+        <button id="selectAllBtn" class="pill" style="cursor:pointer">全选</button>
+        <div id="pestFilters"></div>
+      </div>
+      <div class="toolbar-section is-hidden" id="trackFiltersSection">
+        <span class="toolbar-title">筛选</span>
+        <button id="selectAllTrackBtn" class="pill" style="cursor:pointer">全选</button>
+        <div id="trackFilters"></div>
+      </div>
+      <span id="laneColorStatus" class="lane-color-status"></span>
+    </div>
+    <div class="toolbar-row controls-row">
+      <div class="toolbar-section">
+        <span class="toolbar-title">节点时间</span>
+        <div class="segmented" id="timeDisplayMode">
+          <button type="button" data-mode="start">只显示开始</button>
+          <button type="button" class="active" data-mode="range">开始+结束</button>
+        </div>
+      </div>
+      <div class="toolbar-section">
+        <span class="toolbar-title">节点内容</span>
+        <div class="segmented" id="nodeDisplayMode">
+          <button type="button" data-mode="logo">只显示图片</button>
+          <button type="button" class="active" data-mode="both">图片+标题</button>
+          <button type="button" data-mode="title">只显示标题</button>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar-row controls-row">
+      <div class="toolbar-section">
+        <span class="toolbar-title">时间范围</span>
+        <input id="filterStart" class="toolbar-input" placeholder="开始日期 YYYY-MM-DD" />
+        <input id="filterEnd" class="toolbar-input" placeholder="结束日期 YYYY-MM-DD" />
+        <button id="applyDateBtn" class="pill" style="cursor:pointer">应用</button>
+      </div>
+      <div class="toolbar-section">
+        <button class="quick-range" data-range="1">近1年</button>
+        <button class="quick-range" data-range="3">近3年</button>
+        <button class="quick-range" data-range="5">近5年</button>
+        <button class="quick-range" data-range="10">近10年</button>
+        <button class="quick-range" data-range="20">近20年</button>
+        <button class="quick-range" data-range="30">近30年</button>
+        <button class="quick-range active" data-range="all">全部时间</button>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="timelineCard">
+    <div class="card-head">
+      <div class="card-filters">
+        <div id="favoriteFolderPills" class="favorite-folder-pills"></div>
+      </div>
+      <div class="card-search">
+        <input id="searchInput" class="toolbar-input" placeholder="搜索标题、关键词、分类、描述" />
+        <button id="clearSearchBtn" class="pill" style="cursor:pointer">清空</button>
+      </div>
+    </div>
+    <div id="status" class="status">正在加载时间轴数据…</div>
+    <div id="timeline" hidden></div>
+  </div>
+
+  </div>
+  </div>
+  <div id="awesome-page" class="page-content">
+    <div id="awesome-root" style="width: 100%; height: calc(100vh - 64px); background: #f8fafc;">
+      <!-- React will mount here -->
+    </div>
+  </div>
+</div>
+
+<div id="editModal" class="modal-backdrop">
+  <div class="modal">
+    <h3>编辑时间节点</h3>
+    <div class="grid">
+      <div class="full edit-hero">
+        <div class="edit-hero-preview-wrap">
+          <div id="logoPreview" class="logo-preview is-empty">暂无图片</div>
+          <div id="logoPreviewZoom" class="logo-preview-zoom is-empty" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="full">
+        <label>标题</label>
+        <input id="fTitle" />
+      </div>
+      <div>
+        <label>开始日期（YYYY-MM-DD）</label>
+        <input id="fStart" />
+      </div>
+      <div>
+        <label>结束日期（YYYY-MM-DD，可选）</label>
+        <input id="fEnd" />
+      </div>
+      <div>
+        <label>Logo 图片 URL</label>
+        <input id="fLogo" />
+      </div>
+      <div>
+        <label>图片</label>
+        <div class="logo-controls">
+          <input id="logoFileInput" class="upload-file-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+        </div>
+      </div>
+      <div class="full">
+        <label>关键词（逗号分隔）</label>
+        <input id="fKeywords" />
+      </div>
+      <div>
+        <label>分类</label>
+        <input id="fCategory" />
+      </div>
+      <div>
+        <label>赛道</label>
+        <select id="fTrack"></select>
+      </div>
+      <div>
+        <label>PEST（如 T,E 或 P,S）</label>
+        <input id="fPEST" />
+      </div>
+      <div class="full">
+        <label>描述</label>
+        <textarea id="fDesc"></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <span id="saveStatus" class="save-status"></span>
+      <div class="favorite-wrap">
+        <button id="toggleFavoriteBtn" class="btn favorite-active">已收藏 · 默认收藏夹 ▾</button>
+        <div id="favoritePopover" class="favorite-popover">
+          <div class="favorite-popover-head">
+            <span class="favorite-popover-title">选择收藏夹</span>
+          </div>
+          <div id="favoriteFolderList" class="favorite-folder-list"></div>
+          <div class="favorite-create">
+            <input id="newFavoriteFolderInput" type="text" placeholder="新建收藏夹" />
+            <button id="addFavoriteFolderBtn" type="button" class="btn">新建</button>
+          </div>
+          <div class="favorite-folder-actions">
+            <button id="renameFavoriteFolderBtn" type="button" class="btn" style="font-size:12px;padding:4px 8px">重命名</button>
+            <button id="deleteFavoriteFolderBtn" type="button" class="btn danger" style="font-size:12px;padding:4px 8px">删除</button>
+          </div>
+        </div>
+      </div>
+      <button id="deleteEdit" class="btn danger">删除</button>
+      <button id="cancelEdit" class="btn">取消</button>
+      <button id="saveEdit" class="btn primary">保存</button>
+    </div>
+  </div>
+</div>
+<button id="fullscreenBtn" class="fullscreen-btn" title="全屏查看">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+  </svg>
+</button>
+
+<script src="https://unpkg.com/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+  // Tab switching logic
+  document.addEventListener("DOMContentLoaded", () => {
+    const tabBtns = document.querySelectorAll("[data-tab]");
+    const pages = document.querySelectorAll(".page-content");
+    
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+        pages.forEach(p => p.classList.add("hidden"));
+        const targetPage = document.getElementById(tab + "-page");
+        if (targetPage) targetPage.classList.remove("hidden");
+        if (tab === "timeline" && typeof timeline !== "undefined" && timeline) {
+          timeline.redraw();
+        }
+      });
+    });
+  });
+
+  const container = document.getElementById('timeline');
+  const statusEl = document.getElementById('status');
+  const options = {
+    zoomable: true, moveable: true, stack: true,
+    horizontalScroll: true, verticalScroll: true,
+    orientation: 'top',
+    margin: {
+      item: { horizontal: 14, vertical: 12 },
+      axis: 10
+    },
+    tooltip: { followMouse: true, overflowMethod: 'cap' },
+    editable: { updateTime: true, updateGroup: false, add: false, remove: false },
+    groupEditable: { order: true },
+    groupOrderSwap: function (a, b, groups) {
+      const temp = a.order;
+      a.order = b.order;
+      b.order = temp;
+      
+      if (currentPerspectiveMode === 'pest') {
+        if (!timelineMeta.pest[a.id]) timelineMeta.pest[a.id] = { ...getPestMeta(a.id) };
+        if (!timelineMeta.pest[b.id]) timelineMeta.pest[b.id] = { ...getPestMeta(b.id) };
+        timelineMeta.pest[a.id].order = a.order;
+        timelineMeta.pest[b.id].order = b.order;
+      } else if (currentPerspectiveMode === 'track') {
+        if (!timelineMeta.tracks[a.id]) timelineMeta.tracks[a.id] = { ...getTrackMeta(a.id) };
+        if (!timelineMeta.tracks[b.id]) timelineMeta.tracks[b.id] = { ...getTrackMeta(b.id) };
+        timelineMeta.tracks[a.id].order = a.order;
+        timelineMeta.tracks[b.id].order = b.order;
+      }
+      
+      groups.update(a);
+      groups.update(b);
+      persistTimeline().catch(console.error);
+    },
+    min: '1980-01-01', max: '2026-12-31',
+    groupOrder: (a, b) => a.order - b.order,
+    format: {
+      minorLabels: {
+        millisecond: 'HH:mm:ss.SSS',
+        second: 'HH:mm:ss',
+        minute: 'HH:mm',
+        hour: 'M月D日 HH:mm',
+        weekday: 'M月D日',
+        day: 'M月D日',
+        week: 'M月D日',
+        month: 'M月',
+        year: 'YYYY年'
+      },
+      majorLabels: {
+        millisecond: 'YYYY年M月D日',
+        second: 'YYYY年M月D日',
+        minute: 'YYYY年M月D日',
+        hour: 'YYYY年M月D日',
+        weekday: 'YYYY年M月',
+        day: 'YYYY年M月',
+        week: 'YYYY年M月',
+        month: 'YYYY年',
+        year: ''
+      }
+    }
+  };
+
+  let raw = [];
+  let timelineMeta = { pest: {}, tracks: {}, series: {} };
+  let timeline;
+  let currentItems = null;
+  let selectedItemId = null;
+  let selectedSourceId = null;
+  let editingId = null;
+  let activeGroupOnly = null;
+  let timelineUsesGroups = true;
+
+  const fallbackPestMeta = {
+    P: { label: '政策视角', className: 'group-P', order: 1, color: '#9f2a20', dot: '#ffd1cb', border: '#7c1f18', glow: 'rgba(232,77,61,.16)' },
+    E: { label: '经济视角', className: 'group-E', order: 2, color: '#8a5400', dot: '#ffe0a6', border: '#6d4100', glow: 'rgba(244,166,42,.18)' },
+    S: { label: '社会视角', className: 'group-S', order: 3, color: '#176642', dot: '#b8f0d2', border: '#0e4a2e', glow: 'rgba(40,163,106,.16)' },
+    T: { label: '技术视角', className: 'group-T', order: 4, color: '#194ea8', dot: '#bdd4ff', border: '#133d84', glow: 'rgba(45,127,249,.16)' }
+  };
+
+  const fallbackTrackMeta = {
+    general: { label: '其他', order: 99, color: '#334155', dot: '#cbd5e1' }
+  };
+
+  const pestStyleTag = document.createElement('style');
+  pestStyleTag.id = 'pest-style-overrides';
+  document.head.appendChild(pestStyleTag);
+
+  function getPestMeta(pestId){
+    const fallback = fallbackPestMeta[pestId] || fallbackPestMeta.S;
+    return {
+      ...fallback,
+      ...(timelineMeta.pest?.[pestId] || {})
+    };
+  }
+
+  function applyPestStyles(){
+    pestStyleTag.textContent = ['P', 'E', 'S', 'T'].map((pestId) => {
+      const meta = getPestMeta(pestId);
+      return `
+        .group-${pestId} .group-label,.vis-item.pest-${pestId}{background:${meta.color}}
+        .group-${pestId} .group-dot{background:${meta.dot}}
+        .vis-item.pest-${pestId}{border-color:${meta.border}}
+        .vis-item.pest-${pestId} .vis-item-content{color:#fff}
+        .vis-item.pest-${pestId}.vis-selected{box-shadow:0 0 0 3px ${meta.glow}}
+      `;
+    }).join('\n');
+  }
+
+  function buildPestGroups(){
+    return new vis.DataSet(
+      ['P', 'E', 'S', 'T'].map((key) => {
+        const meta = getPestMeta(key);
+        return {
+          id: key,
+          order: meta.order,
+          className: meta.className,
+          content: `<span class="group-label" data-group-id="${key}"><span class="group-dot"></span><span>${key}</span><span>${meta.label}</span></span>`,
+          title: meta.label
+        };
+      })
+    );
+  }
+
+  function getTrackMeta(trackId){
+    return timelineMeta.tracks?.[trackId] || fallbackTrackMeta.general;
+  }
+
+  function marketSeriesEntries(){
+    return Object.entries(timelineMeta.series || {}).filter(([, series]) => Array.isArray(series?.points) && series.points.length > 1);
+  }
+
+  function buildTrackGroups(){
+    const usedTracks = [
+      ...new Set([
+        ...raw.map((event) => event.track || 'general'),
+        ...marketSeriesEntries().map(([, series]) => series.track || 'general')
+      ])
+    ];
+    return new vis.DataSet(
+      usedTracks
+        .map((trackId) => {
+          const meta = getTrackMeta(trackId);
+          return {
+            id: trackId,
+            order: meta.order,
+            content: `<span class="group-label" style="background:${meta.color};color:#fff" data-group-id="${trackId}"><span class="group-dot" style="background:${meta.dot}"></span><span>${meta.label}</span></span>`,
+            title: meta.label
+          };
+        })
+        .sort((a, b) => a.order - b.order)
+    );
+  }
+
+  function trackGroupIds(){
+    return buildTrackGroups().get().map((group) => group.id);
+  }
+
+  function renderPestFilters(){
+    let selected = selectedPEST();
+    if(!pestFiltersInitialized){
+      selected = ['P', 'E', 'S', 'T'];
+      pestFiltersInitialized = true;
+    }else if(selected.length === 0 && !pestFiltersUserModified){
+      selected = ['P', 'E', 'S', 'T'];
+    }
+    if(pestFiltersUserModified){
+      pestFiltersUserModified = false;
+    }
+    const selectedSet = new Set(selected);
+    pestFilters.innerHTML = ['P', 'E', 'S', 'T'].map((pestId) => {
+      const meta = getPestMeta(pestId);
+      const checked = selectedSet.has(pestId) ? 'checked' : '';
+      return `
+        <label class="lane-color-pill" data-filter-kind="pest" data-filter-id="${pestId}" ondblclick="window.handleLaneFilterDoubleClick(event, 'pest', '${pestId}')">
+          <input type="checkbox" class="pest-filter" data-pest="${pestId}" ${checked} ondblclick="window.handleLaneFilterDoubleClick(event, 'pest', '${pestId}')">
+          <span class="lane-color-name">${pestId} ${meta.label}</span>
+          <input class="lane-color-input" type="color" value="${normalizeHexColor(meta.color)}" data-scope="pest" data-id="${pestId}" aria-label="${meta.label} 颜色" />
+        </label>
+      `;
+    }).join('');
+    syncSelectAllLabel();
+  }
+
+  function renderTrackFilters(){
+    const groupIds = trackGroupIds();
+    if(!trackFiltersInitialized){
+      activeTrackFilters = new Set(groupIds);
+      trackFiltersInitialized = true;
+    }
+    const groups = buildTrackGroups().get();
+    trackFilters.innerHTML = groups
+      .map((group) => {
+        const checked = activeTrackFilters.has(group.id) ? 'checked' : '';
+        const meta = getTrackMeta(group.id);
+        return `
+          <label class="lane-color-pill" data-filter-kind="track" data-filter-id="${group.id}" ondblclick="window.handleLaneFilterDoubleClick(event, 'track', '${group.id}')">
+            <input type="checkbox" class="track-filter" data-track="${group.id}" ${checked} ondblclick="window.handleLaneFilterDoubleClick(event, 'track', '${group.id}')">
+            <span class="lane-color-name">${meta.label}</span>
+            <input class="lane-color-input" type="color" value="${normalizeHexColor(meta.color)}" data-scope="track" data-id="${group.id}" aria-label="${meta.label} 颜色" />
+          </label>
+        `;
+      })
+      .join('');
+    syncSelectAllLabel();
+  }
+
+  function renderTrackOptions(){
+    const options = Object.entries(timelineMeta.tracks || {})
+      .sort(([, left], [, right]) => (left.order || 999) - (right.order || 999))
+      .map(([trackId, meta]) => `<option value="${trackId}">${meta.label}</option>`)
+      .join('');
+    fTrack.innerHTML = options || '<option value="general">其他</option>';
+  }
+
+  async function persistLaneColors(){
+    try{
+      await persistTimeline();
+      setLaneColorStatus('颜色已保存', 'success');
+    }catch(error){
+      setLaneColorStatus(`保存失败：${error.message}`, 'error');
+    }
+  }
+
+  function queueLaneColorPersist(){
+    setLaneColorStatus('正在保存颜色…', '');
+    clearTimeout(laneColorPersistTimer);
+    laneColorPersistTimer = setTimeout(() => {
+      persistLaneColors();
+    }, 220);
+  }
+
+  function updatePestColor(pestId, color){
+    const base = normalizeHexColor(color);
+    timelineMeta.pest[pestId] = {
+      ...getPestMeta(pestId),
+      color: base,
+      dot: mixHex(base, '#ffffff', 0.72),
+      border: mixHex(base, '#000000', 0.22),
+      glow: colorWithAlpha(base, 0.18)
+    };
+    applyPestStyles();
+  }
+
+  function updateTrackColor(trackId, color){
+    const base = normalizeHexColor(color);
+    timelineMeta.tracks[trackId] = {
+      ...getTrackMeta(trackId),
+      color: base,
+      dot: mixHex(base, '#ffffff', 0.72)
+    };
+  }
+
+  const DEFAULT_FAVORITE_FOLDER = '默认收藏夹';
+
+  function getOrCreateDefaultFolder(){
+    const folders = favoriteFolderOptions();
+    if(folders.length > 0){
+      return folders[0];
+    }
+    if(!Array.isArray(timelineMeta.favoriteFolders)){
+      timelineMeta.favoriteFolders = [];
+    }
+    timelineMeta.favoriteFolders.push(DEFAULT_FAVORITE_FOLDER);
+    return DEFAULT_FAVORITE_FOLDER;
+  }
+
+  function favoriteFolderOptions(){
+    return Array.isArray(timelineMeta.favoriteFolders) ? timelineMeta.favoriteFolders.filter(Boolean) : [];
+  }
+
+  function renderFavoriteFolderFilter(){
+    const folders = favoriteFolderOptions();
+    const currentValues = (favoriteFolderPills.dataset.folders || '').split(',').filter(Boolean);
+    favoriteFolderPills.innerHTML = folders.length
+      ? `
+        <button type="button" class="favorite-folder-pill ${!currentValues.length ? 'active' : ''}" data-folder="">
+          全部
+        </button>
+        ${folders.map((folder) => `
+          <button type="button" class="favorite-folder-pill ${currentValues.includes(folder) ? 'active' : ''}" data-folder="${folder}">
+            ${folder}
+          </button>
+        `).join('')}`
+      : '';
+  }
+
+  function renderFavoriteFolderList(selectedValues = []){
+    const folders = favoriteFolderOptions();
+    const defaultFolder = getOrCreateDefaultFolder();
+    const currentValues = selectedValues.length ? selectedValues : [defaultFolder];
+    favoriteFolderList.innerHTML = folders.length
+      ? folders.map((folder) => `
+        <label class="favorite-folder-item">
+          <input type="checkbox" name="favoriteFolderChoice" value="${folder}" ${currentValues.includes(folder) ? 'checked' : ''}>
+          <span>${folder}</span>
+        </label>
+      `).join('')
+      : '<div class="favorite-hint">还没有收藏夹，先新建一个</div>';
+  }
+
+  function selectedFavoriteFolders(){
+    return Array.from(favoriteFolderList.querySelectorAll('input[name="favoriteFolderChoice"]:checked')).map(input => input.value);
+  }
+
+  function syncFavoriteControls(){
+    const folders = selectedFavoriteFolders();
+    const defaultFolder = getOrCreateDefaultFolder();
+    const displayText = folders.length ? folders.join('、') : defaultFolder;
+    toggleFavoriteBtn.textContent = `已收藏 · ${displayText} ▾`;
+    toggleFavoriteBtn.classList.add('favorite-active');
+  }
+
+  function setFavoriteFolderSelection(folders){
+    renderFavoriteFolderList(Array.isArray(folders) ? folders : [folders]);
+    syncFavoriteControls();
+  }
+
+  function closeFavoritePopover(){
+    favoritePopover.classList.remove('open');
+  }
+
+  function toggleFavoritePopover(){
+    favoritePopover.classList.toggle('open');
+  }
+
+  function ensureFavoriteFolderExists(name){
+    const value = (name || '').trim();
+    if(!value) return '';
+    if(!Array.isArray(timelineMeta.favoriteFolders)){
+      timelineMeta.favoriteFolders = [];
+    }
+    if(!timelineMeta.favoriteFolders.includes(value)){
+      timelineMeta.favoriteFolders.push(value);
+    }
+    return value;
+  }
+
+  function getSelectedFolderToModify(){
+    const selected = selectedFavoriteFolders();
+    if(selected.length !== 1){
+      alert('请先选择一个收藏夹');
+      return null;
+    }
+    return selected[0];
+  }
+
+  function renameFavoriteFolder(){
+    const oldName = getSelectedFolderToModify();
+    if(!oldName) return;
+    const newName = prompt('请输入新名称', oldName);
+    if(!newName || newName === oldName) return;
+    const index = timelineMeta.favoriteFolders.indexOf(oldName);
+    if(index > -1){
+      timelineMeta.favoriteFolders[index] = newName;
+      raw.forEach(ev => {
+        if(ev.favoriteFolders && ev.favoriteFolders.includes(oldName)){
+          ev.favoriteFolders = ev.favoriteFolders.map(f => f === oldName ? newName : f);
+        }
+      });
+      renderFavoriteFolderFilter();
+      renderFavoriteFolderList([newName]);
+      syncFavoriteControls();
+    }
+  }
+
+  function deleteFavoriteFolder(){
+    const folderName = getSelectedFolderToModify();
+    if(!folderName) return;
+    if(!confirm(`确定要删除收藏夹「${folderName}」吗？\n已收藏到该文件夹的节点将取消收藏。`)) return;
+    timelineMeta.favoriteFolders = timelineMeta.favoriteFolders.filter(f => f !== folderName);
+    raw.forEach(ev => {
+      if(ev.favoriteFolders && ev.favoriteFolders.includes(folderName)){
+        ev.favoriteFolders = ev.favoriteFolders.filter(f => f !== folderName);
+        if(ev.favoriteFolders.length === 0){
+          ev.favorite = false;
+        }
+      }
+    });
+    renderFavoriteFolderFilter();
+    setFavoriteButtonState();
+  }
+
+  function itemStyleForGroup(groupId){
+    if(currentPerspectiveMode === 'pest') return '';
+    const meta = getTrackMeta(groupId);
+    return `background:${meta.color};border-color:${meta.color};color:#fff;`;
+  }
+
+  function normalizeHexColor(hex){
+    const value = String(hex || '').trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(value)) return value.toLowerCase();
+    if(/^#[0-9a-fA-F]{3}$/.test(value)){
+      return `#${value.slice(1).split('').map((part) => part + part).join('')}`.toLowerCase();
+    }
+    return '#334155';
+  }
+
+  function clampColor(value){
+    return Math.max(0, Math.min(255, Math.round(value)));
+  }
+
+  function hexToRgb(hex){
+    const value = normalizeHexColor(hex).slice(1);
+    return {
+      r: parseInt(value.slice(0, 2), 16),
+      g: parseInt(value.slice(2, 4), 16),
+      b: parseInt(value.slice(4, 6), 16)
+    };
+  }
+
+  function rgbToHex({ r, g, b }){
+    return `#${[r, g, b].map((part) => clampColor(part).toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  function mixHex(hex, targetHex, amount){
+    const source = hexToRgb(hex);
+    const target = hexToRgb(targetHex);
+    return rgbToHex({
+      r: source.r + (target.r - source.r) * amount,
+      g: source.g + (target.g - source.g) * amount,
+      b: source.b + (target.b - source.b) * amount
+    });
+  }
+
+  function colorWithAlpha(hex, alpha){
+    const { r, g, b } = hexToRgb(hex);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  const modal = document.getElementById('editModal');
+  const fStart = document.getElementById('fStart');
+  const fEnd = document.getElementById('fEnd');
+  const fLogo = document.getElementById('fLogo');
+  const fTitle = document.getElementById('fTitle');
+  const fKeywords = document.getElementById('fKeywords');
+  const fCategory = document.getElementById('fCategory');
+  const fTrack = document.getElementById('fTrack');
+  const fPEST = document.getElementById('fPEST');
+  const fDesc = document.getElementById('fDesc');
+  const logoPreview = document.getElementById('logoPreview');
+  const logoPreviewZoom = document.getElementById('logoPreviewZoom');
+  const saveStatus = document.getElementById('saveStatus');
+  const saveEditBtn = document.getElementById('saveEdit');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const wrap = document.querySelector('.wrap');
+  const toggleFavoriteBtn = document.getElementById('toggleFavoriteBtn');
+  const favoritePopover = document.getElementById('favoritePopover');
+  const favoriteFolderList = document.getElementById('favoriteFolderList');
+  const newFavoriteFolderInput = document.getElementById('newFavoriteFolderInput');
+  const addFavoriteFolderBtn = document.getElementById('addFavoriteFolderBtn');
+  const renameFavoriteFolderBtn = document.getElementById('renameFavoriteFolderBtn');
+  const deleteFavoriteFolderBtn = document.getElementById('deleteFavoriteFolderBtn');
+  const deleteEditBtn = document.getElementById('deleteEdit');
+  const logoFileInput = document.getElementById('logoFileInput');
+  const selectAllBtn = document.getElementById('selectAllBtn');
+  const pestFiltersSection = document.getElementById('pestFiltersSection');
+  const pestFilters = document.getElementById('pestFilters');
+  const trackFiltersSection = document.getElementById('trackFiltersSection');
+  const laneColorStatus = document.getElementById('laneColorStatus');
+  const trackFilters = document.getElementById('trackFilters');
+  const selectAllTrackBtn = document.getElementById('selectAllTrackBtn');
+  const perspectiveMode = document.getElementById('perspectiveMode');
+  const perspectiveButtons = Array.from(perspectiveMode.querySelectorAll('button'));
+  const timeDisplayMode = document.getElementById('timeDisplayMode');
+  const timeDisplayButtons = Array.from(timeDisplayMode.querySelectorAll('button'));
+  const nodeDisplayMode = document.getElementById('nodeDisplayMode');
+  const nodeDisplayButtons = Array.from(nodeDisplayMode.querySelectorAll('button'));
+  const filterStart = document.getElementById('filterStart');
+  const filterEnd = document.getElementById('filterEnd');
+  const searchInput = document.getElementById('searchInput');
+  const clearSearchBtn = document.getElementById('clearSearchBtn');
+  const favoriteFolderPills = document.getElementById('favoriteFolderPills');
+  const quickRangeButtons = Array.from(document.querySelectorAll('.quick-range'));
+  let currentTimeDisplayMode = 'range';
+  let currentNodeDisplayMode = 'both';
+  let currentPerspectiveMode = 'pest';
+  
+  // Custom time markers
+  let customTimeMarkers = [];
+  let nextMarkerId = 1;
+  let pestFiltersInitialized = false;
+  let pestFiltersUserModified = false;
+  let activeTrackFilters = new Set();
+  let trackFiltersInitialized = false;
+  let pendingDeleteConfirm = false;
+  let laneColorPersistTimer = null;
+
+  fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      wrap.requestFullscreen().catch(err => {
+        alert(`全屏请求失败: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    const isFullscreen = !!document.fullscreenElement;
+    fullscreenBtn.innerHTML = isFullscreen 
+      ? `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/>
+        </svg>`
+      : `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+        </svg>`;
+    
+    // 全屏切换后重新同步高度和适应时间轴
+    setTimeout(() => {
+      if (timeline) {
+        timeline.fit();
+        queueTimelineHeightSync();
+      }
+    }, 100);
+  });
+
+  function setStatus(message, isError){
+    statusEl.textContent = message;
+    statusEl.classList.toggle('error', Boolean(isError));
+    statusEl.hidden = false;
+    container.hidden = true;
+  }
+
+  function setSaveStatus(message, kind){
+    saveStatus.textContent = message || '';
+    saveStatus.classList.remove('error', 'success');
+    if(kind){
+      saveStatus.classList.add(kind);
+    }
+  }
+
+  function setLaneColorStatus(message, kind){
+    laneColorStatus.textContent = message || '';
+    laneColorStatus.classList.remove('error', 'success');
+    if(kind){
+      laneColorStatus.classList.add(kind);
+    }
+  }
+
+  function showTimeline(){
+    statusEl.hidden = true;
+    container.hidden = false;
+  }
+
+  function syncClearSearchButton(){
+    clearSearchBtn.style.display = (searchInput.value || '').trim() ? 'inline-flex' : 'none';
+  }
+
+  function setFavoriteButtonState(){
+    const folder = getOrCreateDefaultFolder();
+    renderFavoriteFolderList(folder);
+    syncFavoriteControls();
+  }
+
+  function resetDeleteButtonState(){
+    pendingDeleteConfirm = false;
+    deleteEditBtn.textContent = '删除';
+    deleteEditBtn.classList.remove('favorite-active');
+  }
+
+  function nextEventId(){
+    return raw.reduce((max, event) => Math.max(max, Number(event.id) || 0), 0) + 1;
+  }
+
+  function normalizeEvent(event, index){
+    const start = event.start || event.date;
+    const end = event.end || event.date || start;
+    return {
+      id: event.id || index + 1,
+      start,
+      end,
+      title: event.title || '未命名事件',
+      category: event.category || '',
+      keywords: Array.isArray(event.keywords) ? event.keywords : [],
+      description: event.description || '',
+      icon: event.icon || '',
+      logo: event.logo || '',
+      favorite: Boolean(event.favorite),
+      favoriteFolders: Array.isArray(event.favoriteFolders) ? event.favoriteFolders.filter(Boolean) 
+        : (event.favoriteFolder ? [event.favoriteFolder] : []),
+      track: event.track || 'general',
+      pest: Array.isArray(event.pest) && event.pest.length ? event.pest.map((item) => String(item).trim().toUpperCase()).filter(Boolean) : ['S']
+    };
+  }
+
+  function normalizeTimelinePayload(json){
+    if(Array.isArray(json)){
+      timelineMeta = { favoriteFolders: [], pest: { ...fallbackPestMeta }, tracks: { ...fallbackTrackMeta }, series: {} };
+      applyPestStyles();
+      return json.map(normalizeEvent);
+    }
+    if(!json || typeof json !== 'object' || !Array.isArray(json.events)){
+      throw new Error('timeline.json 必须是数组或包含 events 的对象');
+    }
+    timelineMeta = {
+      favoriteFolders: Array.isArray(json.meta?.favoriteFolders) ? json.meta.favoriteFolders.filter(Boolean) : [],
+      pest: {
+        ...fallbackPestMeta,
+        ...(json.meta?.pest || {})
+      },
+      tracks: {
+        ...fallbackTrackMeta,
+        ...(json.meta?.tracks || {})
+      },
+      series: json.meta?.series || {}
+    };
+    applyPestStyles();
+    return json.events.map(normalizeEvent);
+  }
+
+  function buildTimelinePayload(){
+    return {
+      meta: timelineMeta,
+      events: raw.map(({ d, ...event }) => event)
+    };
+  }
+
+  async function loadData(){
+    setStatus('正在加载时间轴数据…', false);
+    try{
+      const response = await fetch('./timeline.json', { cache: 'no-store' });
+      if(!response.ok) throw new Error(`HTTP ${response.status}`);
+      const json = await response.json();
+      raw = normalizeTimelinePayload(json);
+      getOrCreateDefaultFolder();
+      renderTrackOptions();
+      renderTrackFilters();
+      showTimeline();
+      render();
+    }catch(error){
+      console.error(error);
+      const message = window.location.protocol === 'file:'
+        ? '当前是直接打开的本地 HTML（file://），浏览器会拦截 JSON 读取。请用本地服务打开，比如运行 python3 server.py。'
+        : `时间轴数据加载失败：${error.message}`;
+      setStatus(message, true);
+    }
+  }
+
+  function dateToString(value){
+    return value.toISOString().slice(0,10);
+  }
+
+  function startOfDay(value){
+    const d = new Date(value);
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function endOfDay(value){
+    const d = new Date(value);
+    d.setHours(23,59,59,999);
+    return d;
+  }
+
+  function addDays(dateString, days){
+    const d = new Date(`${dateString}T00:00:00`);
+    d.setDate(d.getDate() + days);
+    return dateToString(d);
+  }
+
+  function parseDateInput(value, mode){
+    const trimmed = (value || '').trim();
+    if(!trimmed) return null;
+    const parsed = new Date(`${trimmed}T00:00:00`);
+    if(Number.isNaN(parsed.getTime())) return null;
+    return mode === 'end' ? endOfDay(parsed) : startOfDay(parsed);
+  }
+
+  function itemRangeIntersects(itemStart, itemEnd, filterStartDate, filterEndDate){
+    if(filterStartDate && itemEnd < filterStartDate) return false;
+    if(filterEndDate && itemStart > filterEndDate) return false;
+    return true;
+  }
+
+  function matchesSearch(event, keyword){
+    if(!keyword) return true;
+    const haystack = [
+      event.title || '',
+      event.category || '',
+      event.description || '',
+      event.track || '',
+      ...(event.keywords || [])
+    ].join(' ').toLowerCase();
+    return haystack.includes(keyword);
+  }
+
+  function selectedPEST(){
+    return Array.from(pestFilters.querySelectorAll('.pest-filter'))
+      .filter((input) => input.checked)
+      .map((input) => input.dataset.pest);
+  }
+
+  function selectedTracks(){
+    return Array.from(activeTrackFilters);
+  }
+
+  function syncSelectAllLabel(){
+    if(currentPerspectiveMode === 'none') return;
+    if(currentPerspectiveMode !== 'pest'){
+      const allChecked = Array.from(trackFilters.querySelectorAll('.track-filter')).every((input) => input.checked);
+      selectAllTrackBtn.textContent = allChecked ? '取消全选' : '全选';
+      return;
+    }
+    const allChecked = Array.from(pestFilters.querySelectorAll('.pest-filter')).every((input) => input.checked);
+    selectAllBtn.textContent = allChecked ? '取消全选' : '全选';
+  }
+
+  function setPerspectiveMode(mode){
+    currentPerspectiveMode = mode;
+    perspectiveButtons.forEach((button) => {
+      button.classList.toggle('active', button.dataset.mode === mode);
+    });
+    pestFiltersSection.classList.toggle('is-hidden', mode !== 'pest');
+    trackFiltersSection.classList.toggle('is-hidden', mode !== 'track');
+    activeGroupOnly = null;
+    syncSelectAllLabel();
+  }
+
+  function tooltipText(e, pest){
+    const timeText = `${e.start}${(e.end && e.end!==e.start)?(' ~ '+e.end):''}`;
+    const trackId = e.track || 'general';
+    const trackLabel = getTrackMeta(trackId).label;
+    return [
+      `<div><strong>${e.title}</strong></div>`,
+      `<div>时间: ${timeText}</div>`,
+      currentPerspectiveMode === 'pest'
+        ? `<div>视角: ${pest} · ${getPestMeta(pest).label}</div>`
+        : `<div>赛道: ${trackLabel}</div>`,
+      e.category ? `<div>分类: ${e.category}</div>` : '',
+      e.keywords?.length ? `<div>关键词: ${e.keywords.join(' / ')}</div>` : '',
+      e.description ? `<div>${e.description}</div>` : ''
+    ].filter(Boolean).join('');
+  }
+
+  function updateLogoPreview(){
+    const logo = (fLogo.value || '').trim();
+    if(logo){
+      logoPreview.classList.remove('is-empty');
+      logoPreview.innerHTML = `<img src="${logo}" alt="logo 预览" onerror="window.handleLogoPreviewError(this)" />`;
+      logoPreviewZoom.classList.remove('is-empty');
+      logoPreviewZoom.innerHTML = `<img src="${logo}" alt="logo 原尺寸预览" onerror="window.handleLogoZoomError(this)" />`;
+      return;
+    }
+    logoPreview.classList.add('is-empty');
+    logoPreview.textContent = '暂无图片';
+    logoPreviewZoom.classList.add('is-empty');
+    logoPreviewZoom.innerHTML = '';
+  }
+
+  window.handleLogoPreviewError = function(img){
+    const container = img.parentElement;
+    container.classList.add('is-empty');
+    container.textContent = '暂无图片';
+    logoPreviewZoom.classList.add('is-empty');
+    logoPreviewZoom.innerHTML = '';
+  };
+
+  window.handleLogoZoomError = function(img){
+    const container = img.parentElement;
+    container.classList.add('is-empty');
+    container.innerHTML = '';
+  };
+
+  function readFileAsDataURL(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('图片读取失败'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function iconMarkup(e){
+    if(e.logo){
+      return `<span class="node-icon"><img class="node-logo" src="${e.logo}" alt="${e.title} logo" loading="lazy" referrerpolicy="no-referrer" style="width:13px;height:13px;min-width:13px;min-height:13px;max-width:13px;max-height:13px;display:block;object-fit:contain;flex:none" onerror="this.closest('.node-icon').remove()" /></span>`;
+    }
+    return '';
+  }
+
+  function nodeTimeMarkup(e){
+    const timeText = currentTimeDisplayMode === 'range' && e.end && e.end !== e.start
+      ? `${e.start} ~ ${e.end}`
+      : e.start;
+    return timeText ? `<span class="node-meta">(${timeText})</span>` : '';
+  }
+
+  function itemDisplayEnd(e){
+    if(currentTimeDisplayMode !== 'range') return undefined;
+    return e.end && e.end !== e.start ? e.end : undefined;
+  }
+
+  function setNodeDisplayMode(mode){
+    currentNodeDisplayMode = mode;
+    nodeDisplayButtons.forEach((button) => {
+      button.classList.toggle('active', button.dataset.mode === mode);
+    });
+  }
+
+  function setTimeDisplayMode(mode){
+    currentTimeDisplayMode = mode;
+    timeDisplayButtons.forEach((button) => {
+      button.classList.toggle('active', button.dataset.mode === mode);
+    });
+  }
+
+  function nodeContentMarkup(e){
+    const iconPart = iconMarkup(e);
+    const titleOnlyPart = `<span class="node-text"><span class="node-title">${e.title}</span>${nodeTimeMarkup(e)}</span>`;
+    const textPart = `<span class="node-text"><span class="node-title-line">${iconPart}<span class="node-title">${e.title}</span></span>${nodeTimeMarkup(e)}</span>`;
+    if(currentNodeDisplayMode === 'logo'){
+      return `<div class="node-content">${iconPart}</div>`;
+    }
+    if(currentNodeDisplayMode === 'title'){
+      return `<div class="node-content">${titleOnlyPart}</div>`;
+    }
+    return `<div class="node-content">${iconPart ? textPart : titleOnlyPart}</div>`;
+  }
+
+  function marketSeriesMarkup(series){
+    const points = [...series.points].sort((left, right) => left.date.localeCompare(right.date));
+    if(!points.length) return document.createElement('div');
+    const minValue = Math.min(...points.map((point) => Number(point.value)));
+    const maxValue = Math.max(...points.map((point) => Number(point.value)));
+    const startMs = new Date(`${points[0].date}T00:00:00`).getTime();
+    const endMs = new Date(`${points[points.length - 1].date}T00:00:00`).getTime();
+    const duration = Math.max(endMs - startMs, 1);
+    const valueSpan = Math.max(maxValue - minValue, 1);
+    const polyline = points.map((point) => {
+      const x = ((new Date(`${point.date}T00:00:00`).getTime() - startMs) / duration) * 100;
+      const y = 72 - (((Number(point.value) - minValue) / valueSpan) * 56);
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    }).join(' ');
+    const trackMeta = getTrackMeta(series.track || 'general');
+    const latest = points[points.length - 1];
+    const wrap = document.createElement('div');
+    wrap.className = 'market-series';
+    wrap.innerHTML = `
+      <svg class="market-series-svg" viewBox="0 0 100 78" preserveAspectRatio="none" aria-hidden="true">
+        <polyline class="market-series-base" points="0,72 100,72"></polyline>
+        <polyline class="market-series-line" points="${polyline}" style="stroke:${series.lineColor || trackMeta.color}"></polyline>
+      </svg>
+      <span class="market-series-label"></span>
+      <span class="market-series-meta"></span>
+      <span class="market-series-last"></span>
+    `;
+    wrap.querySelector('.market-series-label').textContent = `${series.label} · ${series.source || ''}`;
+    wrap.querySelector('.market-series-meta').textContent = `${points[0].date} ~ ${latest.date}`;
+    wrap.querySelector('.market-series-last').textContent = `最新 ${latest.value}`;
+    return wrap;
+  }
+
+  function buildItems(){
+    const filterStartDate = parseDateInput(filterStart.value, 'start');
+    const filterEndDate = parseDateInput(filterEnd.value, 'end');
+    const searchKeyword = (searchInput.value || '').trim().toLowerCase();
+    const filterFolders = (favoriteFolderPills.dataset.folders || '').split(',').filter(Boolean);
+    const filtered = raw.filter((e) => {
+      if(filterFolders.length && (!e.favorite || !e.favoriteFolders || !e.favoriteFolders.some(f => filterFolders.includes(f)))) return false;
+      if(!matchesSearch(e, searchKeyword)) return false;
+      if(currentPerspectiveMode === 'pest'){
+        const sel = selectedPEST();
+        if(!e.pest.some(x => sel.includes(x))) return false;
+      } else if(currentPerspectiveMode === 'track') {
+        const tracks = selectedTracks();
+        if(!tracks.length) return false;
+        if(!tracks.includes(e.track || 'general')) return false;
+      }
+      const itemStart = startOfDay(`${e.start}T00:00:00`);
+      const itemEnd = endOfDay(`${(e.end || e.start)}T00:00:00`);
+      return itemRangeIntersects(itemStart, itemEnd, filterStartDate, filterEndDate);
+    });
+    if(currentPerspectiveMode === 'none'){
+      return new vis.DataSet(
+        filtered.map((e) => ({
+          id: `${e.id}-none`,
+          sourceId: e.id,
+          start: e.start,
+          end: itemDisplayEnd(e),
+          title: tooltipText(e, e.pest?.[0] || 'S'),
+          content: nodeContentMarkup(e)
+        }))
+      );
+    }
+    if(currentPerspectiveMode === 'track'){
+      const seriesItems = marketSeriesEntries()
+        .map(([seriesId, series]) => {
+          const trackId = series.track || 'general';
+          const tracks = selectedTracks();
+          if(!tracks.length) return null;
+          if(!tracks.includes(trackId)) return null;
+          if(activeGroupOnly && trackId !== activeGroupOnly) return null;
+          const points = [...series.points]
+            .sort((left, right) => left.date.localeCompare(right.date))
+            .filter((point) => {
+              const pointStart = startOfDay(`${point.date}T00:00:00`);
+              const pointEnd = endOfDay(`${point.date}T00:00:00`);
+              return itemRangeIntersects(pointStart, pointEnd, filterStartDate, filterEndDate);
+            });
+          const start = points[0]?.date;
+          const end = points[points.length - 1]?.date;
+          if(!start || !end) return null;
+          const displayEnd = points.length > 1 ? end : addDays(start, 1);
+          return {
+            id: `series-${seriesId}`,
+            seriesId,
+            group: trackId,
+            start,
+            end: displayEnd,
+            type: 'range',
+            className: 'market-series-item',
+            title: `${series.label} · ${series.source || ''}`,
+            content: marketSeriesMarkup({
+              ...series,
+              points
+            })
+          };
+        })
+        .filter(Boolean);
+      const eventItems = filtered
+          .map((e) => {
+            const trackId = e.track || 'general';
+            if(activeGroupOnly && trackId !== activeGroupOnly) return null;
+            return {
+              id: `${e.id}-track`,
+              sourceId: e.id,
+              group: trackId,
+              start: e.start,
+              end: itemDisplayEnd(e),
+              style: itemStyleForGroup(trackId),
+              title: tooltipText(e, trackId),
+              content: nodeContentMarkup(e)
+            };
+          })
+          .filter(Boolean);
+      return new vis.DataSet([...seriesItems, ...eventItems]);
+    }
+    const sel = selectedPEST();
+    return new vis.DataSet(
+      filtered.flatMap((e) =>
+        e.pest
+          .filter((pest) => sel.includes(pest) && (!activeGroupOnly || pest === activeGroupOnly))
+          .map((pest) => ({
+            id: `${e.id}-${pest}`,
+            sourceId: e.id,
+            group: pest,
+            start: e.start,
+            end: itemDisplayEnd(e),
+            className: `pest-${pest}`,
+            title: tooltipText(e, pest),
+            content: nodeContentMarkup(e)
+          }))
+      )
+    );
+  }
+
+  function setQuickRangeActive(value){
+    quickRangeButtons.forEach((button) => {
+      button.classList.toggle('active', button.dataset.range === value);
+    });
+  }
+
+  function applyRange(years){
+    if(years === 'all'){
+      filterStart.value = '';
+      filterEnd.value = '';
+      setQuickRangeActive('all');
+      render();
+      return;
+    }
+    const today = new Date();
+    const start = new Date(today);
+    start.setFullYear(today.getFullYear() - Number(years));
+    filterStart.value = dateToString(start);
+    filterEnd.value = dateToString(today);
+    setQuickRangeActive(String(years));
+    render();
+  }
+
+  function clearQuickRangeSelection(){
+    quickRangeButtons.forEach((button) => button.classList.remove('active'));
+  }
+
+  function setAllPEST(checked){
+    pestFiltersUserModified = true;
+    pestFilters.querySelectorAll('.pest-filter').forEach((input) => {
+      input.checked = checked;
+    });
+    syncSelectAllLabel();
+  }
+
+  function setAllTracks(checked){
+    activeTrackFilters = new Set(checked ? trackGroupIds() : []);
+    renderTrackFilters();
+  }
+
+  function isolatePestFilter(pestId){
+    activeGroupOnly = null;
+    pestFilters.querySelectorAll('.pest-filter').forEach((input) => {
+      input.checked = input.dataset.pest === pestId;
+    });
+    syncSelectAllLabel();
+    render();
+  }
+
+  function isolateTrackFilter(trackId){
+    activeGroupOnly = null;
+    activeTrackFilters = new Set([trackId]);
+    syncSelectAllLabel();
+    render();
+  }
+
+  window.handleLaneFilterDoubleClick = function(event, kind, id){
+    const target = event?.target;
+    if(target instanceof HTMLElement && target.closest('.lane-color-input')) return false;
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    window.setTimeout(() => {
+      if(kind === 'pest'){
+        const selected = selectedPEST();
+        if(selected.length === 1 && selected[0] === id){
+          setAllPEST(true);
+          render();
+          return;
+        }
+        isolatePestFilter(id);
+        return;
+      }
+      if(kind === 'track'){
+        const selected = selectedTracks();
+        if(selected.length === 1 && selected[0] === id){
+          setAllTracks(true);
+          render();
+          return;
+        }
+        isolateTrackFilter(id);
+      }
+    }, 0);
+    return false;
+  };
+
+  function syncGroupChecks(){
+    if(currentPerspectiveMode === 'track'){
+      if(activeGroupOnly){
+        activeTrackFilters = new Set([activeGroupOnly]);
+        renderTrackFilters();
+        return;
+      }
+      if(!trackFiltersInitialized){
+        setAllTracks(true);
+        return;
+      }
+      renderTrackFilters();
+      return;
+    }
+    setAllPEST(true);
+    if(activeGroupOnly){
+      pestFilters.querySelectorAll('.pest-filter').forEach((input) => {
+        input.checked = input.dataset.pest === activeGroupOnly;
+      });
+    }
+    syncSelectAllLabel();
+  }
+
+  function toggleGroupFocus(groupId){
+    activeGroupOnly = activeGroupOnly === groupId ? null : groupId;
+    syncGroupChecks();
+    render();
+  }
+
+  function openCreateModal(){
+    editingId = null;
+    fStart.value = '';
+    fEnd.value = '';
+    fLogo.value = '';
+    fTitle.value = '';
+    fKeywords.value = '';
+    fCategory.value = '';
+    fTrack.value = 'general';
+    fPEST.value = 'S';
+    fDesc.value = '';
+    setFavoriteButtonState();
+    closeFavoritePopover();
+    resetDeleteButtonState();
+    deleteEditBtn.style.display = 'none';
+    updateLogoPreview();
+    modal.style.display = 'flex';
+  }
+
+  function openEditModal(id){
+    const ev = raw.find(x=>x.id===id);
+    if(!ev) return;
+    editingId = id;
+    fStart.value = ev.start || '';
+    fEnd.value = ev.end || '';
+    fLogo.value = ev.logo || '';
+    fTitle.value = ev.title || '';
+    fKeywords.value = (ev.keywords || []).join(',');
+    fCategory.value = ev.category || '';
+    fTrack.value = ev.track || 'general';
+    fPEST.value = (ev.pest || []).join(',');
+    fDesc.value = ev.description || '';
+    if(ev.favorite && ev.favoriteFolders && ev.favoriteFolders.length > 0){
+      setFavoriteFolderSelection(ev.favoriteFolders);
+    }else{
+      setFavoriteButtonState();
+    }
+    closeFavoritePopover();
+    resetDeleteButtonState();
+    deleteEditBtn.style.display = '';
+    updateLogoPreview();
+    modal.style.display = 'flex';
+  }
+
+  function closeEditModal(){
+    modal.style.display = 'none';
+    editingId = null;
+    closeFavoritePopover();
+    resetDeleteButtonState();
+    setSaveStatus('', '');
+  }
+
+  async function persistTimeline(){
+    const response = await fetch('./save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildTimelinePayload())
+    });
+    let payload = null;
+    try{
+      payload = await response.json();
+    } catch (_) {}
+    if(!response.ok || !payload?.ok){
+      throw new Error(payload?.error || `HTTP ${response.status}`);
+    }
+  }
+
+  async function saveEditModal(){
+    const isCreateMode = editingId == null;
+    const previous = isCreateMode ? JSON.parse(JSON.stringify(raw)) : null;
+    const ev = isCreateMode
+      ? {
+          id: nextEventId(),
+          start: '',
+          end: '',
+          title: '',
+          category: '',
+          keywords: [],
+          description: '',
+          logo: '',
+          favorite: false,
+          favoriteFolders: [],
+          track: 'general',
+          pest: ['S']
+        }
+      : raw.find(x=>x.id===editingId);
+    if(!ev) return;
+    const existing = isCreateMode ? null : JSON.parse(JSON.stringify(ev));
+    ev.start = (fStart.value || '').trim();
+    ev.end = (fEnd.value || '').trim() || ev.start;
+    ev.logo = (fLogo.value || '').trim();
+    ev.title = (fTitle.value || '').trim();
+    ev.keywords = (fKeywords.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+    ev.category = (fCategory.value || '').trim();
+    ev.track = fTrack.value || 'general';
+    ev.pest = (fPEST.value || '').split(',').map(s=>s.trim().toUpperCase()).filter(Boolean);
+    ev.description = (fDesc.value || '').trim();
+    ev.favorite = selectedFavoriteFolders().length > 0;
+    ev.favoriteFolders = selectedFavoriteFolders();
+    if(isCreateMode){
+      raw.push(ev);
+    }
+    setSaveStatus('正在保存…', '');
+    saveEditBtn.disabled = true;
+    try{
+      await persistTimeline();
+      render();
+      setSaveStatus('已自动保存到 timeline.json', 'success');
+      setTimeout(() => closeEditModal(), 300);
+    } catch (error){
+      if(isCreateMode){
+        raw = previous;
+      } else {
+        Object.assign(ev, existing);
+      }
+      render();
+      setSaveStatus(`保存失败：${error.message}`, 'error');
+    } finally {
+      saveEditBtn.disabled = false;
+    }
+  }
+
+  async function deleteEditModal(){
+    if(!editingId) return;
+    const ev = raw.find(x => x.id === editingId);
+    if(!ev) return;
+    if(!pendingDeleteConfirm){
+      pendingDeleteConfirm = true;
+      deleteEditBtn.textContent = '确认删除';
+      deleteEditBtn.classList.add('favorite-active');
+      setSaveStatus(`再次点击删除「${ev.title}」`, '');
+      return;
+    }
+    const previous = JSON.parse(JSON.stringify(raw));
+    raw = raw.filter(x => x.id !== editingId);
+    selectedItemId = null;
+    selectedSourceId = null;
+    activeGroupOnly = null;
+    setSaveStatus('正在删除…', '');
+    deleteEditBtn.disabled = true;
+    saveEditBtn.disabled = true;
+    try{
+      await persistTimeline();
+      render();
+      setSaveStatus('已删除并保存到 timeline.json', 'success');
+      setTimeout(() => closeEditModal(), 300);
+    } catch (error){
+      raw = previous;
+      resetDeleteButtonState();
+      render();
+      setSaveStatus(`删除失败：${error.message}`, 'error');
+    } finally {
+      deleteEditBtn.disabled = false;
+      saveEditBtn.disabled = false;
+    }
+  }
+
+  function exportJson(){
+    const blob = new Blob([JSON.stringify(buildTimelinePayload(), null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'timeline-edited.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function exportImage(){
+    const button = document.getElementById('exportImageBtn');
+    const host = document.getElementById('timeline');
+    const target = host?.querySelector('.vis-timeline') || host;
+    if(typeof window.html2canvas !== 'function'){
+      alert('导出图片功能加载失败，请刷新页面后重试');
+      return;
+    }
+    if(!target || container.hidden){
+      alert('时间轴尚未加载完成，暂时无法导出图片');
+      return;
+    }
+    const previousText = button.textContent;
+    button.disabled = true;
+    button.textContent = '导出中…';
+    try{
+      const canvas = await window.html2canvas(target, {
+        backgroundColor: '#ffffff',
+        scale: Math.min(window.devicePixelRatio || 2, 2),
+        useCORS: true,
+        logging: false,
+        width: Math.ceil(target.scrollWidth || target.clientWidth || target.offsetWidth),
+        height: Math.ceil(target.scrollHeight || target.clientHeight || target.offsetHeight)
+      });
+      const a = document.createElement('a');
+      const timestamp = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
+      a.href = canvas.toDataURL('image/png');
+      a.download = `timeline-${timestamp}.png`;
+      a.click();
+    } catch (error){
+      alert(`导出图片失败：${error.message || error}`);
+    } finally {
+      button.disabled = false;
+      button.textContent = previousText;
+    }
+  }
+
+  function syncTimelineHeight(){
+    const root = container.querySelector('.vis-timeline');
+    if(!root) return;
+    const totalHeight = Math.max(
+      Math.ceil(root.scrollHeight || 0),
+      Math.ceil(root.getBoundingClientRect().height || 0),
+      160
+    );
+    container.style.height = `${totalHeight}px`;
+  }
+
+  function queueTimelineHeightSync(){
+    requestAnimationFrame(() => {
+      syncTimelineHeight();
+      requestAnimationFrame(syncTimelineHeight);
+    });
+  }
+
+  // Custom Time Marker Functions
+  function addCustomTimeMarker(dateStr){
+    if(!dateStr) return null;
+    const id = `marker-${nextMarkerId++}`;
+    const marker = { id, date: dateStr };
+    customTimeMarkers.push(marker);
+    if(timeline){
+      try{
+        timeline.addCustomTime(new Date(dateStr), id);
+      }catch(e){
+        console.warn('Failed to add custom time:', e);
+      }
+    }
+    renderCustomTimeMarkers();
+    return marker;
+  }
+
+  function removeCustomTimeMarker(id){
+    const index = customTimeMarkers.findIndex(m => m.id === id);
+    if(index > -1){
+      customTimeMarkers.splice(index, 1);
+      if(timeline){
+        try{
+          timeline.removeCustomTime(id);
+        }catch(e){
+          console.warn('Failed to remove custom time:', e);
+        }
+      }
+      renderCustomTimeMarkers();
+    }
+  }
+
+  function renderCustomTimeMarkers(){
+    if(!timeline) return;
+    
+    // Clear existing custom times and re-add all markers
+    customTimeMarkers.forEach(marker => {
+      try{
+        // Remove first to avoid duplicates
+        timeline.removeCustomTime(marker.id);
+        timeline.addCustomTime(new Date(marker.date), marker.id);
+      }catch(e){
+        // Ignore errors when re-adding
+      }
+    });
+    
+    // Add labels to custom time elements after a short delay
+    setTimeout(() => {
+      const customTimeBars = container.querySelectorAll('.vis-custom-time');
+      customTimeBars.forEach(bar => {
+        if(!bar.dataset.markerLabelAdded){
+          bar.dataset.markerLabelAdded = 'true';
+          const markerId = bar.className.match(/vis-custom-time-(\S+)/)?.[1];
+          const marker = customTimeMarkers.find(m => m.id === markerId);
+          if(marker && !bar.querySelector('.custom-time-label')){
+            const label = document.createElement('div');
+            label.className = 'custom-time-label';
+            label.textContent = marker.date;
+            bar.appendChild(label);
+            
+            // Double-click to delete
+            bar.addEventListener('dblclick', (e) => {
+              e.stopPropagation();
+              if(confirm(`确定要删除 ${marker.date} 的标记吗？`)){
+                removeCustomTimeMarker(marker.id);
+              }
+            });
+          }
+        }
+      });
+    }, 200);
+  }
+
+  function render(){
+    renderPestFilters();
+    renderTrackFilters();
+    renderFavoriteFolderFilter();
+    const items = buildItems();
+    currentItems = items;
+    const usesGroups = currentPerspectiveMode !== 'none';
+    const groups = currentPerspectiveMode === 'pest'
+      ? buildPestGroups()
+      : currentPerspectiveMode === 'track'
+        ? buildTrackGroups()
+        : null;
+    
+    if(timeline && timelineUsesGroups !== usesGroups){
+      timeline.destroy();
+      timeline = null;
+    }
+    timelineUsesGroups = usesGroups;
+    if(!timeline){
+      timeline = usesGroups
+        ? new vis.Timeline(container, items, groups, options)
+        : new vis.Timeline(container, items, options);
+      timeline.on('changed', queueTimelineHeightSync);
+      timeline.on('rangechanged', queueTimelineHeightSync);
+      timeline.on('select', (props)=>{
+        selectedItemId = props.items?.[0] || null;
+        selectedSourceId = selectedItemId ? currentItems.get(selectedItemId)?.sourceId || null : null;
+      });
+      timeline.on('doubleClick', (props) => {
+        // Handle custom time marker
+        if(props.customTime){
+          const markerId = props.customTime;
+          if(confirm(`确定要删除这个时间标记吗？`)){
+            removeCustomTimeMarker(markerId);
+          }
+          return;
+        }
+        if(props.group && !props.item){
+          toggleGroupFocus(props.group);
+          return;
+        }
+        // Double-click on empty space adds custom time marker
+        if(!props.item && props.time){
+          // Get the time from the click position
+          const date = props.time;
+          if(date){
+            const dateStr = typeof date === 'string' ? date.slice(0, 10) : date.toISOString().slice(0, 10);
+            addCustomTimeMarker(dateStr);
+          }
+          return;
+        }
+        if(!props.item) return;
+        const item = currentItems.get(props.item);
+        if(item?.seriesId) return;
+        if(item?.sourceId) openEditModal(item.sourceId);
+      });
+    } else {
+      timeline.setItems(items);
+      if(usesGroups){
+        timeline.setGroups(groups);
+      }
+      if(selectedSourceId){
+        const match = items.get().find(item => item.sourceId === selectedSourceId);
+        selectedItemId = match?.id || null;
+      } else {
+        selectedItemId = null;
+      }
+    }
+    if(selectedItemId){ timeline.setSelection([selectedItemId], {focus:false}); }
+    timeline.fit();
+    queueTimelineHeightSync();
+    renderCustomTimeMarkers();
+  }
+
+  pestFilters.addEventListener('change', (event) => {
+    if(!(event.target instanceof HTMLInputElement)) return;
+    if(event.target.classList.contains('pest-filter')){
+      activeGroupOnly = null;
+      syncSelectAllLabel();
+      render();
+      return;
+    }
+    if(event.target.classList.contains('lane-color-input') && event.target.dataset.scope === 'pest'){
+      updatePestColor(event.target.dataset.id, event.target.value);
+      render();
+      queueLaneColorPersist();
+    }
+  });
+  trackFilters.addEventListener('change', (event) => {
+    if(!(event.target instanceof HTMLInputElement)) return;
+    if(event.target.classList.contains('track-filter')){
+      activeGroupOnly = null;
+      activeTrackFilters = new Set(
+        Array.from(trackFilters.querySelectorAll('.track-filter'))
+          .filter((input) => input.checked)
+          .map((input) => input.dataset.track)
+      );
+      syncSelectAllLabel();
+      render();
+      return;
+    }
+    if(event.target.classList.contains('lane-color-input') && event.target.dataset.scope === 'track'){
+      updateTrackColor(event.target.dataset.id, event.target.value);
+      render();
+      queueLaneColorPersist();
+    }
+  });
+  selectAllBtn.addEventListener('click', ()=>{
+    if(currentPerspectiveMode !== 'pest') return;
+    const allChecked = Array.from(pestFilters.querySelectorAll('.pest-filter')).every((input) => input.checked);
+    activeGroupOnly = null;
+    setAllPEST(!allChecked);
+    render();
+  });
+  selectAllTrackBtn.addEventListener('click', ()=>{
+    if(currentPerspectiveMode !== 'track') return;
+    const allChecked = Array.from(trackFilters.querySelectorAll('.track-filter')).every((input) => input.checked);
+    activeGroupOnly = null;
+    setAllTracks(!allChecked);
+    render();
+  });
+  perspectiveButtons.forEach((button) => {
+    button.addEventListener('click', ()=>{
+      setPerspectiveMode(button.dataset.mode);
+      render();
+    });
+  });
+  document.getElementById('applyDateBtn').addEventListener('click', ()=>{
+    clearQuickRangeSelection();
+    render();
+  });
+  [filterStart, filterEnd].forEach((input) => {
+    input.addEventListener('change', clearQuickRangeSelection);
+  });
+  searchInput.addEventListener('input', ()=>{
+    syncClearSearchButton();
+    render();
+  });
+  clearSearchBtn.addEventListener('click', ()=>{
+    searchInput.value = '';
+    syncClearSearchButton();
+    favoriteFolderPills.dataset.folders = '';
+    render();
+  });
+  favoriteFolderPills.addEventListener('click', (event) => {
+    const pill = event.target.closest('.favorite-folder-pill');
+    if(!pill) return;
+    const folder = pill.dataset.folder;
+    if(!folder){
+      favoriteFolderPills.dataset.folders = '';
+    }else{
+      const current = (favoriteFolderPills.dataset.folders || '').split(',').filter(Boolean);
+      if(current.includes(folder)){
+        favoriteFolderPills.dataset.folders = current.filter(f => f !== folder).join(',');
+      }else{
+        favoriteFolderPills.dataset.folders = [...current, folder].join(',');
+      }
+    }
+    render();
+  });
+  window.addEventListener('resize', queueTimelineHeightSync);
+  toggleFavoriteBtn.addEventListener('click', (event)=>{
+    event.stopPropagation();
+    toggleFavoritePopover();
+  });
+  favoriteFolderList.addEventListener('change', (event) => {
+    if(!(event.target instanceof HTMLInputElement) || event.target.name !== 'favoriteFolderChoice') return;
+    syncFavoriteControls();
+  });
+  addFavoriteFolderBtn.addEventListener('click', ()=>{
+    const folder = ensureFavoriteFolderExists(newFavoriteFolderInput.value);
+    if(!folder) return;
+    newFavoriteFolderInput.value = '';
+    setFavoriteFolderSelection(folder);
+  });
+  newFavoriteFolderInput.addEventListener('keydown', (event) => {
+    if(event.key !== 'Enter') return;
+    event.preventDefault();
+    addFavoriteFolderBtn.click();
+  });
+  renameFavoriteFolderBtn.addEventListener('click', () => {
+    closeFavoritePopover();
+    renameFavoriteFolder();
+    persistTimeline();
+  });
+  deleteFavoriteFolderBtn.addEventListener('click', () => {
+    closeFavoritePopover();
+    deleteFavoriteFolder();
+    persistTimeline();
+  });
+  timeDisplayButtons.forEach((button) => {
+    button.addEventListener('click', ()=>{
+      setTimeDisplayMode(button.dataset.mode);
+      render();
+    });
+  });
+  nodeDisplayButtons.forEach((button) => {
+    button.addEventListener('click', ()=>{
+      setNodeDisplayMode(button.dataset.mode);
+      render();
+    });
+  });
+  quickRangeButtons.forEach((button) => {
+    button.addEventListener('click', ()=>{
+      applyRange(button.dataset.range);
+    });
+  });
+  document.getElementById('createEventBtn').addEventListener('click', openCreateModal);
+  document.getElementById('addMarkerBtn').addEventListener('click', () => {
+    const dateStr = prompt('请输入日期（YYYY-MM-DD）:', new Date().toISOString().slice(0, 10));
+    if(dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)){
+      addCustomTimeMarker(dateStr);
+    } else if(dateStr){
+      alert('日期格式不正确，请使用 YYYY-MM-DD 格式');
+    }
+  });
+  document.getElementById('exportImageBtn').addEventListener('click', exportImage);
+  document.getElementById('exportBtn').addEventListener('click', exportJson);
+  document.getElementById('cancelEdit').addEventListener('click', closeEditModal);
+  saveEditBtn.addEventListener('click', saveEditModal);
+  deleteEditBtn.addEventListener('click', deleteEditModal);
+  modal.addEventListener('click', (e)=>{ if(e.target===modal) closeEditModal(); });
+  document.addEventListener('click', (event) => {
+    if(!favoritePopover.classList.contains('open')) return;
+    if(event.target === toggleFavoriteBtn || favoritePopover.contains(event.target)) return;
+    closeFavoritePopover();
+  });
+  fLogo.addEventListener('input', updateLogoPreview);
+  logoFileInput.addEventListener('change', async (event) => {
+    const file = event.target.files?.[0];
+    if(!file) return;
+    try{
+      fLogo.value = await readFileAsDataURL(file);
+      updateLogoPreview();
+    }catch(error){
+      alert(error.message || '图片读取失败');
+    } finally {
+      logoFileInput.value = '';
+    }
+  });
+
+  setPerspectiveMode('none');
+  syncSelectAllLabel();
+  syncClearSearchButton();
+  setTimeDisplayMode('range');
+  setNodeDisplayMode('both');
+  loadData();
+</script>
+
+<script type="text/babel">
+    const { useState, useCallback, useEffect, useMemo, useDeferredValue, useRef, useContext } = React;
+  const DISPLAY_OPTIONS_STORAGE_KEY = 'awesome-canvas-display-options';
+  const DEFAULT_DISPLAY_OPTIONS = {
+    showCardChrome: true,
+    autoRelayoutOnTagFilter: false,
+    showTitle: true,
+    showImage: true,
+    showRemarks: true,
+    showTags: true,
+    showHandles: true,
+    showEdges: true
+  };
+  const DisplayOptionsContext = React.createContext(DEFAULT_DISPLAY_OPTIONS);
+  const AvailableTagsContext = React.createContext([]);
+
+  const getRF = () => {
+    const RF = window.ReactFlow || {};
+    const components = RF.ReactFlow || RF.default || RF;
+    return {
+      ReactFlow: components,
+      Handle: RF.Handle || components.Handle,
+      Position: RF.Position || components.Position || { Top: 'top', Bottom: 'bottom', Left: 'left', Right: 'right' },
+      Background: RF.Background || components.Background,
+      Controls: RF.Controls || components.Controls,
+      MiniMap: RF.MiniMap || components.MiniMap,
+      useNodesState: RF.useNodesState || components.useNodesState,
+      useEdgesState: RF.useEdgesState || components.useEdgesState,
+      addEdge: RF.addEdge || components.addEdge
+    };
+  };
+
+  const AssetBlock = ({ id, data, selected }) => {
+    const { Handle, Position } = getRF();
+    const displayOptions = useContext(DisplayOptionsContext);
+    const availableTags = useContext(AvailableTagsContext);
+    const pureImageMode = !displayOptions.showCardChrome;
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedEditQuickTags, setSelectedEditQuickTags] = useState([]);
+    const [editData, setEditData] = useState({ 
+      remarks: data.remarks || '', 
+      tags: (data.tags || []).join(', '),
+      title: data.title || '' 
+    });
+    
+    useEffect(() => { 
+      if (window.lucide) window.lucide.createIcons(); 
+      setEditData({
+        remarks: data.remarks || '',
+        tags: (data.tags || []).join(', '),
+        title: data.title || ''
+      });
+      setSelectedEditQuickTags([]);
+    }, [isExpanded, isEditing, data.tags, data.remarks, data.title, displayOptions.showCardChrome, displayOptions.showTitle]);
+
+    const isImage = data.filename && (
+      data.filename.toLowerCase().endsWith('.svg') || 
+      data.filename.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+    );
+
+    const handleSave = () => {
+      const manualTags = editData.tags.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+      const updatedTags = [...new Set([...manualTags, ...selectedEditQuickTags])];
+      data.onUpdate(id, { 
+        ...data, 
+        remarks: editData.remarks, 
+        tags: updatedTags,
+        title: editData.title 
+      });
+      setSelectedEditQuickTags([]);
+      setIsEditing(false);
+    };
+
+    const toggleEditQuickTag = (tag) => {
+      setSelectedEditQuickTags(prev =>
+        prev.includes(tag)
+          ? prev.filter(item => item !== tag)
+          : [...prev, tag]
+      );
+    };
+
+    if (!Handle) return <div className="p-4 bg-red-50 text-red-500">Handle Component Missing</div>;
+
+    return (
+      <div className={`${pureImageMode ? 'inline-block bg-transparent border-0 shadow-none ring-0 rounded-none w-auto overflow-visible' : `bg-white rounded-xl shadow-xl border-2 ${selected ? "border-blue-500 ring-4 ring-blue-500/20" : "border-gray-100"} overflow-visible transition-all duration-300 w-72`} relative`}>
+        {displayOptions.showHandles && (
+          <>
+            <Handle type="target" position={Position.Top} className="w-3 h-3 bg-blue-400 border-2 border-white" />
+            <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-blue-400 border-2 border-white" />
+            <Handle type="source" position={Position.Right} className="w-3 h-3 bg-blue-400 border-2 border-white" />
+            <Handle type="target" position={Position.Left} className="w-3 h-3 bg-blue-400 border-2 border-white" />
+          </>
+        )}
+        {!pureImageMode && !displayOptions.showTitle && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+            className="absolute right-3 top-3 z-10 rounded-md bg-white/92 p-1.5 shadow-sm backdrop-blur hover:bg-white"
+          >
+            <i data-lucide={isExpanded ? "chevron-up" : "chevron-down"} className="w-4 h-4 text-gray-600"></i>
+          </button>
+        )}
+
+        <div className={`${pureImageMode ? 'overflow-visible rounded-none bg-transparent' : 'overflow-hidden rounded-xl bg-white'}`}>
+          {!pureImageMode && displayOptions.showTitle ? (
+            <div className="p-3 flex justify-between items-center bg-gray-50 border-b border-gray-100">
+              <div className="min-w-0 flex-1">
+                {isEditing ? (
+                  <input 
+                    className="text-sm font-bold bg-white border border-blue-300 rounded px-1 w-40 max-w-full"
+                    value={editData.title}
+                    onChange={e => setEditData({...editData, title: e.target.value})}
+                    onClick={e => e.stopPropagation()}
+                  />
+                ) : (
+                  <span className="block text-sm font-bold truncate text-gray-800">{data.title || data.filename}</span>
+                )}
+              </div>
+              <button onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} className="p-1 hover:bg-gray-200 rounded-md">
+                <i data-lucide={isExpanded ? "chevron-up" : "chevron-down"} className="w-4 h-4 text-gray-500"></i>
+              </button>
+            </div>
+          ) : null}
+
+          {displayOptions.showImage && (
+            <div
+              className={`relative flex items-center justify-center overflow-hidden ${pureImageMode ? 'bg-transparent' : 'bg-gray-100'}`}
+              style={pureImageMode ? undefined : { height: '160px' }}
+            >
+              {isImage ? (
+                <img
+                  src={`./assets/image/${data.filename}`}
+                  className={pureImageMode ? 'block max-w-[320px] max-h-[240px] w-auto h-auto object-contain p-0' : 'w-full h-full object-contain p-2'}
+                  alt={data.title}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div className="flex flex-col items-center text-gray-400">
+                   <i data-lucide="file-text" className="w-12 h-12 mb-2"></i>
+                   <span className="text-[10px]">{data.filename}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isExpanded && !pureImageMode && (
+            <div className={`p-4 space-y-3 bg-white animate-in slide-in-from-top-1 duration-200 ${displayOptions.showImage || displayOptions.showTitle ? 'border-t border-gray-100' : ''}`}>
+              {(displayOptions.showRemarks || isEditing) && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1 block">备注</label>
+                  {isEditing ? (
+                    <textarea 
+                      className="w-full text-xs text-gray-600 border border-blue-300 rounded p-1 min-h-[60px]"
+                      value={editData.remarks}
+                      onChange={e => setEditData({...editData, remarks: e.target.value})}
+                      onClick={e => e.stopPropagation()}
+                    />
+                  ) : (
+                    <p className="text-xs text-gray-600 leading-relaxed italic border-l-2 border-blue-200 pl-2">
+                      {data.remarks || "暂无备注..."}
+                    </p>
+                  )}
+                </div>
+              )}
+              {(displayOptions.showTags || isEditing) && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1 block">标签</label>
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <input 
+                        className="w-full text-xs text-blue-600 border border-blue-300 rounded p-1"
+                        placeholder="标签以逗号分隔"
+                        value={editData.tags}
+                        onChange={e => setEditData({...editData, tags: e.target.value})}
+                        onClick={e => e.stopPropagation()}
+                      />
+                      {availableTags.length > 0 && (
+                        <div className="space-y-1.5">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400">已有标签</div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {availableTags.map(tag => (
+                              <button
+                                key={tag}
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); toggleEditQuickTag(tag); }}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+                                  selectedEditQuickTags.includes(tag)
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                              >
+                                #{tag}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1">
+                      {(data.tags || []).length > 0 ? (data.tags || []).map(tag => (
+                        <span key={tag} className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-md">#{tag}</span>
+                      )) : <span className="text-[10px] text-gray-300">无标签</span>}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="pt-2 flex gap-2">
+                {isEditing ? (
+                  <>
+                    <button onClick={handleSave} className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-[10px] font-medium rounded-lg hover:bg-blue-700 transition-colors">确认</button>
+                    <button onClick={() => { setSelectedEditQuickTags([]); setIsEditing(false); }} className="px-3 py-1.5 border border-gray-200 text-gray-600 text-[10px] font-medium rounded-lg hover:bg-gray-50 transition-colors">取消</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => { setIsEditing(true); setIsExpanded(true); }} className="flex-1 px-3 py-1.5 bg-gray-900 text-white text-[10px] font-medium rounded-lg hover:bg-gray-800 transition-colors">编辑</button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+  const MemoAssetBlock = React.memo(AssetBlock);
+  const STABLE_NODE_TYPES = {
+    assetBlock: MemoAssetBlock
+  };
+
+  const HoverSidePanel = ({ top = 16, width = 320, label, icon, children }) => {
+    const [open, setOpen] = useState(false);
+    const closeTimerRef = useRef(null);
+
+    const openPanel = () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+      setOpen(true);
+    };
+
+    const closePanelSoon = () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+      closeTimerRef.current = setTimeout(() => {
+        setOpen(false);
+      }, 120);
+    };
+
+    useEffect(() => {
+      return () => {
+        if (closeTimerRef.current) {
+          clearTimeout(closeTimerRef.current);
+        }
+      };
+    }, []);
+
+    return (
+      <div className="absolute left-4 z-50 pointer-events-none" style={{ top: `${top}px` }}>
+        <button
+          type="button"
+          className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-gray-200 bg-white/95 px-3 py-2 shadow-xl backdrop-blur-md whitespace-nowrap"
+          onMouseEnter={openPanel}
+          onMouseLeave={closePanelSoon}
+        >
+          <i data-lucide={icon} className="w-4 h-4 text-gray-500"></i>
+          <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-500 whitespace-nowrap">{label}</span>
+        </button>
+        {open && (
+          <div
+            className="pointer-events-auto absolute left-0 top-0 ml-[116px] max-w-[78vw] rounded-3xl border border-gray-200 bg-white/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+            style={{ width: `${width}px` }}
+            onMouseEnter={openPanel}
+            onMouseLeave={closePanelSoon}
+          >
+            <div className="flex min-h-[56px] items-center gap-2 border-b border-gray-100 px-4 py-3">
+              <i data-lucide={icon} className="w-4 h-4 text-gray-500"></i>
+              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-500 whitespace-nowrap">{label}</span>
+            </div>
+            <div className="p-4">
+              {children}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const AwesomeCanvas = () => {
+    const rfObj = getRF();
+    const { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, addEdge } = rfObj;
+
+    const [nodes, setNodes, onNodesChange] = useNodesState([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+    const [status, setStatus] = useState('Loading...');
+    const [isSaving, setIsSaving] = useState(false);
+    const [batchTags, setBatchTags] = useState('');
+    const [selectedBatchQuickTags, setSelectedBatchQuickTags] = useState([]);
+    const [nodesPerRow, setNodesPerRow] = useState(6);
+    const [nodeSpacing, setNodeSpacing] = useState({ x: 350, y: 450 });
+    const [selectedTags, setSelectedTags] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [saveNotice, setSaveNotice] = useState({ kind: 'idle', text: '' });
+    const [displayOptions, setDisplayOptions] = useState(() => {
+      try {
+        const saved = localStorage.getItem(DISPLAY_OPTIONS_STORAGE_KEY);
+        return saved ? { ...DEFAULT_DISPLAY_OPTIONS, ...JSON.parse(saved) } : DEFAULT_DISPLAY_OPTIONS;
+      } catch (error) {
+        return DEFAULT_DISPLAY_OPTIONS;
+      }
+    });
+    const deferredSearchTerm = useDeferredValue(searchTerm);
+    const hasLoadedRef = useRef(false);
+    const saveTimerRef = useRef(null);
+    const saveNoticeTimerRef = useRef(null);
+
+    // Extract all unique tags from nodes
+    const allTags = useMemo(() => {
+      const tagSet = new Set();
+      nodes.forEach(node => {
+        if (node.data && node.data.tags && Array.isArray(node.data.tags)) {
+          node.data.tags.forEach(tag => tagSet.add(tag));
+        }
+      });
+      return Array.from(tagSet).sort();
+    }, [nodes]);
+
+    // Filter nodes based on selected tags
+    const filteredNodes = useMemo(() => {
+      const normalizedSearch = deferredSearchTerm.trim().toLowerCase();
+      return nodes.filter(node => {
+        if (!node.data) return false;
+        const matchesTag = selectedTags.length === 0 || (
+          Array.isArray(node.data.tags) && selectedTags.some(tag => node.data.tags.includes(tag))
+        );
+        if (!matchesTag) return false;
+        if (!normalizedSearch) return true;
+        const haystack = [
+          node.data.title || '',
+          node.data.filename || '',
+          node.data.remarks || '',
+          ...(Array.isArray(node.data.tags) ? node.data.tags : [])
+        ].join(' ').toLowerCase();
+        return haystack.includes(normalizedSearch);
+      });
+    }, [nodes, selectedTags, deferredSearchTerm]);
+
+    const displayedNodes = useMemo(() => {
+      if (!displayOptions.autoRelayoutOnTagFilter || selectedTags.length === 0) {
+        return filteredNodes;
+      }
+      return filteredNodes.map((node, i) => ({
+        ...node,
+        position: {
+          x: (i % nodesPerRow) * nodeSpacing.x + 100,
+          y: Math.floor(i / nodesPerRow) * nodeSpacing.y + 100
+        }
+      }));
+    }, [filteredNodes, displayOptions.autoRelayoutOnTagFilter, selectedTags.length, nodesPerRow, nodeSpacing.x, nodeSpacing.y]);
+
+    const toggleTag = (tag) => {
+      setSelectedTags(prev => 
+        prev.includes(tag) 
+          ? prev.filter(t => t !== tag)
+          : [...prev, tag]
+      );
+    };
+
+    const clearTagFilter = () => setSelectedTags([]);
+
+    const toggleDisplayOption = (key) => {
+      setDisplayOptions(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const applyDisplayPreset = (preset) => {
+      if (preset === 'image-only') {
+        setDisplayOptions(prev => ({
+          ...prev,
+          showCardChrome: false,
+          showTitle: false,
+          showImage: true,
+          showRemarks: false,
+          showTags: false,
+          showHandles: false,
+          showEdges: false
+        }));
+        return;
+      }
+      if (preset === 'image-title') {
+        setDisplayOptions(prev => ({
+          ...prev,
+          showCardChrome: true,
+          showTitle: true,
+          showImage: true,
+          showRemarks: false,
+          showTags: false,
+          showHandles: true,
+          showEdges: true
+        }));
+      }
+    };
+
+    const resetDisplayOptions = () => {
+      setDisplayOptions(DEFAULT_DISPLAY_OPTIONS);
+    };
+
+    const toggleBatchQuickTag = (tag) => {
+      setSelectedBatchQuickTags(prev =>
+        prev.includes(tag)
+          ? prev.filter(item => item !== tag)
+          : [...prev, tag]
+      );
+    };
+
+    const onNodeUpdate = useCallback((nodeId, newData) => {
+      setNodes(nds => nds.map(node => {
+        if (node.id === nodeId) {
+          return { ...node, data: { ...node.data, ...newData } };
+        }
+        return node;
+      }));
+    }, [setNodes]);
+
+    const relayout = useCallback((currentNodesPerRow, spacing) => {
+      setNodes(nds => nds.map((node, i) => ({
+        ...node,
+        position: { 
+          x: (i % currentNodesPerRow) * spacing.x + 100, 
+          y: Math.floor(i / currentNodesPerRow) * spacing.y + 100 
+        }
+      })));
+    }, [setNodes]);
+
+    useEffect(() => {
+      fetch("./assets/image_data.json")
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.images) {
+            setNodes(data.images.map((img, i) => ({
+              id: String(img.id),
+              type: 'assetBlock',
+              position: { 
+                x: (i % nodesPerRow) * nodeSpacing.x + 100, 
+                y: Math.floor(i / nodesPerRow) * nodeSpacing.y + 100 
+              },
+              data: { ...img, onUpdate: onNodeUpdate },
+            })));
+            setStatus('Ready');
+            hasLoadedRef.current = true;
+          }
+          setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 500);
+        })
+        .catch(err => setStatus('Error: ' + err.message));
+    }, [onNodeUpdate]); 
+
+    const selectedNodes = displayedNodes.filter(n => n.selected);
+
+    const handleBatchTags = () => {
+      const manualTags = batchTags.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+      const newTags = [...new Set([...manualTags, ...selectedBatchQuickTags])];
+      if (!newTags.length) return;
+      setNodes(nds => nds.map(node => {
+        if (node.selected) {
+          const existingTags = node.data.tags || [];
+          const combinedTags = [...new Set([...existingTags, ...newTags])];
+          return { ...node, data: { ...node.data, tags: combinedTags } };
+        }
+        return node;
+      }));
+      setBatchTags('');
+      setSelectedBatchQuickTags([]);
+    };
+
+    const handleBatchClearTags = () => {
+      if (!confirm(`确定要清空选中的 ${selectedNodes.length} 个节点的标签吗？`)) return;
+      setNodes(nds => nds.map(node => {
+        if (node.selected) return { ...node, data: { ...node.data, tags: [] } };
+        return node;
+      }));
+      setSelectedBatchQuickTags([]);
+    };
+
+    const saveAllData = async () => {
+      setIsSaving(true);
+      setSaveNotice({ kind: 'saving', text: '自动保存中...' });
+      const images = nodes.map(n => {
+        const { onUpdate, ...cleanData } = n.data;
+        return cleanData;
+      });
+      try {
+        const res = await fetch('/save-assets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ images })
+        });
+        const result = await res.json();
+        if (!res.ok || !result.ok) {
+          throw new Error(result.error || res.statusText);
+        }
+        setSaveNotice({ kind: 'success', text: '已自动保存' });
+        if (saveNoticeTimerRef.current) {
+          clearTimeout(saveNoticeTimerRef.current);
+        }
+        saveNoticeTimerRef.current = setTimeout(() => {
+          setSaveNotice({ kind: 'idle', text: '' });
+        }, 1400);
+      } catch (e) {
+        console.error('自动保存失败:', e);
+        setSaveNotice({ kind: 'error', text: `保存失败：${e.message}` });
+      }
+      setIsSaving(false);
+    };
+
+    useEffect(() => {
+      if (!hasLoadedRef.current || nodes.length === 0) return;
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+      saveTimerRef.current = setTimeout(() => {
+        saveAllData();
+      }, 600);
+      return () => {
+        if (saveTimerRef.current) {
+          clearTimeout(saveTimerRef.current);
+        }
+      };
+    }, [nodes]);
+
+    useEffect(() => {
+      return () => {
+        if (saveTimerRef.current) {
+          clearTimeout(saveTimerRef.current);
+        }
+        if (saveNoticeTimerRef.current) {
+          clearTimeout(saveNoticeTimerRef.current);
+        }
+      };
+    }, []);
+
+    useEffect(() => {
+      try {
+        localStorage.setItem(DISPLAY_OPTIONS_STORAGE_KEY, JSON.stringify(displayOptions));
+      } catch (error) {
+        console.warn('保存画布显示设置失败:', error);
+      }
+    }, [displayOptions]);
+
+    const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges, addEdge]);
+
+    if (status.startsWith('Loading')) return (
+      <div className="flex flex-col items-center justify-center h-full w-full bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-gray-500 font-medium italic">正在渲染灵感画布...</p>
+      </div>
+    );
+
+    if (!ReactFlow) return <div className="p-8 text-red-500 text-center font-bold">ReactFlow 库加载失败，请刷新页面。</div>;
+
+    return (
+      <div style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+        <div className="absolute inset-x-0 top-0 z-50 pointer-events-none">
+          <HoverSidePanel label="排版设置" icon="sliders-horizontal" top={16} width={360}>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="w-16 text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400">每行数量</span>
+                <input type="range" min="2" max="15" value={nodesPerRow} onChange={e => setNodesPerRow(parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                <span className="w-8 text-right text-sm font-bold text-blue-600">{nodesPerRow}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="w-16 text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400">横向间距</span>
+                <input type="range" min="200" max="600" step="10" value={nodeSpacing.x} onChange={e => setNodeSpacing({...nodeSpacing, x: parseInt(e.target.value)})} className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                <span className="w-10 text-right text-xs font-medium text-gray-600">{nodeSpacing.x}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="w-16 text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400">纵向间距</span>
+                <input type="range" min="200" max="800" step="10" value={nodeSpacing.y} onChange={e => setNodeSpacing({...nodeSpacing, y: parseInt(e.target.value)})} className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                <span className="w-10 text-right text-xs font-medium text-gray-600">{nodeSpacing.y}</span>
+              </div>
+              <button onClick={() => relayout(nodesPerRow, nodeSpacing)} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-4 py-2.5 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-[0.98]">
+                <i data-lucide="layout-grid" className="w-4 h-4"></i> 重新排版
+              </button>
+              <div className="space-y-2 border-t border-gray-100 pt-4">
+                <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400">快捷预设</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => applyDisplayPreset('image-only')}
+                    className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50"
+                  >
+                    纯图
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyDisplayPreset('image-title')}
+                    className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50"
+                  >
+                    图+标题
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2 border-t border-gray-100 pt-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400">显示选项</div>
+                  <button
+                    type="button"
+                    onClick={resetDisplayOptions}
+                    className="text-[11px] font-medium text-gray-400 transition-colors hover:text-blue-600"
+                  >
+                    恢复默认
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    ['showCardChrome', '卡片容器'],
+                    ['showTitle', '节点标题'],
+                    ['showImage', '节点图片'],
+                    ['showRemarks', '节点备注'],
+                    ['showTags', '节点标签'],
+                    ['showHandles', '连接锚点'],
+                    ['showEdges', '连线']
+                  ].map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => toggleDisplayOption(key)}
+                      className={`rounded-2xl border px-3 py-2 text-xs font-medium transition-all ${
+                        displayOptions[key]
+                          ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
+                          : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </HoverSidePanel>
+
+          <HoverSidePanel label="标签筛选" icon="tags" top={88} width={360}>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400">已显示 {displayedNodes.length} / {nodes.length}</span>
+                {selectedTags.length > 0 && (
+                  <button onClick={clearTagFilter} className="text-xs text-gray-400 hover:text-red-500 transition-colors">
+                    清除
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => toggleDisplayOption('autoRelayoutOnTagFilter')}
+                className={`flex w-full items-center justify-between rounded-2xl border px-3 py-2 text-xs font-medium transition-all ${
+                  displayOptions.autoRelayoutOnTagFilter
+                    ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
+                    : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                <span>标签筛选补位</span>
+                <span>{displayOptions.autoRelayoutOnTagFilter ? '开启' : '关闭'}</span>
+              </button>
+              {allTags.length > 0 ? (
+                <div className="flex max-h-64 flex-wrap gap-2 overflow-y-auto pr-1">
+                  {allTags.map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                        selectedTags.includes(tag)
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">还没有可筛选的标签</p>
+              )}
+            </div>
+          </HoverSidePanel>
+
+          <HoverSidePanel label="搜索" icon="search" top={160} width={340}>
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 px-3 py-2">
+                <input
+                  className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
+                  placeholder="搜索标题、文件名、备注、标签"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="text-[11px] text-gray-400">
+                当前结果 {displayedNodes.length} 个节点
+              </div>
+            </div>
+          </HoverSidePanel>
+
+          <div className="absolute left-1/2 top-4 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none">
+          {selectedNodes.length > 1 && (
+            <div className="max-w-[720px] bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-2xl border border-blue-100 animate-in slide-in-from-top-4 duration-300 pointer-events-auto">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">已选 {selectedNodes.length}</span>
+                <input className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 w-48 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="批量添加标签" value={batchTags} onChange={e => setBatchTags(e.target.value)} />
+                <button onClick={handleBatchTags} className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-all">应用</button>
+                <button onClick={handleBatchClearTags} className="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-red-50 hover:text-red-600 transition-all">清空标签</button>
+              </div>
+              {allTags.length > 0 && (
+                <div className="mt-3 flex items-start gap-2">
+                  <span className="pt-1 text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400 whitespace-nowrap">已有标签</span>
+                  <div className="flex flex-wrap gap-2">
+                    {allTags.map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => toggleBatchQuickTag(tag)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                          selectedBatchQuickTags.includes(tag)
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          </div>
+        </div>
+        {saveNotice.text && (
+          <div className="absolute bottom-4 right-4 z-50 pointer-events-none">
+            <div className={`rounded-2xl border px-4 py-2 text-xs font-medium shadow-xl backdrop-blur-md ${
+              saveNotice.kind === 'error'
+                ? 'border-red-200 bg-red-50/95 text-red-600'
+                : saveNotice.kind === 'success'
+                  ? 'border-emerald-200 bg-emerald-50/95 text-emerald-700'
+                  : 'border-gray-200 bg-white/92 text-gray-600'
+            }`}>
+              {saveNotice.text}
+            </div>
+          </div>
+        )}
+        <DisplayOptionsContext.Provider value={displayOptions}>
+          <AvailableTagsContext.Provider value={allTags}>
+            <ReactFlow
+              nodes={displayedNodes}
+              edges={displayOptions.showEdges ? edges : []}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              nodeTypes={STABLE_NODE_TYPES}
+              onlyRenderVisibleElements
+              fitView
+              style={{ background: '#f8fafc' }}
+            >
+              <Background variant="dots" gap={24} size={1} color="#e2e8f0" />
+              <Controls />
+              <MiniMap 
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)', border: '1px solid #e2e8f0', borderRadius: '12px' }}
+                nodeColor="#3b82f6" maskColor="rgba(241, 245, 249, 0.6)" pannable zoomable
+              />
+            </ReactFlow>
+          </AvailableTagsContext.Provider>
+        </DisplayOptionsContext.Provider>
+      </div>
+    );
+  };
+
+  const mount = () => {
+    const el = document.getElementById('awesome-root');
+    if (el) {
+      const root = ReactDOM.createRoot(el);
+      root.render(<AwesomeCanvas />);
+    }
+  };
+
+  if (document.readyState === 'complete') mount();
+  else window.addEventListener('load', mount);
+</script>
+</body>
+</html>

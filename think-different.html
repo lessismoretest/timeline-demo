@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Think different | taste2</title>
+  <link rel="stylesheet" href="/assets/shared-nav.css" />
+  <script src="/assets/shared-nav.js" defer></script>
+  <style>
+    :root{
+      color-scheme: light;
+      --bg:#f4f5f7;
+      --panel:rgba(255,255,255,.78);
+      --panel-strong:rgba(255,255,255,.92);
+      --line:rgba(15,23,42,.08);
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#111827;
+      --accent-soft:rgba(17,24,39,.06);
+      --warm:#fff6eb;
+      --blue:#eef4ff;
+      --pink:#fff0f6;
+      --shadow:0 20px 60px rgba(15,23,42,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family:"SF Pro Display","SF Pro SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.96), transparent 34%),
+        radial-gradient(circle at top right, rgba(226,232,240,.92), transparent 32%),
+        linear-gradient(180deg, #fbfbfc 0%, var(--bg) 48%, #eceef2 100%);
+    }
+    .page-shell__body{
+      display:grid;
+      gap:20px;
+      padding-top:14px;
+      padding-bottom:40px;
+    }
+    .hero{
+      position:relative;
+      overflow:hidden;
+      padding:22px;
+      border-radius:30px;
+      border:1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.9), rgba(255,255,255,.74)),
+        linear-gradient(135deg, rgba(255,255,255,.4), rgba(241,245,249,.8));
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+    }
+    .hero::before,
+    .hero::after{
+      content:"";
+      position:absolute;
+      border-radius:999px;
+      filter:blur(12px);
+      opacity:.72;
+      pointer-events:none;
+    }
+    .hero::before{
+      top:-70px;
+      right:-30px;
+      width:220px;
+      height:220px;
+      background:radial-gradient(circle, rgba(191,219,254,.82) 0%, rgba(191,219,254,0) 72%);
+    }
+    .hero::after{
+      bottom:-80px;
+      left:-20px;
+      width:240px;
+      height:240px;
+      background:radial-gradient(circle, rgba(253,230,138,.6) 0%, rgba(253,230,138,0) 74%);
+    }
+    .hero-top{
+      position:relative;
+      z-index:1;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .hero-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(15,23,42,.08);
+      color:#4b5563;
+      font-size:12px;
+      font-weight:600;
+      letter-spacing:.02em;
+    }
+    .hero-title{
+      margin:12px 0 8px;
+      max-width:720px;
+      font-size:clamp(30px, 5vw, 56px);
+      line-height:.95;
+      letter-spacing:-0.055em;
+      font-weight:700;
+    }
+    .hero-subtitle{
+      margin:0;
+      max-width:740px;
+      color:#4b5563;
+      font-size:15px;
+      line-height:1.75;
+    }
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(120px,1fr));
+      gap:10px;
+      min-width:min(280px,100%);
+    }
+    .stat{
+      padding:14px;
+      border-radius:20px;
+      border:1px solid rgba(15,23,42,.08);
+      background:rgba(255,255,255,.7);
+    }
+    .stat-label{
+      display:block;
+      color:#6b7280;
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    .stat-value{
+      display:block;
+      font-size:28px;
+      line-height:1;
+      letter-spacing:-0.04em;
+      font-weight:700;
+    }
+    .toolbar{
+      display:grid;
+      gap:14px;
+      padding:18px;
+      border-radius:26px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      backdrop-filter:blur(14px);
+      box-shadow:var(--shadow);
+    }
+    .toolbar-row{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+    }
+    .toolbar-group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      flex:1 1 360px;
+    }
+    .toolbar-label{
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#6b7280;
+    }
+    .topic-input{
+      flex:1 1 320px;
+      min-width:220px;
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:999px;
+      padding:13px 18px;
+      background:var(--panel-strong);
+      color:var(--text);
+      font:inherit;
+      outline:none;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+    }
+    .topic-input:focus{
+      border-color:rgba(15,23,42,.18);
+      box-shadow:0 0 0 4px rgba(148,163,184,.14);
+    }
+    .segmented{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,.08);
+      background:rgba(255,255,255,.75);
+    }
+    .segmented button,
+    .ghost-btn,
+    .primary-btn{
+      border:0;
+      border-radius:999px;
+      padding:10px 14px;
+      font:inherit;
+      cursor:pointer;
+      transition:transform .18s ease, background-color .18s ease, color .18s ease, box-shadow .18s ease;
+    }
+    .segmented button{
+      background:transparent;
+      color:#4b5563;
+      font-size:13px;
+      font-weight:600;
+    }
+    .segmented button.is-active{
+      background:#111827;
+      color:#fff;
+      box-shadow:0 10px 24px rgba(15,23,42,.12);
+    }
+    .ghost-btn{
+      background:rgba(255,255,255,.74);
+      color:#374151;
+      border:1px solid rgba(15,23,42,.08);
+    }
+    .primary-btn{
+      background:#111827;
+      color:#fff;
+      box-shadow:0 12px 28px rgba(15,23,42,.14);
+    }
+    .ghost-btn:hover,
+    .primary-btn:hover,
+    .segmented button:hover{
+      transform:translateY(-1px);
+    }
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .chip{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,.08);
+      background:rgba(255,255,255,.7);
+      color:#4b5563;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .feed-shell{
+      display:grid;
+      grid-template-columns:minmax(0,1.5fr) minmax(280px,.76fr);
+      gap:18px;
+      align-items:start;
+    }
+    .feed{
+      display:grid;
+      gap:14px;
+    }
+    .thought-card,
+    .side-card{
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:26px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+    }
+    .thought-card{
+      position:relative;
+      overflow:hidden;
+      padding:18px 18px 20px;
+    }
+    .thought-card::after{
+      content:"";
+      position:absolute;
+      inset:auto -10% -30% auto;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      filter:blur(10px);
+      opacity:.64;
+      pointer-events:none;
+    }
+    .thought-card[data-tone="poetic"]::after{background:radial-gradient(circle, rgba(254,205,211,.7) 0%, rgba(254,205,211,0) 74%)}
+    .thought-card[data-tone="sharp"]::after{background:radial-gradient(circle, rgba(191,219,254,.76) 0%, rgba(191,219,254,0) 74%)}
+    .thought-card[data-tone="vision"]::after{background:radial-gradient(circle, rgba(253,230,138,.7) 0%, rgba(253,230,138,0) 74%)}
+    .thought-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .thought-badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .badge.perspective{background:var(--accent-soft);color:#111827}
+    .badge.poetic{background:var(--pink);color:#9d174d}
+    .badge.sharp{background:var(--blue);color:#1d4ed8}
+    .badge.vision{background:var(--warm);color:#b45309}
+    .thought-index{
+      font-size:12px;
+      color:#6b7280;
+      font-variant-numeric:tabular-nums;
+    }
+    .thought-title{
+      margin:0 0 10px;
+      font-size:26px;
+      line-height:1.05;
+      letter-spacing:-0.04em;
+    }
+    .thought-body{
+      margin:0;
+      color:#374151;
+      font-size:15px;
+      line-height:1.9;
+    }
+    .thought-footer{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+    .thought-footer span{
+      display:inline-flex;
+      align-items:center;
+      min-height:34px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.8);
+      border:1px solid rgba(15,23,42,.08);
+      color:#4b5563;
+      font-size:12px;
+    }
+    .side{
+      display:grid;
+      gap:14px;
+      position:sticky;
+      top:calc(var(--shared-nav-visible-offset, 0px) + 14px);
+    }
+    .side-card{
+      padding:18px;
+    }
+    .side-card h2{
+      margin:0 0 12px;
+      font-size:18px;
+      letter-spacing:-0.03em;
+    }
+    .side-list{
+      display:grid;
+      gap:10px;
+    }
+    .side-item{
+      padding:12px 14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(15,23,42,.08);
+    }
+    .side-item strong{
+      display:block;
+      margin-bottom:4px;
+      font-size:13px;
+    }
+    .side-item span{
+      display:block;
+      color:#6b7280;
+      font-size:13px;
+      line-height:1.65;
+    }
+    .mini-note{
+      margin:0;
+      color:#6b7280;
+      font-size:13px;
+      line-height:1.7;
+    }
+    .mini-note.is-error{
+      color:#9f2a20;
+    }
+    .empty-state{
+      padding:28px;
+      border-radius:26px;
+      border:1px solid rgba(159,42,32,.12);
+      background:rgba(255,255,255,.78);
+      color:#7f1d1d;
+      box-shadow:var(--shadow);
+    }
+    .empty-state h2{
+      margin:0 0 8px;
+      font-size:24px;
+      letter-spacing:-0.03em;
+      color:#111827;
+    }
+    .empty-state p{
+      margin:0;
+      line-height:1.8;
+      color:#6b7280;
+      font-size:14px;
+    }
+    .status-bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px 14px;
+      border-radius:18px;
+      border:1px solid rgba(15,23,42,.08);
+      background:rgba(255,255,255,.68);
+      color:#4b5563;
+      font-size:13px;
+      box-shadow:var(--shadow);
+    }
+    .status-main{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .status-dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:#9ca3af;
+      flex:none;
+    }
+    .status-dot.is-live{
+      background:#16a34a;
+      box-shadow:0 0 0 6px rgba(22,163,74,.12);
+    }
+    .status-dot.is-fallback{
+      background:#d97706;
+      box-shadow:0 0 0 6px rgba(217,119,6,.12);
+    }
+    .status-dot.is-loading{
+      background:#2563eb;
+      box-shadow:0 0 0 6px rgba(37,99,235,.12);
+    }
+    .status-meta{
+      color:#6b7280;
+      font-size:12px;
+    }
+    @media (max-width: 980px){
+      .feed-shell{
+        grid-template-columns:1fr;
+      }
+      .side{
+        position:static;
+      }
+      .hero-stats{
+        width:100%;
+      }
+    }
+    @media (max-width: 640px){
+      .hero,
+      .toolbar,
+      .thought-card,
+      .side-card{
+        border-radius:22px;
+      }
+      .hero{
+        padding:18px;
+      }
+      .thought-title{
+        font-size:22px;
+      }
+    }
+  </style>
+</head>
+<body
+  data-nav-page="think-different"
+  data-page-title="Think different"
+  data-page-subtitle="不是把问题想得更完整，而是把问题想得更偏一点、更反一点、更像一个新物种的起点。"
+  style="--page-max-width:1320px"
+>
+  <div data-shared-nav-root></div>
+  <div data-shared-page-header-root></div>
+  <main class="page-shell__body">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <span class="hero-kicker">Speculative feed · LM-style divergence</span>
+          <h2 class="hero-title">让 AI 不只是 thinking，而是开始 think different.</h2>
+          <p class="hero-subtitle">
+            输入一个主题，它不会只给你正确答案，而是沿着几个不同的认知斜坡往外走。
+            有的像产品判断，有的像哲学便签，有的像反市场下注，有的像一句未来口号。
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-label">默认批次</span>
+            <span class="stat-value" id="batchCount">6</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">视角维度</span>
+            <span class="stat-value">7</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">输出气质</span>
+            <span class="stat-value" id="toneLabel">混合</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">目标感觉</span>
+            <span class="stat-value">偏一点</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar" aria-label="灵感控制台">
+      <div class="toolbar-row">
+        <div class="toolbar-group">
+          <span class="toolbar-label">主题</span>
+          <input id="topicInput" class="topic-input" type="text" value="下一代 AI 产品" placeholder="例如：个人操作系统、未来搜索、教育 Agent、空间计算..." />
+        </div>
+        <div class="toolbar-group" style="justify-content:flex-end;">
+          <button id="shuffleBtn" class="ghost-btn" type="button">换一批想法</button>
+          <button id="surpriseBtn" class="primary-btn" type="button">给我更不一样的</button>
+        </div>
+      </div>
+      <div class="toolbar-row">
+        <div class="toolbar-group">
+          <span class="toolbar-label">语气</span>
+          <div class="segmented" role="tablist" aria-label="语气切换">
+            <button type="button" data-tone="mixed" class="is-active">混合</button>
+            <button type="button" data-tone="poetic">诗性</button>
+            <button type="button" data-tone="sharp">锋利</button>
+            <button type="button" data-tone="vision">愿景</button>
+          </div>
+        </div>
+        <div class="toolbar-group" style="justify-content:flex-end;">
+          <span class="toolbar-label">快速切题</span>
+          <div class="chips">
+            <button type="button" class="chip" data-topic="个人 AI 操作系统">个人 AI 操作系统</button>
+            <button type="button" class="chip" data-topic="未来教育产品">未来教育产品</button>
+            <button type="button" class="chip" data-topic="下一代搜索">下一代搜索</button>
+            <button type="button" class="chip" data-topic="AI 硬件">AI 硬件</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="status-bar" aria-live="polite">
+      <div class="status-main">
+        <span id="statusDot" class="status-dot"></span>
+        <strong id="statusText">等待生成</strong>
+        <span id="statusMeta" class="status-meta">当前还没有请求模型。</span>
+      </div>
+      <span id="statusSource" class="status-meta">source: idle</span>
+    </section>
+
+    <section class="feed-shell">
+      <section id="feed" class="feed" aria-live="polite"></section>
+      <aside class="side">
+        <section class="side-card">
+          <h2>它在怎么“不同”</h2>
+          <div class="side-list">
+            <div class="side-item">
+              <strong>不是找共识</strong>
+              <span>优先找反直觉切口，再决定哪些值得收敛。</span>
+            </div>
+            <div class="side-item">
+              <strong>不是只回答</strong>
+              <span>更像往主题旁边扔几块石头，看会不会激起新的涟漪。</span>
+            </div>
+            <div class="side-item">
+              <strong>不是复述趋势</strong>
+              <span>会尝试把同一件事翻译成别的时代、别的行业、别的用户语境。</span>
+            </div>
+          </div>
+        </section>
+        <section class="side-card">
+          <h2>适合拿来干嘛</h2>
+          <div class="side-list">
+            <div class="side-item">
+              <strong>做产品方向会前热身</strong>
+              <span>先让团队看到几种“不主流但有力”的理解框架。</span>
+            </div>
+            <div class="side-item">
+              <strong>写品牌句子或 keynote</strong>
+              <span>把一个功能问题升维成一句可以传播的判断。</span>
+            </div>
+            <div class="side-item">
+              <strong>找 demo / feature 灵感</strong>
+              <span>把抽象主题拆成可以展示、可以体验、可以被记住的形式。</span>
+            </div>
+          </div>
+        </section>
+        <section class="side-card">
+          <h2>当前方法</h2>
+          <p id="methodNote" class="mini-note">
+            默认混合诗性、锋利和愿景三种口吻，让同一个主题同时像备忘录、内部判断和未来发布会。
+          </p>
+        </section>
+      </aside>
+    </section>
+  </main>
+  <script>
+    (function () {
+      const feed = document.getElementById('feed');
+      const topicInput = document.getElementById('topicInput');
+      const batchCount = document.getElementById('batchCount');
+      const toneLabel = document.getElementById('toneLabel');
+      const methodNote = document.getElementById('methodNote');
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const statusMeta = document.getElementById('statusMeta');
+      const statusSource = document.getElementById('statusSource');
+      const segmentedButtons = Array.from(document.querySelectorAll('.segmented button'));
+      const quickTopicButtons = Array.from(document.querySelectorAll('.chip[data-topic]'));
+      const shuffleBtn = document.getElementById('shuffleBtn');
+      const surpriseBtn = document.getElementById('surpriseBtn');
+
+      const toneMeta = {
+        mixed: {
+          label: '混合',
+          note: '默认混合诗性、锋利和愿景三种口吻，让同一个主题同时像备忘录、内部判断和未来发布会。'
+        },
+        poetic: {
+          label: '诗性',
+          note: '偏比喻、留白和画面感，像一句还没被解释完的 keynote 开场。'
+        },
+        sharp: {
+          label: '锋利',
+          note: '偏判断、反问和切割感，更像战略会上那种一针见血的句子。'
+        },
+        vision: {
+          label: '愿景',
+          note: '偏未来叙事和产品想象，把今天的功能翻译成明天的范式。'
+        }
+      };
+
+      let currentTone = 'mixed';
+      let activeRequestId = 0;
+
+      function toneClass(tone, index) {
+        if (tone === 'mixed') {
+          return ['poetic', 'sharp', 'vision'][index % 3];
+        }
+        return tone;
+      }
+
+      function setStatus(kind, text, meta, source) {
+        statusDot.classList.remove('is-live', 'is-fallback', 'is-loading');
+        if (kind === 'live') statusDot.classList.add('is-live');
+        if (kind === 'fallback') statusDot.classList.add('is-fallback');
+        if (kind === 'loading') statusDot.classList.add('is-loading');
+        statusText.textContent = text;
+        statusMeta.textContent = meta;
+        statusSource.textContent = source;
+        methodNote.classList.toggle('is-error', kind === 'fallback');
+      }
+
+      function renderErrorState(message) {
+        batchCount.textContent = '0';
+        toneLabel.textContent = toneMeta[currentTone].label;
+        methodNote.textContent = '这里只显示 Gemini 的真实返回；如果模型不可用，就直接报错，不再展示任何模板内容。';
+        feed.innerHTML = `
+          <section class="empty-state">
+            <h2>这次没有拿到真实结果</h2>
+            <p>${message}</p>
+          </section>
+        `;
+      }
+
+      function normalizeCardTone(value, index) {
+        const safe = String(value || '').trim();
+        if (safe === 'poetic' || safe === 'sharp' || safe === 'vision') return safe;
+        if (safe === 'mixed') return toneClass('mixed', index);
+        return toneClass(currentTone, index);
+      }
+
+      function renderRemoteFeed(payload) {
+        const items = Array.isArray(payload.items) ? payload.items : [];
+        const source = payload.source || 'unknown';
+        const model = payload.model || 'unknown';
+
+        batchCount.textContent = String(items.length || 0);
+        toneLabel.textContent = toneMeta[currentTone].label;
+        methodNote.textContent = source === 'gemini'
+          ? `当前内容由 ${model} 实时生成。${toneMeta[currentTone].note}`
+          : `模型暂时不可用，当前显示的是服务端回退内容。${toneMeta[currentTone].note}`;
+
+        feed.innerHTML = items.map((item, index) => {
+          const cardTone = normalizeCardTone(item.tone, index);
+          const tags = Array.isArray(item.tags) ? item.tags : [];
+          const themeLabel = cardTone === 'poetic'
+            ? '诗性'
+            : cardTone === 'sharp'
+              ? '锋利'
+              : '愿景';
+
+          return `
+            <article class="thought-card" data-tone="${cardTone}">
+              <div class="thought-meta">
+                <div class="thought-badges">
+                  <span class="badge perspective">${item.perspective || '不同视角'}</span>
+                  <span class="badge ${cardTone}">${themeLabel}</span>
+                </div>
+                <span class="thought-index">idea ${String(index + 1).padStart(2, '0')}</span>
+              </div>
+              <h2 class="thought-title">${item.title || ''}</h2>
+              <p class="thought-body">${item.body || ''}</p>
+              <div class="thought-footer">
+                ${tags.map((tag) => `<span>${tag}</span>`).join('')}
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      async function requestFeed() {
+        const requestId = ++activeRequestId;
+        const topic = topicInput.value.trim() || '下一代 AI 产品';
+
+        setStatus('loading', '正在请求 Gemini', `主题：${topic}`, `source: requesting ${currentTone}`);
+
+        try {
+          const response = await fetch('/api/think-different', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              topic,
+              tone: currentTone
+            })
+          });
+          const payload = await response.json();
+          if (requestId !== activeRequestId) return;
+          if (!response.ok || payload.ok === false) {
+            throw new Error(payload.error || '请求失败');
+          }
+
+          renderRemoteFeed(payload);
+          setStatus('live', 'Gemini 已生成新想法', `主题：${payload.topic || topic}`, `source: ${payload.source} · ${payload.model || 'unknown'}`);
+        } catch (error) {
+          if (requestId !== activeRequestId) return;
+          renderErrorState(error instanceof Error ? error.message : '未知错误');
+          setStatus('fallback', '接口失败，没有展示任何假数据', error instanceof Error ? error.message : '未知错误', 'source: error');
+        }
+      }
+
+      segmentedButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          currentTone = button.dataset.tone || 'mixed';
+          segmentedButtons.forEach((item) => item.classList.toggle('is-active', item === button));
+          requestFeed();
+        });
+      });
+
+      quickTopicButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          topicInput.value = button.dataset.topic || '';
+          requestFeed();
+        });
+      });
+
+      shuffleBtn.addEventListener('click', () => {
+        requestFeed();
+      });
+
+      surpriseBtn.addEventListener('click', () => {
+        currentTone = 'mixed';
+        segmentedButtons.forEach((item) => item.classList.toggle('is-active', item.dataset.tone === 'mixed'));
+        const wildcards = [
+          '把它做得像一件奢侈品',
+          '把它做得像一套操作系统',
+          '把它做得像一个安静的助手',
+          '把它做得像一场仪式',
+          '把它做得像下一代默认入口'
+        ];
+        const topic = topicInput.value.trim() || '下一代 AI 产品';
+        const index = Math.floor(Math.random() * wildcards.length);
+        topicInput.value = `${topic} · ${wildcards[index]}`;
+        requestFeed();
+      });
+
+      topicInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          requestFeed();
+        }
+      });
+
+      requestFeed();
+    })();
+  </script>
+</body>
+</html>

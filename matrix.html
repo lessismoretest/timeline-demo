@@ -1,0 +1,2103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>taste2 Matrix</title>
+  <link rel="stylesheet" href="/assets/shared-nav.css" />
+  <script src="/assets/shared-nav.js" defer></script>
+  <style>
+    :root{
+      color-scheme: light;
+      --bg:#f5f5f7;
+      --card:#ffffff;
+      --line:#e5e5ea;
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#111827;
+      --shadow:0 8px 24px rgba(17,24,39,.05);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#f5f5f7;
+      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+      color:var(--text);
+    }
+    .hero{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+    .hero h1{
+      margin:0;
+      font-size:24px;
+      letter-spacing:-0.025em;
+    }
+    .hero p{
+      margin:4px 0 0;
+      max-width:680px;
+      color:var(--muted);
+      line-height:1.45;
+      font-size:12px;
+    }
+    .hero-stats{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .stat{
+      min-width:88px;
+      padding:8px 10px;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:12px;
+      background:#fff;
+    }
+    .stat-label{
+      display:block;
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:2px;
+    }
+    .stat-value{
+      font-size:18px;
+      font-weight:700;
+      letter-spacing:-0.02em;
+    }
+    .panel{
+      background:#fff;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .toolbar{
+      padding:10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      border-bottom:1px solid var(--line);
+      background:#fafafb;
+    }
+    .toolbar-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .toolbar-group{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .toolbar-title{
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .toolbar-input,.toolbar-select{
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      padding:7px 10px;
+      background:#fff;
+      color:var(--text);
+      font-size:13px;
+      min-height:34px;
+    }
+    .toolbar-input{min-width:220px}
+    .segmented{
+      display:inline-flex;
+      align-items:center;
+      background:#fff;
+      border:1px solid #d1d5db;
+      border-radius:999px;
+      padding:2px;
+      gap:2px;
+    }
+    .segmented button,
+    .ghost-btn,
+    .header-link{
+      border:0;
+      background:transparent;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      color:#374151;
+      cursor:pointer;
+      text-decoration:none;
+      font-weight:600;
+    }
+    .segmented button.active,
+    .ghost-btn.active{
+      background:#111827;
+      color:#fff;
+    }
+    .ghost-btn{
+      border:1px solid #d1d5db;
+      background:#fff;
+      border-radius:10px;
+    }
+    .status{
+      padding:12px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .status.error{color:#9f2a20}
+    .matrix-shell{
+      overflow:auto;
+      padding:0 0 6px;
+    }
+    .matrix-grid{
+      display:grid;
+      gap:0;
+      min-width:max-content;
+    }
+    .corner-cell,
+    .col-header,
+    .row-header,
+    .matrix-cell{
+      border-right:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      background:#fff;
+    }
+    .corner-cell{
+      position:sticky;
+      left:0;
+      top:0;
+      z-index:5;
+      padding:10px 12px;
+      min-width:160px;
+      background:#f8fafc;
+    }
+    .corner-eyebrow{
+      display:block;
+      font-size:10px;
+      letter-spacing:.08em;
+      color:var(--muted);
+      text-transform:uppercase;
+      margin-bottom:4px;
+      font-weight:700;
+    }
+    .corner-value{
+      display:block;
+      font-size:14px;
+      font-weight:700;
+      letter-spacing:-0.02em;
+    }
+    .col-header{
+      position:sticky;
+      top:0;
+      z-index:4;
+      min-width:190px;
+      padding:8px 10px;
+      background:#f8fafc;
+    }
+    .col-header-content{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .col-header-main{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .header-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      align-self:flex-start;
+      padding:4px 7px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:700;
+      color:#fff;
+      text-decoration:none;
+    }
+    .header-dot{
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:rgba(255,255,255,.88);
+      flex:none;
+    }
+    .header-title{
+      font-size:13px;
+      font-weight:700;
+      line-height:1.2;
+    }
+    .header-subtitle{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .header-actions{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:4px;
+      flex:none;
+    }
+    .header-link{
+      padding:0;
+      color:#2563eb;
+      background:none;
+    }
+    .header-link:hover{text-decoration:underline}
+    .row-header{
+      position:sticky;
+      left:0;
+      z-index:3;
+      min-width:160px;
+      padding:8px 10px;
+      background:#f8fafc;
+    }
+    .row-header strong{display:block;font-size:12px;line-height:1.25}
+    .row-header span{display:block;margin-top:2px;font-size:11px;color:var(--muted);line-height:1.3}
+    .matrix-cell{
+      padding:6px;
+      min-width:190px;
+      min-height:84px;
+      background:#fff;
+      vertical-align:top;
+    }
+    .matrix-cell.empty{
+      background:#fbfbfc;
+    }
+    .cell-card{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      height:100%;
+    }
+    .cell-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .cell-title{
+      font-size:10px;
+      color:var(--muted);
+      line-height:1.25;
+    }
+    .cell-count{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:22px;
+      padding:2px 6px;
+      border-radius:999px;
+      background:#111827;
+      color:#fff;
+      font-size:10px;
+      font-weight:700;
+    }
+    .cell-items{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-content:flex-start;
+    }
+    .cell-items.mode-grid .matrix-node{width:calc(50% - 4px)}
+    .cell-items.mode-preview .matrix-node{max-width:100%}
+    .cell-items.mode-density-minimal{
+      gap:6px;
+      align-items:flex-start;
+    }
+    .cell-items.mode-density-minimal .matrix-node{
+      padding:6px;
+      box-shadow:none;
+      border-color:rgba(17,24,39,.06);
+    }
+    .cell-items.mode-density-detail{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    .cell-card.minimal{
+      justify-content:center;
+    }
+    .cell-card.minimal .cell-items{
+      min-height:52px;
+    }
+    .cell-empty{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100%;
+      color:#9ca3af;
+      font-size:12px;
+      border:1px dashed #e5e7eb;
+      border-radius:14px;
+      background:rgba(255,255,255,.55);
+    }
+    .matrix-node{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      padding:5px 7px;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:10px;
+      background:#fff;
+      cursor:pointer;
+      transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;
+      box-shadow:none;
+    }
+    .matrix-node:hover{
+      transform:translateY(-1px);
+      border-color:rgba(37,99,235,.28);
+      box-shadow:0 6px 14px rgba(37,99,235,.09);
+    }
+    .matrix-node.logo-only{padding:5px}
+    .node-logo-wrap{
+      width:22px;
+      height:22px;
+      min-width:22px;
+      border-radius:7px;
+      overflow:hidden;
+      background:#eef2ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:none;
+    }
+    .node-logo-wrap img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      background:#fff;
+    }
+    .node-fallback{
+      font-size:9px;
+      font-weight:700;
+      color:#1f2937;
+    }
+    .node-copy{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .node-title{
+      font-size:11px;
+      font-weight:700;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .node-meta{
+      font-size:10px;
+      color:var(--muted);
+      line-height:1.25;
+    }
+    .node-more{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:5px 7px;
+      border-radius:10px;
+      border:1px dashed #cbd5e1;
+      background:rgba(248,250,252,.95);
+      color:#475569;
+      font-size:10px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .count-summary{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      justify-content:center;
+      min-height:64px;
+      border-radius:10px;
+      background:linear-gradient(135deg,#111827 0%,#374151 100%);
+      color:#fff;
+      padding:10px;
+    }
+    .count-summary strong{font-size:20px;letter-spacing:-0.03em}
+    .count-summary span{font-size:10px;color:rgba(255,255,255,.78)}
+    .hint{
+      padding:8px 12px;
+      border-top:1px solid var(--line);
+      background:#fafafa;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.45;
+    }
+    .detail-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(17,24,39,.34);
+      display:none;
+      align-items:flex-end;
+      justify-content:flex-end;
+      z-index:120;
+    }
+    .detail-backdrop.open{display:flex}
+    .detail-panel{
+      width:min(360px,100vw);
+      height:100vh;
+      background:#fff;
+      box-shadow:-8px 0 22px rgba(17,24,39,.12);
+      padding:16px 14px;
+      overflow:auto;
+    }
+    .detail-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .detail-head h2{
+      margin:0;
+      font-size:18px;
+      letter-spacing:-0.03em;
+    }
+    .detail-close{
+      border:0;
+      background:#f3f4f6;
+      width:30px;
+      height:30px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:16px;
+      flex:none;
+    }
+    .detail-logo{
+      width:48px;
+      height:48px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#f3f4f6;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:10px;
+    }
+    .detail-logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      background:#fff;
+    }
+    .detail-section{
+      margin-bottom:12px;
+      padding-bottom:12px;
+      border-bottom:1px solid var(--line);
+    }
+    .detail-section:last-child{border-bottom:0;padding-bottom:0}
+    .detail-event-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:6px;
+    }
+    .detail-event-list button{
+      background:#f3f4f6;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      padding:5px 8px;
+      font-size:11px;
+      font-weight:600;
+      color:#1f2937;
+      cursor:pointer;
+      transition:background .2s,border .2s;
+    }
+    .detail-event-list button.active{
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
+    .detail-label{
+      display:block;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:6px;
+    }
+    .detail-value{
+      font-size:12px;
+      line-height:1.5;
+      color:#1f2937;
+    }
+    .tag-list{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid #dbe2ea;
+      background:#f8fafc;
+      font-size:10px;
+      color:#334155;
+    }
+    .detail-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .detail-actions a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:32px;
+      padding:0 10px;
+      border-radius:10px;
+      text-decoration:none;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid #d1d5db;
+      color:#111827;
+      background:#fff;
+    }
+    .detail-actions a.primary{
+      background:#111827;
+      border-color:#111827;
+      color:#fff;
+    }
+    .edit-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(17,24,39,.3);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:130;
+      padding:20px;
+    }
+    .edit-backdrop.open{display:flex}
+    .edit-modal{
+      width:min(720px,96vw);
+      max-height:88vh;
+      overflow:auto;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:0 18px 50px rgba(17,24,39,.18);
+      padding:16px;
+    }
+    .edit-modal h3{
+      margin:0 0 10px;
+      font-size:18px;
+    }
+    .edit-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .edit-grid .full{grid-column:1 / -1}
+    .edit-grid label{
+      display:block;
+      margin-bottom:4px;
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .edit-grid input,
+    .edit-grid select,
+    .edit-grid textarea{
+      width:100%;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:13px;
+      color:var(--text);
+      background:#fff;
+    }
+    .edit-grid textarea{
+      min-height:96px;
+      resize:vertical;
+    }
+    .edit-actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    .edit-status{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .edit-status.error{color:#9f2a20}
+    .edit-status.success{color:#176642}
+    .edit-buttons{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .edit-buttons button{
+      min-height:34px;
+      padding:0 12px;
+      border-radius:10px;
+      border:1px solid #d1d5db;
+      background:#fff;
+      color:#111827;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .edit-buttons button.primary{
+      background:#111827;
+      border-color:#111827;
+      color:#fff;
+    }
+    @media (max-width: 900px){
+      .toolbar-input{min-width:unset;width:100%}
+      .toolbar-group{width:100%}
+      .hero-stats{justify-content:flex-start}
+      .matrix-cell,.col-header{min-width:170px}
+      .row-header,.corner-cell{min-width:140px}
+    }
+  </style>
+</head>
+<body data-nav-page="matrix" data-page-title="矩阵视图" data-page-subtitle="同一套数据的无时间投影，适合做赛道与人群、模态、门槛等维度交叉查看。" style="--page-max-width:1680px">
+  <div data-shared-nav-root></div>
+  <div data-shared-page-header-root></div>
+  <div class="page-shell__body">
+    <section class="hero">
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-label">数据点</span>
+          <span class="stat-value" id="statEvents">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">当前列数</span>
+          <span class="stat-value" id="statColumns">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">当前行数</span>
+          <span class="stat-value" id="statRows">0</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="toolbar-group">
+            <span class="toolbar-title">X 轴</span>
+            <select id="xAxisSelect" class="toolbar-select"></select>
+            <span class="toolbar-title">Y 轴</span>
+            <select id="yAxisSelect" class="toolbar-select"></select>
+            <button id="swapAxesBtn" class="ghost-btn" type="button">交换轴</button>
+          </div>
+          <div class="toolbar-group">
+            <span class="toolbar-title">搜索</span>
+            <input id="searchInput" class="toolbar-input" placeholder="搜索标题、关键词、描述、分类" />
+          </div>
+        </div>
+        <div class="toolbar-row">
+          <div class="toolbar-group">
+            <span class="toolbar-title">节点内容</span>
+            <div class="segmented" id="nodeModeSegment">
+              <button type="button" data-mode="logo">只显示图片</button>
+              <button type="button" data-mode="both" class="active">图片+文字</button>
+              <button type="button" data-mode="title">只显示文字</button>
+            </div>
+          </div>
+          <div class="toolbar-group">
+            <span class="toolbar-title">Cell 展示</span>
+            <div class="segmented" id="cellModeSegment">
+              <button type="button" data-mode="preview" class="active">前几个</button>
+              <button type="button" data-mode="grid">平铺</button>
+              <button type="button" data-mode="count">聚合</button>
+            </div>
+          </div>
+          <div class="toolbar-group">
+            <span class="toolbar-title">信息密度</span>
+            <div class="segmented" id="cellDensitySegment">
+              <button type="button" data-mode="minimal">极简</button>
+              <button type="button" data-mode="detail" class="active">详情</button>
+            </div>
+          </div>
+          <div class="toolbar-group">
+            <span class="toolbar-title">赛道层级</span>
+            <button id="collapseTracksBtn" class="ghost-btn active" type="button">默认折叠</button>
+            <button id="expandAllTracksBtn" class="ghost-btn" type="button">展开全部二级</button>
+          </div>
+        </div>
+      </div>
+      <div id="status" class="status">正在加载矩阵数据…</div>
+      <div id="matrixShell" class="matrix-shell" hidden></div>
+      <div class="hint">兼容策略：如果数据里暂时没有 `modality / medium / classifications.modality` 等字段，矩阵会先归入“未分类”；后续补字段后会自动按新维度分布。</div>
+    </section>
+  </div>
+
+  <div id="detailBackdrop" class="detail-backdrop" aria-hidden="true">
+    <aside class="detail-panel">
+    <div class="detail-head">
+      <div>
+        <h2 id="detailTitle">详情</h2>
+      </div>
+      <button id="detailCloseBtn" class="detail-close" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="detail-section">
+      <span class="detail-label">格内节点</span>
+      <div id="detailEventList" class="detail-event-list"></div>
+    </div>
+    <div id="detailLogo" class="detail-logo" hidden></div>
+      <div class="detail-section">
+        <span class="detail-label">摘要</span>
+        <div id="detailDescription" class="detail-value">暂无描述</div>
+      </div>
+      <div class="detail-section">
+        <span class="detail-label">主归属</span>
+        <div id="detailPrimary" class="tag-list"></div>
+      </div>
+      <div class="detail-section">
+        <span class="detail-label">全部归属</span>
+        <div id="detailAll" class="tag-list"></div>
+      </div>
+      <div class="detail-section">
+        <span class="detail-label">关键词</span>
+        <div id="detailKeywords" class="tag-list"></div>
+      </div>
+      <div class="detail-section">
+        <span class="detail-label">时间</span>
+        <div id="detailTime" class="detail-value">-</div>
+      </div>
+      <div class="detail-actions">
+        <a id="detailTimelineTrackLink" class="primary" href="/vis-timeline.html">查看对应赛道时间线</a>
+        <a id="detailTimelineItemLink" href="/vis-timeline.html">打开时间线页</a>
+        <a id="detailEditLink" href="#">编辑当前节点</a>
+      </div>
+    </aside>
+  </div>
+
+  <div id="editBackdrop" class="edit-backdrop" aria-hidden="true">
+    <div class="edit-modal">
+      <h3>编辑节点</h3>
+      <div class="edit-grid">
+        <div class="full">
+          <label for="editTitle">标题</label>
+          <input id="editTitle" />
+        </div>
+        <div>
+          <label for="editPrimaryTrack">主赛道</label>
+          <select id="editPrimaryTrack"></select>
+        </div>
+        <div>
+          <label for="editTracks">全部赛道</label>
+          <input id="editTracks" placeholder="逗号分隔，如 ai-code,ai" />
+        </div>
+        <div>
+          <label for="editPrimaryModality">主模态</label>
+          <select id="editPrimaryModality"></select>
+        </div>
+        <div>
+          <label for="editModalities">全部模态</label>
+          <input id="editModalities" placeholder="逗号分隔，如 code,text" />
+        </div>
+        <div>
+          <label for="editPrimaryAudienceAge">用户年龄段</label>
+          <select id="editPrimaryAudienceAge"></select>
+        </div>
+        <div>
+          <label for="editAudienceAges">全部年龄段</label>
+          <input id="editAudienceAges" placeholder="逗号分隔，如 18-24,25-34" />
+        </div>
+        <div>
+          <label for="editPrimaryAudienceSegment">目标人群</label>
+          <select id="editPrimaryAudienceSegment"></select>
+        </div>
+        <div>
+          <label for="editAudienceSegments">全部目标人群</label>
+          <input id="editAudienceSegments" placeholder="逗号分隔，如 开发者,企业用户" />
+        </div>
+        <div>
+          <label for="editPrimaryExpertise">上手门槛</label>
+          <select id="editPrimaryExpertise"></select>
+        </div>
+        <div>
+          <label for="editExpertiseLevels">全部门槛</label>
+          <input id="editExpertiseLevels" placeholder="逗号分隔，如 小白,专业" />
+        </div>
+        <div class="full">
+          <label for="editKeywords">关键词</label>
+          <input id="editKeywords" placeholder="逗号分隔" />
+        </div>
+        <div class="full">
+          <label for="editDescription">描述</label>
+          <textarea id="editDescription"></textarea>
+        </div>
+      </div>
+      <div class="edit-actions">
+        <span id="editStatus" class="edit-status"></span>
+        <div class="edit-buttons">
+          <button id="editCancelBtn" type="button">取消</button>
+          <button id="editSaveBtn" type="button" class="primary">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fallbackTrackMeta = {
+      general: { label: '其他', order: 99, color: '#334155', dot: '#cbd5e1' }
+    };
+    const fallbackModalities = {
+      text: { label: '文本', order: 1 },
+      voice: { label: '语音', order: 2 },
+      video: { label: '视频', order: 3 },
+      image: { label: '图像', order: 4 },
+      code: { label: '代码', order: 5 },
+      game: { label: '游戏/互动', order: 6 },
+      unknown: { label: '未分类', order: 99 }
+    };
+    const fallbackAudienceAges = {
+      '0-12': { label: '0-12', order: 1 },
+      '13-17': { label: '13-17', order: 2 },
+      '18-24': { label: '18-24', order: 3 },
+      '25-34': { label: '25-34', order: 4 },
+      '35-49': { label: '35-49', order: 5 },
+      '50-64': { label: '50-64', order: 6 },
+      '65+': { label: '65+', order: 7 },
+      '全年龄': { label: '全年龄', order: 8 },
+      '未分类': { label: '未分类', order: 99 }
+    };
+    const fallbackAudienceSegments = {
+      'K12': { label: 'K12', order: 1 },
+      '大学生': { label: '大学生', order: 2 },
+      '职场通用': { label: '职场通用', order: 3 },
+      '专业人士': { label: '专业人士', order: 4 },
+      '开发者': { label: '开发者', order: 5 },
+      '创作者': { label: '创作者', order: 6 },
+      '企业用户': { label: '企业用户', order: 7 },
+      '未分类': { label: '未分类', order: 99 }
+    };
+    const fallbackExpertiseLevels = {
+      '小白': { label: '小白', order: 1 },
+      '专业': { label: '专业', order: 2 },
+      '未分类': { label: '未分类', order: 99 }
+    };
+
+    const dimensionOptions = {
+      track: { label: '赛道', hierarchical: true },
+      modality: { label: '交互模态', hierarchical: false },
+      audienceAge: { label: '用户年龄段', hierarchical: false },
+      audienceSegment: { label: '目标人群', hierarchical: false },
+      expertise: { label: '上手门槛', hierarchical: false }
+    };
+
+    const state = {
+      raw: [],
+      meta: {
+        tracks: { ...fallbackTrackMeta },
+        modalities: { ...fallbackModalities },
+        audienceAges: { ...fallbackAudienceAges },
+        audienceSegments: { ...fallbackAudienceSegments },
+        expertiseLevels: { ...fallbackExpertiseLevels }
+      },
+      xAxis: 'track',
+      yAxis: 'modality',
+      nodeMode: 'both',
+      cellMode: 'preview',
+      cellDensityMode: 'detail',
+      expandAllTracks: false,
+      expandedTrackIds: new Set(),
+      search: ''
+    };
+    const MATRIX_STATE_STORAGE_KEY = 'taste2:matrix:view-state:v1';
+
+    const xAxisSelect = document.getElementById('xAxisSelect');
+    const yAxisSelect = document.getElementById('yAxisSelect');
+    const swapAxesBtn = document.getElementById('swapAxesBtn');
+    const searchInput = document.getElementById('searchInput');
+    const nodeModeSegment = document.getElementById('nodeModeSegment');
+    const cellModeSegment = document.getElementById('cellModeSegment');
+    const cellDensitySegment = document.getElementById('cellDensitySegment');
+    const collapseTracksBtn = document.getElementById('collapseTracksBtn');
+    const expandAllTracksBtn = document.getElementById('expandAllTracksBtn');
+    const statusEl = document.getElementById('status');
+    const matrixShell = document.getElementById('matrixShell');
+    const statEvents = document.getElementById('statEvents');
+    const statColumns = document.getElementById('statColumns');
+    const statRows = document.getElementById('statRows');
+    const detailBackdrop = document.getElementById('detailBackdrop');
+    const detailCloseBtn = document.getElementById('detailCloseBtn');
+    const detailTitle = document.getElementById('detailTitle');
+    const detailLogo = document.getElementById('detailLogo');
+    const detailEventList = document.getElementById('detailEventList');
+    const detailDescription = document.getElementById('detailDescription');
+    const detailPrimary = document.getElementById('detailPrimary');
+    const detailAll = document.getElementById('detailAll');
+    const detailKeywords = document.getElementById('detailKeywords');
+    const detailTime = document.getElementById('detailTime');
+    const detailTimelineTrackLink = document.getElementById('detailTimelineTrackLink');
+    const detailTimelineItemLink = document.getElementById('detailTimelineItemLink');
+    const detailEditLink = document.getElementById('detailEditLink');
+    const editBackdrop = document.getElementById('editBackdrop');
+    const editTitle = document.getElementById('editTitle');
+    const editPrimaryTrack = document.getElementById('editPrimaryTrack');
+    const editTracks = document.getElementById('editTracks');
+    const editPrimaryModality = document.getElementById('editPrimaryModality');
+    const editModalities = document.getElementById('editModalities');
+    const editPrimaryAudienceAge = document.getElementById('editPrimaryAudienceAge');
+    const editAudienceAges = document.getElementById('editAudienceAges');
+    const editPrimaryAudienceSegment = document.getElementById('editPrimaryAudienceSegment');
+    const editAudienceSegments = document.getElementById('editAudienceSegments');
+    const editPrimaryExpertise = document.getElementById('editPrimaryExpertise');
+    const editExpertiseLevels = document.getElementById('editExpertiseLevels');
+    const editKeywords = document.getElementById('editKeywords');
+    const editDescription = document.getElementById('editDescription');
+    const editStatus = document.getElementById('editStatus');
+    const editCancelBtn = document.getElementById('editCancelBtn');
+    const editSaveBtn = document.getElementById('editSaveBtn');
+    let detailActiveEvents = [];
+    let editingEventId = null;
+    let currentDetailEventId = null;
+    let sourcePayload = null;
+
+    function escapeHtml(value){
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function makeSlug(value){
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'unknown';
+    }
+
+    function normalizeArray(value){
+      if(Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+      if(typeof value === 'string'){
+        return value.split(',').map((item) => item.trim()).filter(Boolean);
+      }
+      return [];
+    }
+
+    function inferModalities(event){
+      const haystack = [
+        event.title || '',
+        event.category || '',
+        event.description || '',
+        ...(event.keywords || [])
+      ].join(' ').toLowerCase();
+
+      const inferred = [];
+      if(/代码|编程|开发|ide|cursor|copilot|devin|windsurf|v0|sdk|api/.test(haystack)) inferred.push('code');
+      if(/语音|音频|播客|voice|speech|tts|music|歌曲/.test(haystack)) inferred.push('voice');
+      if(/视频|影视|电影|剪辑|短片|runway|sora/.test(haystack)) inferred.push('video');
+      if(/图像|图片|image|photo|摄影|设计|vision/.test(haystack)) inferred.push('image');
+      if(/游戏|game|roblox|unity|unreal|steam/.test(haystack)) inferred.push('game');
+      if(/文本|写作|阅读|搜索|chat|文档|知识/.test(haystack)) inferred.push('text');
+      return inferred;
+    }
+
+    function normalizeModalityId(value){
+      const slug = makeSlug(value);
+      if(slug === 'audio') return 'voice';
+      if(slug === 'speech') return 'voice';
+      if(slug === 'coding') return 'code';
+      if(slug === 'games') return 'game';
+      return slug;
+    }
+
+    function collectModalitiesFromMeta(meta){
+      if(meta?.modalities && typeof meta.modalities === 'object') return meta.modalities;
+      if(meta?.mediums && typeof meta.mediums === 'object') return meta.mediums;
+      const dimensionModalities = meta?.dimensions?.modality?.values;
+      if(dimensionModalities && typeof dimensionModalities === 'object') return dimensionModalities;
+      return null;
+    }
+
+    function collectAudienceAgesFromMeta(meta){
+      if(meta?.audienceAges && typeof meta.audienceAges === 'object') return meta.audienceAges;
+      if(meta?.userAgeGroups && typeof meta.userAgeGroups === 'object') return meta.userAgeGroups;
+      if(meta?.dimensions?.audienceAge?.values && typeof meta.dimensions.audienceAge.values === 'object'){
+        return meta.dimensions.audienceAge.values;
+      }
+      return null;
+    }
+
+    function collectAudienceSegmentsFromMeta(meta){
+      if(meta?.audienceSegments && typeof meta.audienceSegments === 'object') return meta.audienceSegments;
+      if(meta?.targetAudiences && typeof meta.targetAudiences === 'object') return meta.targetAudiences;
+      if(meta?.dimensions?.audienceSegment?.values && typeof meta.dimensions.audienceSegment.values === 'object'){
+        return meta.dimensions.audienceSegment.values;
+      }
+      return null;
+    }
+
+    function collectExpertiseLevelsFromMeta(meta){
+      if(meta?.expertiseLevels && typeof meta.expertiseLevels === 'object') return meta.expertiseLevels;
+      if(meta?.usabilityLevels && typeof meta.usabilityLevels === 'object') return meta.usabilityLevels;
+      if(meta?.dimensions?.expertise?.values && typeof meta.dimensions.expertise.values === 'object'){
+        return meta.dimensions.expertise.values;
+      }
+      return null;
+    }
+
+    function normalizeTrackInfo(trackId){
+      return state.meta.tracks?.[trackId] || fallbackTrackMeta.general;
+    }
+
+    function normalizeModalityInfo(modalityId){
+      return state.meta.modalities?.[modalityId] || fallbackModalities.unknown;
+    }
+
+    function normalizeAudienceAgeId(value){
+      return String(value || '').trim() || '未分类';
+    }
+
+    function normalizeExpertiseId(value){
+      const normalized = String(value || '').trim() || '未分类';
+      return normalized === '进阶' ? '专业' : normalized;
+    }
+
+    function normalizeAudienceAgeInfo(audienceAgeId){
+      return state.meta.audienceAges?.[audienceAgeId] || { label: audienceAgeId || '未分类', order: 999 };
+    }
+
+    function normalizeAudienceSegmentId(value){
+      return String(value || '').trim() || '未分类';
+    }
+
+    function normalizeAudienceSegmentInfo(audienceSegmentId){
+      return state.meta.audienceSegments?.[audienceSegmentId] || { label: audienceSegmentId || '未分类', order: 999 };
+    }
+
+    function normalizeExpertiseInfo(expertiseId){
+      return state.meta.expertiseLevels?.[expertiseId] || { label: expertiseId || '未分类', order: 999 };
+    }
+
+    function normalizeEvent(event, index){
+      const trackClassification = event.classifications?.track || {};
+      const modalityClassification = event.classifications?.modality || {};
+      const primaryTrack = trackClassification.primary || event.primaryTrack || event.track || 'general';
+      const allTracks = Array.from(new Set([
+        primaryTrack,
+        ...normalizeArray(trackClassification.all),
+        ...normalizeArray(event.tracks)
+      ])).filter(Boolean);
+
+      const rawModalities = Array.from(new Set([
+        ...normalizeArray(modalityClassification.all),
+        ...normalizeArray(event.modalities),
+        ...normalizeArray(event.mediums),
+        ...normalizeArray(event.medium),
+        ...normalizeArray(event.modality)
+      ]));
+
+      const normalizedModalities = rawModalities
+        .map(normalizeModalityId)
+        .filter(Boolean);
+
+      const inferred = normalizedModalities.length ? [] : inferModalities(event);
+      const allModalities = Array.from(new Set([
+        modalityClassification.primary ? normalizeModalityId(modalityClassification.primary) : '',
+        ...normalizedModalities,
+        ...inferred
+      ].filter(Boolean)));
+
+      const primaryModality = modalityClassification.primary
+        ? normalizeModalityId(modalityClassification.primary)
+        : allModalities[0] || 'unknown';
+      const audienceAgeClassification = event.classifications?.audienceAge || event.classifications?.audience || {};
+      const allAudienceAges = Array.from(new Set([
+        audienceAgeClassification.primary ? normalizeAudienceAgeId(audienceAgeClassification.primary) : '',
+        ...normalizeArray(audienceAgeClassification.all).map(normalizeAudienceAgeId),
+        ...normalizeArray(event.audienceAges).map(normalizeAudienceAgeId),
+        ...normalizeArray(event.audienceAge).map(normalizeAudienceAgeId),
+        ...normalizeArray(event.userAgeGroups).map(normalizeAudienceAgeId),
+        ...normalizeArray(event.userAgeGroup).map(normalizeAudienceAgeId),
+        ...normalizeArray(event.targetAudienceAges).map(normalizeAudienceAgeId),
+        ...normalizeArray(event.targetAudienceAge).map(normalizeAudienceAgeId)
+      ].filter(Boolean)));
+      const primaryAudienceAge = audienceAgeClassification.primary
+        ? normalizeAudienceAgeId(audienceAgeClassification.primary)
+        : allAudienceAges[0] || '未分类';
+      const audienceSegmentClassification = event.classifications?.audienceSegment || event.classifications?.targetAudience || {};
+      const allAudienceSegments = Array.from(new Set([
+        audienceSegmentClassification.primary ? normalizeAudienceSegmentId(audienceSegmentClassification.primary) : '',
+        ...normalizeArray(audienceSegmentClassification.all).map(normalizeAudienceSegmentId),
+        ...normalizeArray(event.audienceSegments).map(normalizeAudienceSegmentId),
+        ...normalizeArray(event.audienceSegment).map(normalizeAudienceSegmentId),
+        ...normalizeArray(event.targetAudiences).map(normalizeAudienceSegmentId),
+        ...normalizeArray(event.targetAudience).map(normalizeAudienceSegmentId)
+      ].filter(Boolean)));
+      const primaryAudienceSegment = audienceSegmentClassification.primary
+        ? normalizeAudienceSegmentId(audienceSegmentClassification.primary)
+        : allAudienceSegments[0] || '未分类';
+      const expertiseClassification = event.classifications?.expertise || event.classifications?.skillLevel || {};
+      const allExpertise = Array.from(new Set([
+        expertiseClassification.primary ? normalizeExpertiseId(expertiseClassification.primary) : '',
+        ...normalizeArray(expertiseClassification.all).map(normalizeExpertiseId),
+        ...normalizeArray(event.expertiseLevels).map(normalizeExpertiseId),
+        ...normalizeArray(event.expertiseLevel).map(normalizeExpertiseId),
+        ...normalizeArray(event.skillLevels).map(normalizeExpertiseId),
+        ...normalizeArray(event.skillLevel).map(normalizeExpertiseId),
+        ...normalizeArray(event.userLevel).map(normalizeExpertiseId)
+      ].filter(Boolean)));
+      const primaryExpertise = expertiseClassification.primary
+        ? normalizeExpertiseId(expertiseClassification.primary)
+        : allExpertise[0] || '未分类';
+
+      return {
+        id: event.id || index + 1,
+        source: event,
+        start: event.start || '',
+        end: event.end || '',
+        title: event.title || '未命名',
+        description: event.description || '',
+        category: event.category || '',
+        keywords: Array.isArray(event.keywords) ? event.keywords : [],
+        logo: event.logo || '',
+        audienceAge: {
+          primary: primaryAudienceAge,
+          all: allAudienceAges.length ? allAudienceAges : ['未分类']
+        },
+        audienceSegment: {
+          primary: primaryAudienceSegment,
+          all: allAudienceSegments.length ? allAudienceSegments : ['未分类']
+        },
+        expertise: {
+          primary: primaryExpertise,
+          all: allExpertise.length ? allExpertise : ['未分类']
+        },
+        track: {
+          primary: primaryTrack,
+          all: allTracks.length ? allTracks : [primaryTrack]
+        },
+        modality: {
+          primary: primaryModality,
+          all: allModalities.length ? allModalities : ['unknown']
+        }
+      };
+    }
+
+    function normalizePayload(json){
+      if(!json || typeof json !== 'object' || !Array.isArray(json.events)){
+        throw new Error('timeline.json 必须是包含 meta/events 的对象');
+      }
+      sourcePayload = json;
+      state.meta.tracks = {
+        ...fallbackTrackMeta,
+        ...(json.meta?.tracks || {})
+      };
+      state.meta.modalities = {
+        ...fallbackModalities,
+        ...(collectModalitiesFromMeta(json.meta) || {})
+      };
+      state.meta.audienceAges = {
+        ...fallbackAudienceAges,
+        ...(collectAudienceAgesFromMeta(json.meta) || {})
+      };
+      state.meta.audienceSegments = {
+        ...fallbackAudienceSegments,
+        ...(collectAudienceSegmentsFromMeta(json.meta) || {})
+      };
+      state.meta.expertiseLevels = {
+        ...fallbackExpertiseLevels,
+        ...(collectExpertiseLevelsFromMeta(json.meta) || {})
+      };
+      state.raw = json.events.map(normalizeEvent);
+    }
+
+    function optionMarkup(values){
+      return values.map(({ id, label }) => `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`).join('');
+    }
+
+    function setEditStatus(message, kind){
+      editStatus.textContent = message || '';
+      editStatus.classList.remove('error', 'success');
+      if(kind) editStatus.classList.add(kind);
+    }
+
+    function populateEditOptions(){
+      editPrimaryTrack.innerHTML = optionMarkup(
+        Object.entries(state.meta.tracks || {})
+          .sort(([, left], [, right]) => (left.order || 999) - (right.order || 999))
+          .map(([id, meta]) => ({ id, label: meta.label || id }))
+      );
+      editPrimaryModality.innerHTML = optionMarkup(
+        Object.entries(state.meta.modalities || {})
+          .sort(([, left], [, right]) => (left.order || 999) - (right.order || 999))
+          .map(([id, meta]) => ({ id, label: meta.label || id }))
+      );
+      editPrimaryAudienceAge.innerHTML = optionMarkup(
+        Object.entries(state.meta.audienceAges || {})
+          .sort(([, left], [, right]) => (left.order || 999) - (right.order || 999))
+          .map(([id, meta]) => ({ id, label: meta.label || id }))
+      );
+      editPrimaryAudienceSegment.innerHTML = optionMarkup(
+        Object.entries(state.meta.audienceSegments || {})
+          .sort(([, left], [, right]) => (left.order || 999) - (right.order || 999))
+          .map(([id, meta]) => ({ id, label: meta.label || id }))
+      );
+      editPrimaryExpertise.innerHTML = optionMarkup(
+        Object.entries(state.meta.expertiseLevels || {})
+          .sort(([, left], [, right]) => (left.order || 999) - (right.order || 999))
+          .map(([id, meta]) => ({ id, label: meta.label || id }))
+      );
+    }
+
+    function openEditModal(event){
+      editingEventId = event.id;
+      currentDetailEventId = event.id;
+      populateEditOptions();
+      editTitle.value = event.title || '';
+      editPrimaryTrack.value = event.track.primary || 'general';
+      editTracks.value = (event.track.all || [event.track.primary || 'general']).join(',');
+      editPrimaryModality.value = event.modality.primary || 'unknown';
+      editModalities.value = (event.modality.all || [event.modality.primary || 'unknown']).join(',');
+      editPrimaryAudienceAge.value = event.audienceAge.primary || '未分类';
+      editAudienceAges.value = (event.audienceAge.all || [event.audienceAge.primary || '未分类']).join(',');
+      editPrimaryAudienceSegment.value = event.audienceSegment.primary || '未分类';
+      editAudienceSegments.value = (event.audienceSegment.all || [event.audienceSegment.primary || '未分类']).join(',');
+      editPrimaryExpertise.value = event.expertise.primary || '未分类';
+      editExpertiseLevels.value = (event.expertise.all || [event.expertise.primary || '未分类']).join(',');
+      editKeywords.value = (event.keywords || []).join(',');
+      editDescription.value = event.description || '';
+      setEditStatus('', '');
+      editBackdrop.classList.add('open');
+      editBackdrop.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeEditModal(){
+      editingEventId = null;
+      editBackdrop.classList.remove('open');
+      editBackdrop.setAttribute('aria-hidden', 'true');
+      setEditStatus('', '');
+    }
+
+    function csvList(value){
+      return String(value || '').split(',').map((item) => item.trim()).filter(Boolean);
+    }
+
+    function syncNormalizedEvent(event){
+      const source = event.source || {};
+      const normalized = normalizeEvent(source, 0);
+      Object.keys(event).forEach((key) => {
+        if(key !== 'source') delete event[key];
+      });
+      Object.assign(event, normalized);
+    }
+
+    function buildPayload(){
+      if(!sourcePayload) return null;
+      sourcePayload.meta = {
+        ...(sourcePayload.meta || {}),
+        tracks: state.meta.tracks,
+        modalities: state.meta.modalities,
+        audienceAges: state.meta.audienceAges,
+        audienceSegments: state.meta.audienceSegments,
+        expertiseLevels: state.meta.expertiseLevels
+      };
+      return sourcePayload;
+    }
+
+    async function persistTimeline(){
+      const payload = buildPayload();
+      const response = await fetch('./save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => null);
+      if(!response.ok || !result?.ok){
+        throw new Error(result?.error || `HTTP ${response.status}`);
+      }
+    }
+
+    function renderAxisOptions(){
+      const optionsMarkup = Object.entries(dimensionOptions).map(([id, meta]) => (
+        `<option value="${id}">${meta.label}</option>`
+      )).join('');
+      xAxisSelect.innerHTML = optionsMarkup;
+      yAxisSelect.innerHTML = optionsMarkup;
+      xAxisSelect.value = state.xAxis;
+      yAxisSelect.value = state.yAxis;
+    }
+
+    function serializeViewState(){
+      return {
+        xAxis: state.xAxis,
+        yAxis: state.yAxis,
+        nodeMode: state.nodeMode,
+        cellMode: state.cellMode,
+        cellDensityMode: state.cellDensityMode,
+        expandAllTracks: state.expandAllTracks,
+        expandedTrackIds: Array.from(state.expandedTrackIds),
+        search: state.search
+      };
+    }
+
+    function persistViewState(){
+      try{
+        window.localStorage.setItem(MATRIX_STATE_STORAGE_KEY, JSON.stringify(serializeViewState()));
+      }catch(error){
+        console.warn('Failed to persist matrix state:', error);
+      }
+    }
+
+    function restoreViewState(){
+      try{
+        const rawValue = window.localStorage.getItem(MATRIX_STATE_STORAGE_KEY);
+        if(!rawValue) return;
+        const parsed = JSON.parse(rawValue);
+        if(parsed && typeof parsed === 'object'){
+          if(parsed.xAxis && dimensionOptions[parsed.xAxis]) state.xAxis = parsed.xAxis;
+          if(parsed.yAxis && dimensionOptions[parsed.yAxis]) state.yAxis = parsed.yAxis;
+          if(['logo', 'both', 'title'].includes(parsed.nodeMode)) state.nodeMode = parsed.nodeMode;
+          if(['preview', 'grid', 'count'].includes(parsed.cellMode)) state.cellMode = parsed.cellMode;
+          if(['minimal', 'detail'].includes(parsed.cellDensityMode)) state.cellDensityMode = parsed.cellDensityMode;
+          state.expandAllTracks = Boolean(parsed.expandAllTracks);
+          state.expandedTrackIds = new Set(Array.isArray(parsed.expandedTrackIds) ? parsed.expandedTrackIds : []);
+          state.search = typeof parsed.search === 'string' ? parsed.search : '';
+        }
+      }catch(error){
+        console.warn('Failed to restore matrix state:', error);
+      }
+    }
+
+    function getTrackChildrenMap(){
+      const childrenMap = new Map();
+      Object.keys(state.meta.tracks || {}).forEach((trackId) => {
+        childrenMap.set(trackId, []);
+      });
+      Object.entries(state.meta.tracks || {}).forEach(([trackId, meta]) => {
+        if(!childrenMap.has(trackId)) childrenMap.set(trackId, []);
+        if(meta?.parent){
+          if(!childrenMap.has(meta.parent)) childrenMap.set(meta.parent, []);
+          childrenMap.get(meta.parent).push(trackId);
+        }
+      });
+      childrenMap.forEach((children, parentId) => {
+        children.sort((left, right) => (normalizeTrackInfo(left).order || 999) - (normalizeTrackInfo(right).order || 999));
+      });
+      return childrenMap;
+    }
+
+    function usedTrackIds(){
+      return Array.from(new Set(state.raw.flatMap((event) => event.track.all))).filter(Boolean);
+    }
+
+    function topTrackId(trackId){
+      let currentId = trackId;
+      const visited = new Set();
+      while(state.meta.tracks?.[currentId]?.parent && !visited.has(currentId)){
+        visited.add(currentId);
+        currentId = state.meta.tracks[currentId].parent;
+      }
+      return currentId || 'general';
+    }
+
+    function listDimensionValues(dimensionId){
+      if(dimensionId === 'audienceAge'){
+        const usedIds = new Set(state.raw.flatMap((event) => event.audienceAge.all));
+        const ids = Array.from(usedIds.size ? usedIds : ['未分类']);
+        return ids
+          .map((id) => {
+            const info = normalizeAudienceAgeInfo(id);
+            return {
+              id,
+              label: info.label || id,
+              order: info.order ?? 999,
+              level: 1,
+              parent: null,
+              count: state.raw.filter((event) => event.audienceAge.primary === id).length
+            };
+          })
+          .sort((left, right) => left.order - right.order || left.label.localeCompare(right.label, 'zh-CN'));
+      }
+      if(dimensionId === 'audienceSegment'){
+        const usedIds = new Set(state.raw.flatMap((event) => event.audienceSegment.all));
+        const ids = Array.from(usedIds.size ? usedIds : ['未分类']);
+        return ids
+          .map((id) => {
+            const info = normalizeAudienceSegmentInfo(id);
+            return {
+              id,
+              label: info.label || id,
+              order: info.order ?? 999,
+              level: 1,
+              parent: null,
+              count: state.raw.filter((event) => event.audienceSegment.primary === id).length
+            };
+          })
+          .sort((left, right) => left.order - right.order || left.label.localeCompare(right.label, 'zh-CN'));
+      }
+      if(dimensionId === 'expertise'){
+        const usedIds = new Set(state.raw.flatMap((event) => event.expertise.all));
+        const ids = Array.from(usedIds.size ? usedIds : ['未分类']);
+        return ids
+          .map((id) => {
+            const info = normalizeExpertiseInfo(id);
+            return {
+              id,
+              label: info.label || id,
+              order: info.order ?? 999,
+              level: 1,
+              parent: null,
+              count: state.raw.filter((event) => event.expertise.primary === id).length
+            };
+          })
+          .sort((left, right) => left.order - right.order || left.label.localeCompare(right.label, 'zh-CN'));
+      }
+      if(dimensionId === 'modality'){
+        const usedIds = new Set(state.raw.flatMap((event) => event.modality.all));
+        const ids = Array.from(usedIds.size ? usedIds : ['unknown']);
+        return ids
+          .map((id) => ({
+            id,
+            label: normalizeModalityInfo(id).label || id,
+            order: normalizeModalityInfo(id).order ?? 999,
+            level: 1,
+            parent: null,
+            count: state.raw.filter((event) => event.modality.primary === id).length
+          }))
+          .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label, 'zh-CN'));
+      }
+
+      const usedIds = usedTrackIds();
+      const childrenMap = getTrackChildrenMap();
+      const roots = Array.from(new Set(usedIds.map(topTrackId)))
+        .map((id) => ({
+          id,
+          label: normalizeTrackInfo(id).label || id,
+          order: normalizeTrackInfo(id).order ?? 999,
+          level: 1,
+          parent: null
+        }))
+        .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label, 'zh-CN'));
+
+      const values = [];
+      roots.forEach((root) => {
+        values.push(root);
+        const childIds = (childrenMap.get(root.id) || []).filter((childId) => usedIds.includes(childId));
+        const shouldExpand = state.expandAllTracks || state.expandedTrackIds.has(root.id);
+        if(shouldExpand && childIds.length){
+          childIds.forEach((childId) => {
+            values.push({
+              id: childId,
+              label: normalizeTrackInfo(childId).label || childId,
+              order: normalizeTrackInfo(childId).order ?? 999,
+              level: 2,
+              parent: root.id
+            });
+          });
+        }
+      });
+      return values;
+    }
+
+    function valueIdForDimension(event, dimensionId, axisValues){
+      if(dimensionId === 'audienceAge'){
+        return event.audienceAge.primary || '未分类';
+      }
+      if(dimensionId === 'audienceSegment'){
+        return event.audienceSegment.primary || '未分类';
+      }
+      if(dimensionId === 'expertise'){
+        return event.expertise.primary || '未分类';
+      }
+      if(dimensionId === 'modality'){
+        return event.modality.primary || 'unknown';
+      }
+      const primaryTrack = event.track.primary || 'general';
+      const visibleTrackIds = new Set(axisValues.map((item) => item.id));
+      if(visibleTrackIds.has(primaryTrack)) return primaryTrack;
+      return topTrackId(primaryTrack);
+    }
+
+    function filteredEvents(){
+      const keyword = state.search.trim().toLowerCase();
+      if(!keyword) return state.raw;
+      return state.raw.filter((event) => {
+        const haystack = [
+          event.title,
+          event.category,
+          event.description,
+          ...event.keywords,
+          ...event.track.all.map((trackId) => normalizeTrackInfo(trackId).label || trackId),
+          ...event.modality.all.map((modalityId) => normalizeModalityInfo(modalityId).label || modalityId)
+        ].join(' ').toLowerCase();
+        return haystack.includes(keyword);
+      });
+    }
+
+    function updateStats(columns, rows, events){
+      statColumns.textContent = String(columns.length);
+      statRows.textContent = String(rows.length);
+      statEvents.textContent = String(events.length);
+    }
+
+    function axisLabel(dimensionId){
+      return dimensionOptions[dimensionId]?.label || dimensionId;
+    }
+
+    function trackHeaderLink(trackId){
+      const meta = normalizeTrackInfo(trackId);
+      const params = new URLSearchParams({
+        perspective: 'track',
+        trackScope: trackId
+      });
+      return {
+        href: `/vis-timeline.html?${params.toString()}`,
+        color: meta.color || '#334155',
+        dot: meta.dot || '#cbd5e1'
+      };
+    }
+
+    function renderHeaderCell(value, dimensionId){
+      if(dimensionId !== 'track'){
+        const info = dimensionId === 'modality'
+          ? normalizeModalityInfo(value.id)
+          : dimensionId === 'audienceAge'
+            ? { description: '按产品面向的年龄段分层' }
+            : dimensionId === 'audienceSegment'
+              ? { description: '按产品主要面向的人群类型分层' }
+            : { description: '按上手门槛或专业度分层' };
+        return `
+          <div class="col-header-content">
+            <div class="col-header-main">
+              <span class="header-badge" style="background:#4b5563"><span class="header-dot"></span><span>${escapeHtml(axisLabel(dimensionId))}</span></span>
+              <div class="header-title">${escapeHtml(value.label)}</div>
+              <div class="header-subtitle">${escapeHtml(info.description || '平面维度')}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      const trackInfo = normalizeTrackInfo(value.id);
+      const link = trackHeaderLink(value.id);
+      const childCount = Object.values(state.meta.tracks || {}).filter((item) => item?.parent === value.id).length;
+      const isExpanded = state.expandAllTracks || state.expandedTrackIds.has(value.id);
+      const toggleButton = value.level === 1 && childCount
+        ? `<button class="ghost-btn ${isExpanded ? '' : 'active'}" data-action="toggle-track" data-track-id="${value.id}" type="button">${isExpanded ? '折叠二级' : '展开二级'}</button>`
+        : '';
+      return `
+        <div class="col-header-content">
+          <div class="col-header-main">
+            <a class="header-badge" href="${escapeHtml(link.href)}" style="background:${escapeHtml(link.color)}"><span class="header-dot" style="background:${escapeHtml(link.dot)}"></span><span>${value.level === 1 ? '一级赛道' : '二级赛道'}</span></a>
+            <div class="header-title">${escapeHtml(value.label)}</div>
+            <div class="header-subtitle">${value.level === 1 ? `点击跳转该赛道时间线${childCount ? '，可展开二级赛道' : ''}` : `归属 ${escapeHtml(normalizeTrackInfo(value.parent).label || value.parent || '')}`}</div>
+          </div>
+          <div class="header-actions">
+            ${toggleButton}
+            <a class="header-link" href="${escapeHtml(link.href)}">看时间线</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRowHeaderCell(value, dimensionId){
+      if(dimensionId === 'track'){
+        const meta = normalizeTrackInfo(value.id);
+        return `
+          <strong>${escapeHtml(value.label)}</strong>
+          <span>${value.level === 1 ? '一级赛道' : `二级赛道 · 归属 ${escapeHtml(normalizeTrackInfo(value.parent).label || '')}`}</span>
+          <span style="margin-top:8px;color:${escapeHtml(meta.color || '#334155')}">点击列头可跳转时间线</span>
+        `;
+      }
+      return `
+        <strong>${escapeHtml(value.label)}</strong>
+        <span>${escapeHtml(axisLabel(dimensionId))}</span>
+      `;
+    }
+
+    function nodeMarkup(event){
+      const hasLogo = Boolean(event.logo);
+      const initials = escapeHtml((event.title || '?').trim().slice(0, 2).toUpperCase());
+      const logoMarkup = hasLogo
+        ? `<span class="node-logo-wrap"><img src="${escapeHtml(event.logo)}" alt="${escapeHtml(event.title)}" loading="lazy" referrerpolicy="no-referrer" /></span>`
+        : `<span class="node-logo-wrap"><span class="node-fallback">${initials}</span></span>`;
+      const showMeta = state.cellDensityMode !== 'minimal';
+
+      if(state.nodeMode === 'logo'){
+        return `<button class="matrix-node logo-only" type="button" data-event-id="${event.id}" title="${escapeHtml(event.title)}">${logoMarkup}</button>`;
+      }
+      if(state.nodeMode === 'title'){
+        return `
+          <button class="matrix-node" type="button" data-event-id="${event.id}" title="${escapeHtml(event.title)}">
+            <span class="node-copy">
+              <span class="node-title">${escapeHtml(event.title)}</span>
+              ${showMeta ? `<span class="node-meta">${escapeHtml(
+                state.cellDensityMode === 'detail'
+                  ? [normalizeTrackInfo(event.track.primary).label || '', normalizeModalityInfo(event.modality.primary).label || ''].filter(Boolean).join(' · ')
+                  : (normalizeTrackInfo(event.track.primary).label || '')
+              )}</span>` : ''}
+            </span>
+          </button>
+        `;
+      }
+      return `
+        <button class="matrix-node" type="button" data-event-id="${event.id}" title="${escapeHtml(event.title)}">
+          ${logoMarkup}
+          <span class="node-copy">
+            <span class="node-title">${escapeHtml(event.title)}</span>
+            ${showMeta ? `<span class="node-meta">${escapeHtml(
+              state.cellDensityMode === 'detail'
+                ? [
+                    normalizeTrackInfo(event.track.primary).label || '',
+                    normalizeModalityInfo(event.modality.primary).label || '',
+                    (event.keywords || []).slice(0, 2).join(' · ')
+                  ].filter(Boolean).join(' · ')
+                : ((event.keywords || []).slice(0, 2).join(' · ') || normalizeTrackInfo(event.track.primary).label || '')
+            )}</span>` : ''}
+          </span>
+        </button>
+      `;
+    }
+
+    function renderCell(events, xValue, yValue){
+      if(!events.length){
+        return '';
+      }
+      const title = `${yValue.label} × ${xValue.label}`;
+      const densityMode = state.cellDensityMode;
+
+      if(state.cellMode === 'count'){
+        return `
+          <div class="cell-card ${densityMode === 'minimal' ? 'minimal' : ''}">
+            ${densityMode !== 'minimal' ? `
+            <div class="cell-head">
+              <div class="cell-title">${escapeHtml(title)}</div>
+              <span class="cell-count">${events.length}</span>
+            </div>` : ''}
+            <button class="count-summary" type="button" data-action="open-cell" data-x-id="${escapeHtml(xValue.id)}" data-y-id="${escapeHtml(yValue.id)}">
+              <strong>${events.length}</strong>
+              <span>点击查看这一格的全部节点</span>
+            </button>
+          </div>
+        `;
+      }
+
+      const previewLimit = state.cellMode === 'preview' ? 4 : events.length;
+      const visibleEvents = events.slice(0, previewLimit);
+      const hiddenCount = Math.max(events.length - visibleEvents.length, 0);
+      const showHeader = densityMode !== 'minimal';
+
+      return `
+        <div class="cell-card ${densityMode === 'minimal' ? 'minimal' : ''}">
+          ${showHeader ? `
+          <div class="cell-head">
+            <div class="cell-title">${escapeHtml(title)}</div>
+            <span class="cell-count">${events.length}</span>
+          </div>` : ''}
+          <div class="cell-items mode-${escapeHtml(state.cellMode)} mode-density-${escapeHtml(densityMode)}">
+            ${visibleEvents.map(nodeMarkup).join('')}
+            ${hiddenCount ? `<button class="node-more" type="button" data-action="open-cell" data-x-id="${escapeHtml(xValue.id)}" data-y-id="${escapeHtml(yValue.id)}">还有 ${hiddenCount} 个</button>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function buildMatrix(){
+      const events = filteredEvents();
+      const columns = listDimensionValues(state.xAxis);
+      const rows = listDimensionValues(state.yAxis);
+      updateStats(columns, rows, events);
+
+      const eventBuckets = new Map();
+      events.forEach((event) => {
+        const xValue = valueIdForDimension(event, state.xAxis, columns);
+        const yValue = valueIdForDimension(event, state.yAxis, rows);
+        const key = `${xValue}::${yValue}`;
+        if(!eventBuckets.has(key)) eventBuckets.set(key, []);
+        eventBuckets.get(key).push(event);
+      });
+
+      eventBuckets.forEach((bucket) => {
+        bucket.sort((left, right) => left.title.localeCompare(right.title, 'zh-CN'));
+      });
+
+      const templateColumns = [`minmax(220px, 220px)`, ...columns.map(() => 'minmax(260px, 1fr)')].join(' ');
+      let markup = `<div class="matrix-grid" style="grid-template-columns:${templateColumns}">`;
+      markup += `
+        <div class="corner-cell">
+          <span class="corner-eyebrow">Y 轴 / X 轴</span>
+          <span class="corner-value">${escapeHtml(axisLabel(state.yAxis))} / ${escapeHtml(axisLabel(state.xAxis))}</span>
+        </div>
+      `;
+      columns.forEach((column) => {
+        markup += `<div class="col-header">${renderHeaderCell(column, state.xAxis)}</div>`;
+      });
+
+      rows.forEach((row) => {
+        markup += `<div class="row-header">${renderRowHeaderCell(row, state.yAxis)}</div>`;
+        columns.forEach((column) => {
+          const cellEvents = eventBuckets.get(`${column.id}::${row.id}`) || [];
+          markup += `<div class="matrix-cell ${cellEvents.length ? '' : 'empty'}" data-cell-key="${escapeHtml(`${column.id}::${row.id}`)}">${renderCell(cellEvents, column, row)}</div>`;
+        });
+      });
+      markup += '</div>';
+      matrixShell.innerHTML = markup;
+      matrixShell.hidden = false;
+      statusEl.hidden = true;
+      matrixShell.dataset.columns = JSON.stringify(columns.map((item) => item.id));
+      matrixShell.dataset.rows = JSON.stringify(rows.map((item) => item.id));
+      persistViewState();
+    }
+
+    function setStatus(message, isError){
+      statusEl.textContent = message;
+      statusEl.classList.toggle('error', Boolean(isError));
+      statusEl.hidden = false;
+      matrixShell.hidden = true;
+    }
+
+    function setSegmentValue(segment, value){
+      Array.from(segment.querySelectorAll('button')).forEach((button) => {
+        button.classList.toggle('active', button.dataset.mode === value);
+      });
+    }
+
+    function renderDetailEventList(events){
+      detailActiveEvents = events;
+      if(!detailEventList) return;
+      detailEventList.innerHTML = events.map((item) => `
+        <button type="button" data-event-id="${item.id}" title="${escapeHtml(item.title)}">
+          ${escapeHtml(item.title)}
+        </button>
+      `).join('');
+    }
+
+    function highlightDetailListEntry(eventId){
+      if(!detailEventList) return;
+      Array.from(detailEventList.querySelectorAll('button')).forEach((button) => {
+        button.classList.toggle('active', button.dataset.eventId === String(eventId));
+      });
+    }
+
+    function openDetailForEvent(event, options = {}){
+      currentDetailEventId = event.id;
+      if(options.renderList !== false){
+        renderDetailEventList([event]);
+      }
+      highlightDetailListEntry(event.id);
+      detailTitle.textContent = event.title;
+      detailDescription.textContent = event.description || '暂无描述';
+      if(event.logo){
+        detailLogo.hidden = false;
+        detailLogo.innerHTML = `<img src="${escapeHtml(event.logo)}" alt="${escapeHtml(event.title)}" referrerpolicy="no-referrer" />`;
+      } else {
+        detailLogo.hidden = true;
+        detailLogo.innerHTML = '';
+      }
+
+      const primaryTags = [
+        `主赛道：${normalizeTrackInfo(event.track.primary).label || event.track.primary}`,
+        `主模态：${normalizeModalityInfo(event.modality.primary).label || event.modality.primary}`,
+        `用户年龄段：${normalizeAudienceAgeInfo(event.audienceAge.primary).label || event.audienceAge.primary}`,
+        `目标人群：${normalizeAudienceSegmentInfo(event.audienceSegment.primary).label || event.audienceSegment.primary}`,
+        `上手门槛：${normalizeExpertiseInfo(event.expertise.primary).label || event.expertise.primary}`
+      ];
+      detailPrimary.innerHTML = primaryTags.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join('');
+
+      const allTags = [
+        ...event.track.all.map((trackId) => `赛道：${normalizeTrackInfo(trackId).label || trackId}`),
+        ...event.modality.all.map((modalityId) => `模态：${normalizeModalityInfo(modalityId).label || modalityId}`),
+        ...event.audienceAge.all.map((audienceAgeId) => `用户年龄段：${normalizeAudienceAgeInfo(audienceAgeId).label || audienceAgeId}`),
+        ...event.audienceSegment.all.map((audienceSegmentId) => `目标人群：${normalizeAudienceSegmentInfo(audienceSegmentId).label || audienceSegmentId}`),
+        ...event.expertise.all.map((expertiseId) => `上手门槛：${normalizeExpertiseInfo(expertiseId).label || expertiseId}`)
+      ];
+      detailAll.innerHTML = allTags.length
+        ? allTags.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join('')
+        : '<span class="tag">暂无更多归属</span>';
+
+      detailKeywords.innerHTML = event.keywords.length
+        ? event.keywords.map((keyword) => `<span class="tag">${escapeHtml(keyword)}</span>`).join('')
+        : '<span class="tag">暂无关键词</span>';
+
+      detailTime.textContent = event.start
+        ? `${event.start}${event.end && event.end !== event.start ? ` ~ ${event.end}` : ''}`
+        : '无时间字段';
+
+      const trackScopeParams = new URLSearchParams({
+        perspective: 'track',
+        trackScope: topTrackId(event.track.primary)
+      });
+      const itemParams = new URLSearchParams({
+        perspective: 'track',
+        track: event.track.primary,
+        search: event.title
+      });
+      detailTimelineTrackLink.href = `/vis-timeline.html?${trackScopeParams.toString()}`;
+      detailTimelineItemLink.href = `/vis-timeline.html?${itemParams.toString()}`;
+
+      detailBackdrop.classList.add('open');
+      detailBackdrop.setAttribute('aria-hidden', 'false');
+    }
+
+    function openDetailForCell(xId, yId){
+      const columns = listDimensionValues(state.xAxis);
+      const rows = listDimensionValues(state.yAxis);
+      const events = filteredEvents().filter((event) => (
+        valueIdForDimension(event, state.xAxis, columns) === xId &&
+        valueIdForDimension(event, state.yAxis, rows) === yId
+      ));
+      if(!events.length) return;
+      renderDetailEventList(events);
+      openDetailForEvent(events[0], { renderList: false });
+    }
+
+    function closeDetail(){
+      detailBackdrop.classList.remove('open');
+      detailBackdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    async function saveEditModal(){
+      const event = state.raw.find((item) => String(item.id) === String(editingEventId));
+      if(!event || !event.source) return;
+      const source = event.source;
+      source.title = editTitle.value.trim() || source.title || '未命名';
+      source.description = editDescription.value.trim();
+      source.keywords = csvList(editKeywords.value);
+
+      const primaryTrack = editPrimaryTrack.value || 'general';
+      const allTracks = Array.from(new Set([primaryTrack, ...csvList(editTracks.value)]));
+      const primaryModality = normalizeModalityId(editPrimaryModality.value || 'unknown') || 'unknown';
+      const allModalities = Array.from(new Set([primaryModality, ...csvList(editModalities.value).map(normalizeModalityId).filter(Boolean)]));
+      const primaryAudienceAge = normalizeAudienceAgeId(editPrimaryAudienceAge.value || '未分类');
+      const allAudienceAges = Array.from(new Set([primaryAudienceAge, ...csvList(editAudienceAges.value).map(normalizeAudienceAgeId)]));
+      const primaryAudienceSegment = normalizeAudienceSegmentId(editPrimaryAudienceSegment.value || '未分类');
+      const allAudienceSegments = Array.from(new Set([primaryAudienceSegment, ...csvList(editAudienceSegments.value).map(normalizeAudienceSegmentId)]));
+      const primaryExpertise = normalizeExpertiseId(editPrimaryExpertise.value || '未分类');
+      const allExpertise = Array.from(new Set([primaryExpertise, ...csvList(editExpertiseLevels.value).map(normalizeExpertiseId)]));
+
+      source.track = primaryTrack;
+      source.tracks = allTracks;
+      source.primaryTrack = primaryTrack;
+      source.modality = primaryModality;
+      source.modalities = allModalities;
+      source.primaryModality = primaryModality;
+      source.audienceAge = primaryAudienceAge;
+      source.audienceAges = allAudienceAges;
+      source.primaryAudienceAge = primaryAudienceAge;
+      source.audienceSegment = primaryAudienceSegment;
+      source.audienceSegments = allAudienceSegments;
+      source.primaryAudienceSegment = primaryAudienceSegment;
+      source.expertiseLevel = primaryExpertise;
+      source.expertiseLevels = allExpertise;
+      source.primaryExpertise = primaryExpertise;
+      source.classifications = {
+        ...(source.classifications || {}),
+        track: { primary: primaryTrack, all: allTracks },
+        modality: { primary: primaryModality, all: allModalities },
+        audienceAge: { primary: primaryAudienceAge, all: allAudienceAges },
+        audienceSegment: { primary: primaryAudienceSegment, all: allAudienceSegments },
+        expertise: { primary: primaryExpertise, all: allExpertise }
+      };
+
+      setEditStatus('正在保存…', '');
+      editSaveBtn.disabled = true;
+      try{
+        syncNormalizedEvent(event);
+        await persistTimeline();
+        buildMatrix();
+        openDetailForEvent(event);
+        setEditStatus('已保存到 timeline.json', 'success');
+        setTimeout(() => closeEditModal(), 260);
+      }catch(error){
+        setEditStatus(`保存失败：${error.message}`, 'error');
+      }finally{
+        editSaveBtn.disabled = false;
+      }
+    }
+
+    function enforceDistinctAxes(changedAxis){
+      if(state.xAxis !== state.yAxis) return;
+      if(changedAxis === 'x'){
+        state.yAxis = state.xAxis === 'track' ? 'modality' : 'track';
+      } else {
+        state.xAxis = state.yAxis === 'track' ? 'modality' : 'track';
+      }
+      renderAxisOptions();
+    }
+
+    async function loadData(){
+      setStatus('正在加载矩阵数据…', false);
+      try{
+        const response = await fetch('./timeline.json', { cache: 'no-store' });
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        normalizePayload(json);
+        restoreViewState();
+        renderAxisOptions();
+        searchInput.value = state.search;
+        setSegmentValue(nodeModeSegment, state.nodeMode);
+        setSegmentValue(cellModeSegment, state.cellMode);
+        setSegmentValue(cellDensitySegment, state.cellDensityMode);
+        collapseTracksBtn.classList.toggle('active', !state.expandAllTracks);
+        expandAllTracksBtn.classList.toggle('active', state.expandAllTracks);
+        buildMatrix();
+      }catch(error){
+        console.error(error);
+        const message = window.location.protocol === 'file:'
+          ? '当前是直接打开的本地 HTML（file://），浏览器会拦截 JSON 读取。请用本地服务打开，比如运行 python3 server.py。'
+          : `矩阵数据加载失败：${error.message}`;
+        setStatus(message, true);
+      }
+    }
+
+    xAxisSelect.addEventListener('change', () => {
+      state.xAxis = xAxisSelect.value;
+      enforceDistinctAxes('x');
+      buildMatrix();
+    });
+
+    yAxisSelect.addEventListener('change', () => {
+      state.yAxis = yAxisSelect.value;
+      enforceDistinctAxes('y');
+      buildMatrix();
+    });
+
+    swapAxesBtn.addEventListener('click', () => {
+      const nextX = state.yAxis;
+      const nextY = state.xAxis;
+      state.xAxis = nextX;
+      state.yAxis = nextY;
+      renderAxisOptions();
+      buildMatrix();
+    });
+
+    searchInput.addEventListener('input', () => {
+      state.search = searchInput.value || '';
+      buildMatrix();
+    });
+
+    nodeModeSegment.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-mode]');
+      if(!button) return;
+      state.nodeMode = button.dataset.mode;
+      setSegmentValue(nodeModeSegment, state.nodeMode);
+      buildMatrix();
+    });
+
+    cellModeSegment.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-mode]');
+      if(!button) return;
+      state.cellMode = button.dataset.mode;
+      setSegmentValue(cellModeSegment, state.cellMode);
+      buildMatrix();
+    });
+
+    cellDensitySegment.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-mode]');
+      if(!button) return;
+      state.cellDensityMode = button.dataset.mode;
+      setSegmentValue(cellDensitySegment, state.cellDensityMode);
+      buildMatrix();
+    });
+
+    collapseTracksBtn.addEventListener('click', () => {
+      state.expandAllTracks = false;
+      state.expandedTrackIds.clear();
+      collapseTracksBtn.classList.add('active');
+      expandAllTracksBtn.classList.remove('active');
+      buildMatrix();
+    });
+
+    expandAllTracksBtn.addEventListener('click', () => {
+      state.expandAllTracks = true;
+      collapseTracksBtn.classList.remove('active');
+      expandAllTracksBtn.classList.add('active');
+      buildMatrix();
+    });
+
+    matrixShell.addEventListener('click', (event) => {
+      const toggleButton = event.target.closest('[data-action="toggle-track"]');
+      if(toggleButton){
+        const trackId = toggleButton.dataset.trackId;
+        if(state.expandedTrackIds.has(trackId)){
+          state.expandedTrackIds.delete(trackId);
+        }else{
+          state.expandedTrackIds.add(trackId);
+        }
+        state.expandAllTracks = false;
+        collapseTracksBtn.classList.add('active');
+        expandAllTracksBtn.classList.remove('active');
+        buildMatrix();
+        return;
+      }
+
+      const nodeButton = event.target.closest('[data-event-id]');
+      if(nodeButton){
+        const eventId = nodeButton.dataset.eventId;
+        const found = state.raw.find((item) => String(item.id) === String(eventId));
+        if(found) openDetailForEvent(found);
+        return;
+      }
+
+      const cellButton = event.target.closest('[data-action="open-cell"]');
+      if(cellButton){
+        openDetailForCell(cellButton.dataset.xId, cellButton.dataset.yId);
+      }
+    });
+
+    detailEventList?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-event-id]');
+      if(!button) return;
+      event.preventDefault();
+      const target = detailActiveEvents.find((item) => String(item.id) === button.dataset.eventId);
+      if(target){
+        openDetailForEvent(target, { renderList: false });
+      }
+    });
+
+    detailEditLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      const target = state.raw.find((item) => String(item.id) === String(currentDetailEventId));
+      if(target){
+        openEditModal(target);
+      }
+    });
+
+    editCancelBtn.addEventListener('click', closeEditModal);
+    editSaveBtn.addEventListener('click', saveEditModal);
+    editBackdrop.addEventListener('click', (event) => {
+      if(event.target === editBackdrop) closeEditModal();
+    });
+
+    detailCloseBtn.addEventListener('click', closeDetail);
+    detailBackdrop.addEventListener('click', (event) => {
+      if(event.target === detailBackdrop) closeDetail();
+    });
+    document.addEventListener('keydown', (event) => {
+      if(event.key === 'Escape'){
+        closeEditModal();
+        closeDetail();
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

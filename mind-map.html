@@ -1,0 +1,2204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>思维图谱原型 | taste2</title>
+  <link rel="stylesheet" href="/assets/shared-nav.css" />
+  <script src="/assets/shared-nav.js?v=2026-03-21-focus-fix-3" defer></script>
+  <style>
+    :root{
+      color-scheme: light;
+      --bg:#f4f1eb;
+      --panel:#fffdf9;
+      --line:#d7c8b6;
+      --ink:#1f1b16;
+      --muted:#7a6d60;
+      --accent:#d26d3d;
+      --accent-soft:rgba(210,109,61,.14);
+      --active:#0e7490;
+      --active-soft:rgba(14,116,144,.16);
+      --return:#8b5cf6;
+      --return-soft:rgba(139,92,246,.16);
+      --pending:#b45309;
+      --pending-soft:rgba(180,83,9,.15);
+      --shadow:0 24px 60px rgba(56,34,15,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top left, rgba(210,109,61,.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(14,116,144,.10), transparent 22%),
+        linear-gradient(180deg, #f7f4ef 0%, var(--bg) 100%);
+      color:var(--ink);
+      font-family:"SF Pro SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    }
+    .page-shell__body{
+      display:grid;
+      gap:20px;
+      padding-bottom:36px;
+    }
+    .card{
+      background:rgba(255,253,249,.88);
+      border:1px solid rgba(164,134,104,.18);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(340px, 440px) minmax(0, 1fr);
+      gap:18px;
+      align-items:start;
+    }
+    .left-stack{
+      display:grid;
+      gap:18px;
+      align-items:start;
+    }
+    .composer{
+      display:grid;
+      gap:16px;
+      padding:20px;
+    }
+    .composer-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .composer-top p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+      max-width:780px;
+    }
+    .composer-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .ghost-btn,
+    .primary-btn{
+      border:none;
+      border-radius:999px;
+      padding:10px 16px;
+      font:inherit;
+      cursor:pointer;
+      transition:transform .2s ease, opacity .2s ease, box-shadow .2s ease;
+    }
+    .primary-btn{
+      background:#16110d;
+      color:#fff7ed;
+      box-shadow:0 10px 24px rgba(31,27,22,.16);
+    }
+    .ghost-btn{
+      background:rgba(31,27,22,.06);
+      color:#4d4238;
+    }
+    .primary-btn:hover,
+    .ghost-btn:hover{
+      transform:translateY(-1px);
+    }
+    .composer textarea{
+      width:100%;
+      min-height:190px;
+      resize:vertical;
+      padding:18px 20px;
+      border-radius:22px;
+      border:1px solid rgba(164,134,104,.18);
+      background:rgba(255,255,255,.78);
+      color:#2c241d;
+      font:inherit;
+      line-height:1.75;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+    }
+    .composer textarea:focus{
+      outline:none;
+      border-color:rgba(14,116,144,.42);
+      box-shadow:0 0 0 4px rgba(14,116,144,.08);
+    }
+    .composer-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .phase-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(31,27,22,.06);
+      color:#4d4238;
+      font-size:12px;
+    }
+    .phase-pill.is-thinking{
+      background:rgba(14,116,144,.12);
+      color:#0e7490;
+    }
+    .phase-pill.is-done{
+      background:rgba(34,197,94,.12);
+      color:#166534;
+    }
+    .build-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(31,27,22,.06);
+      color:#4d4238;
+      font-size:12px;
+    }
+    .auto-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(14,116,144,.10);
+      color:#0f5f75;
+      font-size:12px;
+    }
+    .auto-pill.is-typing{
+      background:rgba(245,158,11,.14);
+      color:#92400e;
+    }
+    .auto-pill.is-updating{
+      background:rgba(14,116,144,.16);
+      color:#0c4a5a;
+    }
+    .debug-panel{
+      padding:18px;
+      display:grid;
+      gap:12px;
+    }
+    .debug-panel details{
+      border:1px solid rgba(164,134,104,.14);
+      border-radius:18px;
+      background:rgba(255,255,255,.72);
+      overflow:hidden;
+    }
+    .debug-panel summary{
+      cursor:pointer;
+      list-style:none;
+      padding:14px 16px;
+      font-size:14px;
+      font-weight:600;
+      color:#2f241a;
+    }
+    .debug-panel summary::-webkit-details-marker{
+      display:none;
+    }
+    .debug-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      padding:0 16px 16px;
+    }
+    .debug-card{
+      border-radius:16px;
+      background:rgba(31,27,22,.04);
+      border:1px solid rgba(164,134,104,.12);
+      overflow:hidden;
+      min-height:220px;
+    }
+    .debug-card__head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px 0;
+    }
+    .debug-card strong{
+      display:block;
+      font-size:13px;
+    }
+    .copy-btn{
+      border:none;
+      border-radius:999px;
+      background:rgba(31,27,22,.08);
+      color:#4d4238;
+      padding:6px 10px;
+      font:inherit;
+      font-size:11px;
+      cursor:pointer;
+      transition:background-color .2s ease,color .2s ease,transform .2s ease;
+    }
+    .copy-btn:hover{
+      transform:translateY(-1px);
+      background:rgba(31,27,22,.12);
+    }
+    .copy-btn.is-copied{
+      background:rgba(34,197,94,.14);
+      color:#166534;
+    }
+    .debug-card pre{
+      margin:0;
+      padding:12px 14px 14px;
+      color:#43372d;
+      font-size:11px;
+      line-height:1.6;
+      white-space:pre-wrap;
+      word-break:break-word;
+      overflow:auto;
+      max-height:340px;
+    }
+    .transcript{
+      padding:18px;
+    }
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .section-title h3,
+    .graph-panel h3,
+    .detail-panel h3{
+      margin:0;
+      font-size:16px;
+      letter-spacing:-.02em;
+    }
+    .section-title span{
+      color:var(--muted);
+      font-size:12px;
+    }
+    .segment-list{
+      display:grid;
+      gap:10px;
+      max-height:760px;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .segment{
+      padding:14px 15px;
+      border-radius:18px;
+      border:1px solid rgba(164,134,104,.15);
+      background:rgba(255,255,255,.72);
+      cursor:pointer;
+      transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+    }
+    .segment:hover{
+      transform:translateY(-1px);
+      border-color:rgba(210,109,61,.34);
+      box-shadow:0 12px 24px rgba(56,34,15,.08);
+    }
+    .segment.is-active{
+      border-color:rgba(14,116,144,.48);
+      background:linear-gradient(180deg, rgba(14,116,144,.12), rgba(255,255,255,.88));
+      box-shadow:0 18px 36px rgba(14,116,144,.12);
+    }
+    .segment.is-live{
+      border-color:rgba(245,158,11,.38);
+      background:linear-gradient(180deg, rgba(245,158,11,.12), rgba(255,255,255,.9));
+      box-shadow:0 14px 30px rgba(245,158,11,.12);
+    }
+    .segment-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .segment-index{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .segment-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 9px;
+      border-radius:999px;
+      background:rgba(31,27,22,.05);
+      font-size:11px;
+      color:#5c5249;
+    }
+    .segment p{
+      margin:0;
+      color:#322922;
+      font-size:13px;
+      line-height:1.7;
+    }
+    .graph-area{
+      display:grid;
+      gap:18px;
+    }
+    .graph-panel{
+      padding:18px;
+    }
+    .graph-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .legend{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .legend-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(31,27,22,.04);
+      color:#5c5249;
+      font-size:12px;
+    }
+    .legend-dot{
+      width:9px;
+      height:9px;
+      border-radius:999px;
+      display:inline-block;
+    }
+    .controls{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .play-btn{
+      border:none;
+      border-radius:999px;
+      background:#16110d;
+      color:#fff7ed;
+      padding:9px 14px;
+      font:inherit;
+      cursor:pointer;
+      transition:transform .2s ease, opacity .2s ease;
+    }
+    .play-btn:hover{transform:translateY(-1px)}
+    .graph-stage{
+      position:relative;
+      min-height:620px;
+      border-radius:24px;
+      border:1px solid rgba(164,134,104,.16);
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,.94) 0%, rgba(248,242,234,.92) 46%, rgba(240,233,224,.92) 100%);
+      overflow:hidden;
+      cursor:grab;
+      touch-action:none;
+    }
+    .graph-stage.is-panning{
+      cursor:grabbing;
+    }
+    .graph-viewport{
+      position:absolute;
+      inset:0;
+      transform-origin:center center;
+      transition:transform .42s cubic-bezier(.2,.8,.2,1);
+    }
+    .graph-stage::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:
+        linear-gradient(rgba(122,109,96,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(122,109,96,.06) 1px, transparent 1px);
+      background-size:44px 44px;
+      mask-image:radial-gradient(circle at center, black 35%, transparent 85%);
+      pointer-events:none;
+    }
+    .graph-svg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+    }
+    .edge{
+      fill:none;
+      stroke:rgba(122,109,96,.34);
+      stroke-width:1.6;
+      transition:stroke .25s ease, stroke-width .25s ease, opacity .25s ease;
+    }
+    .edge.is-active{
+      stroke:rgba(14,116,144,.58);
+      stroke-width:2.4;
+      opacity:1;
+      filter:drop-shadow(0 0 8px rgba(14,116,144,.16));
+    }
+    .edge.is-return{
+      stroke:rgba(139,92,246,.5);
+    }
+    .edge.is-collapsed{
+      opacity:0;
+    }
+    .node{
+      position:absolute;
+      transform:translate(-50%, -50%);
+      --node-scale:1;
+      --node-offset-x:0px;
+      --node-offset-y:0px;
+      min-width:88px;
+      max-width:168px;
+      padding:12px 14px;
+      border-radius:18px;
+      border:1px solid rgba(164,134,104,.16);
+      background:rgba(255,255,255,.9);
+      box-shadow:0 14px 30px rgba(56,34,15,.06);
+      cursor:pointer;
+      transition:transform .28s ease, box-shadow .25s ease, border-color .25s ease, background-color .25s ease, opacity .25s ease;
+    }
+    .node:hover{
+      transform:translate(-50%, -50%) translate(var(--node-offset-x), calc(var(--node-offset-y) - 2px)) scale(var(--node-scale));
+      box-shadow:0 18px 36px rgba(56,34,15,.1);
+    }
+    .node small{
+      display:block;
+      margin-bottom:6px;
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .node strong{
+      display:block;
+      font-size:14px;
+      line-height:1.3;
+      letter-spacing:-.01em;
+    }
+    .node.is-core{
+      background:linear-gradient(160deg, rgba(210,109,61,.16), rgba(255,255,255,.96));
+      border-color:rgba(210,109,61,.32);
+    }
+    .node.is-major{
+      box-shadow:0 18px 38px rgba(56,34,15,.12);
+      border-color:rgba(31,27,22,.22);
+    }
+    .node.is-secondary{
+      opacity:.9;
+    }
+    .node.is-peripheral{
+      opacity:.72;
+      filter:saturate(.9);
+    }
+    .node.is-active{
+      background:linear-gradient(180deg, rgba(14,116,144,.18), rgba(255,255,255,.98));
+      border-color:rgba(14,116,144,.5);
+      box-shadow:0 0 0 1px rgba(14,116,144,.16), 0 18px 40px rgba(14,116,144,.16);
+      animation:pulse 1.9s ease-in-out infinite;
+    }
+    .node.is-return{
+      background:linear-gradient(180deg, rgba(139,92,246,.18), rgba(255,255,255,.98));
+      border-color:rgba(139,92,246,.42);
+    }
+    .node.is-pending{
+      background:linear-gradient(180deg, rgba(180,83,9,.15), rgba(255,255,255,.98));
+      border-color:rgba(180,83,9,.34);
+      border-style:dashed;
+    }
+    .node.is-dim{
+      opacity:.58;
+      filter:saturate(.88);
+    }
+    .node.is-collapsed{
+      opacity:0;
+      --node-scale:.82;
+      --node-offset-x:0px;
+      --node-offset-y:0px;
+      pointer-events:none;
+    }
+    .node-ring{
+      position:absolute;
+      inset:-12px;
+      border-radius:26px;
+      border:1px solid transparent;
+      pointer-events:none;
+    }
+    .node.is-active .node-ring{
+      border-color:rgba(14,116,144,.26);
+      animation:halo 1.9s ease-out infinite;
+    }
+    .detail-grid{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 280px;
+      gap:18px;
+    }
+    .detail-panel{
+      padding:18px;
+    }
+    .detail-panel p{
+      margin:0;
+      color:#4d4238;
+      line-height:1.7;
+      font-size:14px;
+    }
+    .detail-main{
+      display:grid;
+      gap:14px;
+    }
+    .focus-stack{
+      display:grid;
+      gap:10px;
+    }
+    .focus-card{
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(31,27,22,.04);
+      border:1px solid rgba(164,134,104,.12);
+    }
+    .focus-card span{
+      display:block;
+      margin-bottom:6px;
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .focus-card strong{
+      display:block;
+      color:#2f241a;
+      font-size:15px;
+      line-height:1.4;
+    }
+    .chips{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(31,27,22,.05);
+      color:#4d4238;
+      font-size:12px;
+    }
+    .notes{
+      display:grid;
+      gap:10px;
+    }
+    .note{
+      padding:13px 14px;
+      border-radius:16px;
+      background:rgba(31,27,22,.035);
+      border:1px solid rgba(164,134,104,.12);
+    }
+    .note strong{
+      display:block;
+      margin-bottom:5px;
+      font-size:13px;
+    }
+    .note span{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.65;
+    }
+    @keyframes pulse{
+      0%,100%{transform:translate(-50%, -50%) translate(var(--node-offset-x), var(--node-offset-y)) scale(var(--node-scale))}
+      50%{transform:translate(-50%, -50%) translate(var(--node-offset-x), var(--node-offset-y)) scale(calc(var(--node-scale) * 1.04))}
+    }
+    @keyframes halo{
+      0%{opacity:.78; transform:scale(1)}
+      100%{opacity:0; transform:scale(1.22)}
+    }
+    @media (max-width: 1120px){
+      .layout,
+      .detail-grid{
+        grid-template-columns:1fr;
+      }
+      .debug-grid{
+        grid-template-columns:1fr;
+      }
+      .graph-stage{
+        min-height:560px;
+      }
+    }
+    @media (max-width: 720px){
+      .graph-stage{
+        min-height:680px;
+      }
+      .node{
+        min-width:78px;
+        max-width:132px;
+        padding:10px 12px;
+      }
+      .node strong{
+        font-size:13px;
+      }
+    }
+  </style>
+</head>
+<body
+  data-nav-page="mind-map"
+  data-page-title="实时思维图谱原型"
+  data-page-subtitle="把一段发散式口述，翻译成可回看、可定位、可继续展开的动态图结构。"
+  style="--page-max-width:1440px"
+>
+  <div data-shared-nav-root></div>
+  <div data-shared-page-header-root></div>
+
+  <main class="page-shell__body">
+    <section class="layout">
+      <section class="left-stack">
+        <section class="card composer">
+          <div class="composer-top">
+            <div>
+              <div class="section-title" style="margin-bottom:0;">
+                <h3>输入一段真实表达，自动生成图谱</h3>
+                <span>正式工作模式</span>
+              </div>
+              <p>把语音转写、聊天记录、随手口述直接贴进来。页面会按句子切分内容，用启发式规则抽出核心母题、主题节点、回访冲突和未展开分支。</p>
+            </div>
+            <div class="composer-actions">
+              <button class="primary-btn" id="generate-map" type="button">生成图谱</button>
+            </div>
+          </div>
+          <textarea id="source-input" spellcheck="false"></textarea>
+          <div class="composer-meta">
+            <span id="input-meta">输入内容后会自动更新图谱，也可以手动点击生成。</span>
+            <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span id="client-build-pill" class="build-pill">Client Build: loading...</span>
+              <span id="auto-mode-pill" class="auto-pill">自动更新：开启</span>
+              <span id="phase-pill" class="phase-pill">阶段：本地候选</span>
+              <span>规则优先验证“结构感”，不是做事实抽取。</span>
+            </span>
+          </div>
+        </section>
+
+        <article class="card transcript">
+          <div class="section-title">
+            <h3>原始口述片段</h3>
+            <span>点击片段，可切换右侧图谱焦点</span>
+          </div>
+          <div class="segment-list" id="segment-list"></div>
+        </article>
+      </section>
+
+      <section class="graph-area">
+        <article class="card graph-panel">
+          <div class="graph-toolbar">
+            <div class="legend">
+              <span class="legend-pill"><i class="legend-dot" style="background:var(--accent)"></i>核心母题</span>
+              <span class="legend-pill"><i class="legend-dot" style="background:var(--active)"></i>当前节点</span>
+              <span class="legend-pill"><i class="legend-dot" style="background:var(--return)"></i>回访节点</span>
+              <span class="legend-pill"><i class="legend-dot" style="background:var(--pending)"></i>未展开节点</span>
+            </div>
+            <div class="controls">
+              <button class="play-btn" id="play-toggle" type="button">暂停演示</button>
+              <span id="step-indicator">步骤 1 / 6</span>
+            </div>
+          </div>
+          <div class="graph-stage" id="graph-stage">
+            <div class="graph-viewport" id="graph-viewport">
+              <svg class="graph-svg" id="graph-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+            </div>
+          </div>
+        </article>
+
+        <section class="detail-grid">
+          <article class="card detail-panel detail-main">
+            <div class="section-title">
+              <h3>思路定位器</h3>
+              <span>这个区块相当于“思路定位器”</span>
+            </div>
+            <div class="focus-stack">
+              <div class="focus-card">
+                <span>核心母题</span>
+                <strong id="core-topic-label">等待输入</strong>
+              </div>
+              <div class="focus-card">
+                <span>当前焦点</span>
+                <strong id="current-focus-label">等待输入</strong>
+              </div>
+            </div>
+            <div class="chips" id="active-tags"></div>
+            <p id="active-description"></p>
+          </article>
+
+          <aside class="card detail-panel">
+            <div class="section-title">
+              <h3>未展开分支</h3>
+              <span>下一步可继续聊</span>
+            </div>
+            <div class="notes" id="pending-notes"></div>
+          </aside>
+        </section>
+      </section>
+    </section>
+
+    <section class="card debug-panel">
+      <details>
+        <summary style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span>调试面板：看 payload、Gemini 原始返回、最终操作</span>
+          <button class="copy-btn" id="copy-debug-bundle" type="button">一键复制全部</button>
+        </summary>
+        <div class="debug-grid">
+          <article class="debug-card">
+            <div class="debug-card__head">
+              <strong>Payload</strong>
+              <button class="copy-btn" type="button" data-copy-target="debug-payload">复制</button>
+            </div>
+            <pre id="debug-payload">等待生成...</pre>
+          </article>
+          <article class="debug-card">
+            <div class="debug-card__head">
+              <strong>Raw Model Response</strong>
+              <button class="copy-btn" type="button" data-copy-target="debug-raw-response">复制</button>
+            </div>
+            <pre id="debug-raw-response">等待生成...</pre>
+          </article>
+          <article class="debug-card">
+            <div class="debug-card__head">
+              <strong>Final Operations</strong>
+              <button class="copy-btn" type="button" data-copy-target="debug-final-ops">复制</button>
+            </div>
+            <pre id="debug-final-ops">等待生成...</pre>
+          </article>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <script>
+    const TOPIC_LIBRARY = [
+      { id: 'source', label: '信源选择', keywords: ['信源', '国内', '国外', '官方', '品牌', '媒体', '博客', '机构', '公众号', '一手', '二手'], description: '围绕信息从哪里来、该订阅谁、是否追求一手源展开。' },
+      { id: 'trust', label: '信息可信度', keywords: ['信谁', '可信', '品牌', '专业', '视角', '判断'], description: '反复出现“该信谁”的追问，说明你在寻找可信度判断规则。' },
+      { id: 'frequency', label: '信息频率', keywords: ['每天', '每周', '每月', '周期', '周报', '月报', '频率'], description: '你在试图给不同类型的信息设计不同的更新节律。' },
+      { id: 'format', label: '信息载体', keywords: ['文字', '视频', '音频', '博客', '评论区', '图片', '原文', '总结', '载体'], description: '你不只是关心内容，还在比较不同载体是否更适合不同深度的信息。' },
+      { id: 'fomo', label: 'FOMO', keywords: ['fomo', '漏掉', '错过', '焦虑', '害怕'], description: '担心漏掉关键内容，但又知道真正重要的信息会重复出现。' },
+      { id: 'capacity', label: '处理能力有限', keywords: ['处理', '时间', '精力', '消化不了', '能力有限', '约束', '问题很多', '痛苦'], description: '时间和认知带宽是最终约束，这会反过来影响你对信源和频率的选择。' },
+      { id: 'raw-vs-ai', label: 'AI冲击与转行', keywords: ['ai', '转行', '跨行业', '教育工作', '行业'], description: '与 AI 冲击、跨行业、是否转行相关的职业判断。' },
+      { id: 'english', label: '英文原版', keywords: ['英文', '翻译', '原版'], description: '语言并非绝对障碍，更像一种心理上的不确定感来源。' },
+      { id: 'reports', label: '研报', keywords: ['研报', '券商', '麦肯锡'], description: '长周期、高压缩度的信息源，天然适合月度或阶段性阅读。' },
+      { id: 'commentary', label: '评论区价值', keywords: ['评论区', '陪伴感'], description: '评论区是增量信息还是只是“有人一起看”的现场感。' },
+      { id: 'anti-bubble', label: '避免信息茧房', keywords: ['茧房', '视角', '不同领域', '探索'], description: '你想保留探索未知领域的入口，但不想因此把自己拖进噪音洪流。' },
+      { id: 'schedule', label: '每天 / 每周 / 每月', keywords: ['每天', '每周', '每月', '周期'], description: '这个分支适合直接落成一套节律规则。' }
+    ];
+    const GENERIC_TOPIC_RULES = [
+      { id: 'city-choice', label: '城市选择', keywords: ['城市', '北京', '济南'], description: '关于要在哪座城市生活和发展的选择。', type: 'topic' },
+      { id: 'career-choice', label: '职业选择与AI冲击', keywords: ['跨行业', '转行', '工作', '找不着工作', 'ai', '教育工作'], description: '关于是否转行、是否跨行业，以及 AI 对职业路径的冲击。', type: 'topic' },
+      { id: 'economic-pressure', label: '经济与生存压力', keywords: ['负债', '没钱', '没存款', '没车', '没房'], description: '围绕负债、收入、存款与现实生活压力的主题。', type: 'topic' },
+      { id: 'life-stage', label: '年龄与人生阶段', keywords: ['31岁', '年龄'], description: '关于年龄、人生阶段和现实处境的压力。', type: 'topic' },
+      { id: 'relationship-pain', label: '情感创伤', keywords: ['失恋', '姑娘', '伤害', '幸福', '痛苦'], description: '围绕失恋、内疚和关系伤害的情感主题。', type: 'topic' },
+      { id: 'future-uncertainty', label: '未来不确定性', keywords: ['不知道', '怎么处理', '选择什么', '怎么办'], description: '围绕未来方向不确定、难以决策的主题。', type: 'loop' }
+    ];
+    const CONFLICT_PATTERNS = [
+      { id: 'fomo-vs-discipline', label: 'FOMO vs 节制', match: ['fomo', '漏掉', '错过', '重要', '反复出现'] },
+      { id: 'breadth-vs-overload', label: '广度 vs 过载', match: ['茧房', '过载', '太多', '消化不了'] },
+      { id: 'raw-vs-summary', label: '原文 vs 总结', match: ['原文', '总结', '翻译'] }
+    ];
+    const QUESTION_HINTS = ['为什么', '怎么', '如何', '我该', '要不要', '是不是', '需不需要', '什么', '谁'];
+    const CONFLICT_HINTS = ['但是', '但', '不过', '还是', '如果', '又', '同时'];
+    const FILLER_PATTERNS = [
+      /^兄弟/,
+      /^你帮我/,
+      /^你明白我意思吗/,
+      /^我举个例子/,
+      /^然后再一个是说/,
+      /^这里边就会衍生出来一个问题/,
+      /^还有信息承载形式的问题/,
+      /^就是需要考虑多个维度的/,
+      /^是这样/,
+      /^我大概关注的有几个需求点/,
+      /^再说到/,
+      /^我到底需要什么/,
+      /^什么\s*像/,
+      /^还有.*的问题$/
+    ];
+    const PHRASE_PATTERNS = [
+      /([A-Za-z][A-Za-z0-9/+ .-]{1,24})/g,
+      /([\u4e00-\u9fa5A-Za-z0-9]{2,12}(?:频率|周期|价值|能力|形式|视角|原版|原文|总结|评论区|陪伴感|一手源|二手转述|研报|周报|月报|茧房|可信度|信息源))/g,
+      /([\u4e00-\u9fa5A-Za-z0-9]{2,12}的(?:价值|形式|频率|能力|视角|可信度))/g
+    ];
+    const PHRASE_BLACKLIST = ['信息', '问题', '这个问题', '这种问题', '东西', '内容', '自己', '领域', '品牌', '媒体', '这里边就会衍生出来一个问题', '兄弟', '然后再一个是说', '你帮我分析一下'];
+    const LAYOUTS = [
+      { x: 50, y: 50 },
+      { x: 24, y: 24 }, { x: 50, y: 18 }, { x: 76, y: 24 },
+      { x: 16, y: 50 }, { x: 32, y: 74 }, { x: 50, y: 82 }, { x: 68, y: 74 }, { x: 84, y: 50 },
+      { x: 10, y: 32 }, { x: 90, y: 32 }, { x: 9, y: 70 }, { x: 91, y: 70 }
+    ];
+
+    const graphStage = document.getElementById('graph-stage');
+    const graphViewport = document.getElementById('graph-viewport');
+    const graphSvg = document.getElementById('graph-svg');
+    const segmentList = document.getElementById('segment-list');
+    const activeTags = document.getElementById('active-tags');
+    const activeDescription = document.getElementById('active-description');
+    const coreTopicLabel = document.getElementById('core-topic-label');
+    const currentFocusLabel = document.getElementById('current-focus-label');
+    const pendingNotes = document.getElementById('pending-notes');
+    const stepIndicator = document.getElementById('step-indicator');
+    const playToggle = document.getElementById('play-toggle');
+    const sourceInput = document.getElementById('source-input');
+    const generateMap = document.getElementById('generate-map');
+    const inputMeta = document.getElementById('input-meta');
+    const phasePill = document.getElementById('phase-pill');
+    const debugPayload = document.getElementById('debug-payload');
+    const debugRawResponse = document.getElementById('debug-raw-response');
+    const debugFinalOps = document.getElementById('debug-final-ops');
+    const copyButtons = Array.from(document.querySelectorAll('.copy-btn'));
+    const copyDebugBundle = document.getElementById('copy-debug-bundle');
+    const clientBuildPill = document.getElementById('client-build-pill');
+    const autoModePill = document.getElementById('auto-mode-pill');
+
+    let state = {
+      nodes: [],
+      edges: [],
+      segments: [],
+      modelMeta: null
+    };
+    let currentStep = 0;
+    let playing = true;
+    let timer = null;
+    let requestSerial = 0;
+    let liveUpdateTimer = null;
+    let liveInputState = 'idle';
+    let viewportState = { x: 0, y: 0, scale: 1.08 };
+    let isPanningViewport = false;
+    let panStart = null;
+    let manualViewportUntil = 0;
+    const MODEL_SCHEMA_VERSION = 'graph-refine.v1';
+    const MODEL_SCHEMA_PATH = '/schemas/graph-refine.v1.schema.json';
+    const CLIENT_BUILD = '2026-03-21-focus-fix-3';
+    const LIVE_UPDATE_DELAY_MS = 900;
+    const LIVE_UPDATE_MIN_LENGTH = 24;
+    const VIEWPORT_MIN_SCALE = 0.78;
+    const VIEWPORT_MAX_SCALE = 1.6;
+    const MANUAL_VIEWPORT_HOLD_MS = 15000;
+
+    clientBuildPill.textContent = `Client Build: ${CLIENT_BUILD}`;
+    autoModePill.textContent = `自动更新：开启（${LIVE_UPDATE_DELAY_MS}ms）`;
+
+    function createEdgePath(from, to) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const c1x = from.x + dx * 0.28;
+      const c1y = from.y + dy * 0.08;
+      const c2x = from.x + dx * 0.72;
+      const c2y = from.y + dy * 0.92;
+      return `M ${from.x} ${from.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${to.x} ${to.y}`;
+    }
+
+    function clampText(text, max = 92) {
+      return text.length > max ? `${text.slice(0, max)}…` : text;
+    }
+
+    function clampNumber(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function unique(items) {
+      return Array.from(new Set(items.filter(Boolean)));
+    }
+
+    function splitIntoSegments(text) {
+      const clean = text.replace(/\s+/g, ' ').trim();
+      const sentences = clean
+        .split(/(?<=[。！？!?])/)
+        .map((item) => item.trim())
+        .filter((item) => item.length >= 12);
+
+      const grouped = [];
+      let bucket = '';
+      let sentenceCount = 0;
+
+      sentences.forEach((sentence) => {
+        const next = bucket ? `${bucket} ${sentence}` : sentence;
+        if (next.length > 260 || sentenceCount >= 3) {
+          if (bucket) {
+            grouped.push(bucket.trim());
+          }
+          bucket = sentence;
+          sentenceCount = 1;
+          return;
+        }
+        bucket = next;
+        sentenceCount += 1;
+      });
+
+      if (bucket) {
+        grouped.push(bucket.trim());
+      }
+
+      return grouped.slice(0, 18);
+    }
+
+    function countMatches(text, keywords) {
+      return keywords.reduce((total, keyword) => total + (text.includes(keyword.toLowerCase()) ? 1 : 0), 0);
+    }
+
+    function isQuestionSentence(sentence) {
+      return /[？?]/.test(sentence) || QUESTION_HINTS.some((hint) => sentence.includes(hint));
+    }
+
+    function hasConflictHint(sentence) {
+      return CONFLICT_HINTS.some((hint) => sentence.includes(hint));
+    }
+
+    function detectTopics(sentence) {
+      const lowered = sentence.toLowerCase();
+      return TOPIC_LIBRARY
+        .map((topic) => {
+          const keywordHits = countMatches(lowered, topic.keywords.map((keyword) => keyword.toLowerCase()));
+          if (!keywordHits) return null;
+          const questionBoost = isQuestionSentence(sentence) && topic.keywords.some((keyword) => lowered.includes(keyword.toLowerCase())) ? 1.4 : 0;
+          const conflictBoost = hasConflictHint(sentence) && keywordHits ? 0.6 : 0;
+          const score = keywordHits + questionBoost + conflictBoost;
+          return {
+            ...topic,
+            score,
+            keywordHits
+          };
+        })
+        .filter(Boolean)
+        .filter((topic) => topic.score > 0)
+        .sort((a, b) => b.score - a.score);
+    }
+
+    function detectGenericTopics(sentence) {
+      const lowered = sentence.toLowerCase();
+      return GENERIC_TOPIC_RULES
+        .map((topic) => {
+          const keywordHits = countMatches(lowered, topic.keywords.map((keyword) => keyword.toLowerCase()));
+          if (!keywordHits) return null;
+          const questionBoost = isQuestionSentence(sentence) ? 0.8 : 0;
+          const conflictBoost = hasConflictHint(sentence) ? 0.4 : 0;
+          return {
+            ...topic,
+            score: keywordHits + questionBoost + conflictBoost,
+            keywordHits
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.score - a.score);
+    }
+
+    function detectConflictLabels(text) {
+      const lowered = text.toLowerCase();
+      return CONFLICT_PATTERNS
+        .filter((pattern) => pattern.match.filter((keyword) => lowered.includes(keyword.toLowerCase())).length >= 2)
+        .map((pattern) => pattern.label);
+    }
+
+    function classifyVisualPriority(node) {
+      if (node.id === 'system') return 'core';
+      if (node.type === 'pending') return 'secondary';
+      const weightTag = (node.tags || []).find((tag) => tag.startsWith('权重 '));
+      const weight = weightTag ? Number(weightTag.replace('权重 ', '')) : 0;
+      if (weight >= 6 || node.type === 'loop') return 'major';
+      if (weight >= 3) return 'secondary';
+      return 'peripheral';
+    }
+
+    function buildWindowSummary(graphState) {
+      const topNodes = graphState.nodes
+        .filter((node) => node.id !== 'system')
+        .slice(0, 6)
+        .map((node) => `${node.label}(${node.type})`);
+      const pendingNodes = graphState.nodes
+        .filter((node) => node.type === 'pending')
+        .slice(0, 4)
+        .map((node) => node.label);
+      const loopNodes = graphState.nodes
+        .filter((node) => node.type === 'loop')
+        .slice(0, 4)
+        .map((node) => node.label);
+
+      return {
+        top_nodes: topNodes,
+        pending_nodes: pendingNodes,
+        revisited_nodes: loopNodes
+      };
+    }
+
+    function inferDisplayParent(nodeId, label) {
+      if (['source', 'format', 'frequency', 'raw-vs-ai', 'capacity', 'trust', 'fomo'].includes(nodeId)) {
+        return null;
+      }
+      const lower = (label || '').toLowerCase();
+      if (lower.includes('研报') || lower.includes('一手源') || lower.includes('二手转述')) return 'source';
+      if (lower.includes('评论区')) return 'format';
+      if (lower.includes('周报') || lower.includes('每天') || lower.includes('每周') || lower.includes('每月')) return 'frequency';
+      if (lower.includes('原文') || lower.includes('总结')) return 'raw-vs-ai';
+      if (lower.includes('处理能力')) return 'capacity';
+      return null;
+    }
+
+    function layoutChildNodesAroundParents(nodes) {
+      const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+      const groups = new Map();
+
+      nodes.forEach((node) => {
+        if (!node.displayParent) return;
+        const items = groups.get(node.displayParent) || [];
+        items.push(node);
+        groups.set(node.displayParent, items);
+      });
+
+      groups.forEach((children, parentId) => {
+        const parent = nodeMap.get(parentId);
+        if (!parent) return;
+
+        const count = children.length;
+        const angleStart = -75;
+        const angleEnd = 75;
+        const radius = count <= 2 ? 13 : 16;
+
+        children.forEach((child, index) => {
+          const ratio = count === 1 ? 0.5 : index / (count - 1);
+          const angleDeg = angleStart + (angleEnd - angleStart) * ratio;
+          const angle = angleDeg * (Math.PI / 180);
+          const x = parent.x + Math.cos(angle) * radius;
+          const y = parent.y + Math.sin(angle) * (radius * 0.82);
+          child.x = Math.max(8, Math.min(92, Math.round(x * 10) / 10));
+          child.y = Math.max(10, Math.min(90, Math.round(y * 10) / 10));
+          child.expandOffsetX = `${Math.round((child.x - parent.x) * 2.4)}px`;
+          child.expandOffsetY = `${Math.round((child.y - parent.y) * 2.4)}px`;
+        });
+      });
+    }
+
+    function makeOpenQuestionLabel(sentence) {
+      const clean = sentence.replace(/[。！？?]/g, '').trim();
+      if (clean.includes('每天') && clean.includes('每周') && clean.includes('每月')) {
+        return '每天 / 每周 / 每月';
+      }
+      if (clean.includes('周报')) {
+        return '周报式获取';
+      }
+      if (clean.includes('一手源') || clean.includes('二手转述')) {
+        return '要不要追求一手源';
+      }
+      const patterns = [
+        /我该([^，。；？]{2,16})/,
+        /要不要([^，。；？]{2,16})/,
+        /需不需要([^，。；？]{2,16})/,
+        /什么([^，。；？]{2,16})/
+      ];
+      for (const pattern of patterns) {
+        const match = clean.match(pattern);
+        if (match) {
+          return clampText(match[0], 20);
+        }
+      }
+      return clampText(clean, 20);
+    }
+
+    function normalizePhraseLabel(label) {
+      const normalized = label
+        .replace(/[“”"'`]/g, '')
+        .replace(/\s+/g, ' ')
+        .replace(/^(这个|那个|一种|一个)/, '')
+        .replace(/(就是|的话)$/g, '')
+        .trim();
+      if (normalized.includes('周报')) {
+        return '周报式获取';
+      }
+      if (normalized.includes('评论区') && normalized.includes('陪伴感')) {
+        return '评论区陪伴感';
+      }
+      if (normalized.includes('每天') && normalized.includes('每周') && normalized.includes('每月')) {
+        return '每天 / 每周 / 每月';
+      }
+      return normalized;
+    }
+
+    function isFillerSentence(sentence) {
+      const clean = sentence.replace(/[，。！？?]/g, '').trim();
+      return FILLER_PATTERNS.some((pattern) => pattern.test(clean));
+    }
+
+    function shouldKeepPhrase(label, existingLabelsLower) {
+      if (!label) return false;
+      if (label.length < 2 || label.length > 14) return false;
+      if (PHRASE_BLACKLIST.includes(label)) return false;
+      if (label.includes('问题') && label.length > 8) return false;
+      if (label.startsWith('还是') || label.startsWith('还有') || label.startsWith('然后')) return false;
+       if (label.startsWith('再说到') || label.startsWith('我到底需要什么') || label.startsWith('什么')) return false;
+      const lowered = label.toLowerCase();
+      if (existingLabelsLower.some((item) => item.includes(lowered) || lowered.includes(item))) return false;
+      if (/^[a-z]$/i.test(label)) return false;
+      return true;
+    }
+
+    function extractOpenQuestionNodes(segmentsRaw, existingIds) {
+      const candidates = [];
+      segmentsRaw.forEach((sentence) => {
+        if (!isQuestionSentence(sentence)) return;
+        if (isFillerSentence(sentence)) return;
+        const label = makeOpenQuestionLabel(sentence);
+        if (label.length > 16 && !['每天 / 每周 / 每月', '周报式获取', '要不要追求一手源'].includes(label)) return;
+        const id = `open-${label.replace(/[^a-z0-9\u4e00-\u9fa5]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase()}`;
+        if (!label || existingIds.has(id)) return;
+        candidates.push({
+          id,
+          label,
+          type: 'pending',
+          tags: ['未展开', '问句'],
+          description: `这是系统从原话里的问句直接抽出的开放问题：${clampText(sentence, 42)}`
+        });
+        existingIds.add(id);
+      });
+      return candidates.slice(0, 2);
+    }
+
+    function extractAutoPhraseNodes(segmentsRaw, existingIds, existingLabels) {
+      const existingLabelsLower = existingLabels.map((label) => label.toLowerCase());
+      const candidates = new Map();
+
+      segmentsRaw.forEach((sentence) => {
+        if (isFillerSentence(sentence)) return;
+        PHRASE_PATTERNS.forEach((pattern) => {
+          const matches = sentence.matchAll(pattern);
+          for (const match of matches) {
+            const phrase = normalizePhraseLabel(match[1] || '');
+            if (!shouldKeepPhrase(phrase, existingLabelsLower)) continue;
+            const id = `phrase-${phrase.replace(/[^a-z0-9\u4e00-\u9fa5]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase()}`;
+            if (!id || existingIds.has(id)) continue;
+            const current = candidates.get(id) || {
+              id,
+              label: phrase,
+              type: 'topic',
+              tags: ['自动短语'],
+              description: `这是系统直接从原话里抽出的短语：“${phrase}”。`,
+              score: 0
+            };
+            current.score += 1;
+            if (isQuestionSentence(sentence)) {
+              current.score += 1.2;
+              current.type = 'pending';
+              current.tags = unique([...current.tags, '未展开']);
+            }
+            if (hasConflictHint(sentence)) {
+              current.score += 0.4;
+            }
+            candidates.set(id, current);
+          }
+        });
+      });
+
+      return Array.from(candidates.values())
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 2)
+        .map(({ score, ...node }) => node);
+    }
+
+    function buildGraphFromText(text) {
+      const segmentsRaw = splitIntoSegments(text);
+      const topicHits = new Map();
+      const topicScores = new Map();
+      const genericHits = new Map();
+      const genericScores = new Map();
+
+      segmentsRaw.forEach((sentence) => {
+        detectTopics(sentence).forEach((topic) => {
+          const current = topicHits.get(topic.id) || 0;
+          topicHits.set(topic.id, current + 1);
+          const score = topicScores.get(topic.id) || 0;
+          topicScores.set(topic.id, score + topic.score);
+        });
+        detectGenericTopics(sentence).forEach((topic) => {
+          const current = genericHits.get(topic.id) || 0;
+          genericHits.set(topic.id, current + 1);
+          const score = genericScores.get(topic.id) || 0;
+          genericScores.set(topic.id, score + topic.score);
+        });
+      });
+
+      const rankedTopics = TOPIC_LIBRARY
+        .filter((topic) => topicHits.has(topic.id))
+        .sort((a, b) => (topicScores.get(b.id) || 0) - (topicScores.get(a.id) || 0))
+        .slice(0, 4);
+      const rankedGenericTopics = GENERIC_TOPIC_RULES
+        .filter((topic) => genericHits.has(topic.id))
+        .sort((a, b) => (genericScores.get(b.id) || 0) - (genericScores.get(a.id) || 0))
+        .slice(0, 5);
+      const combinedTopics = [...rankedGenericTopics, ...rankedTopics]
+        .filter((topic, index, array) => array.findIndex((item) => item.id === topic.id) === index)
+        .slice(0, 8);
+
+      const topTopicIds = combinedTopics.slice(0, 4).map((topic) => topic.id);
+      const shouldUseInfoSystemLabel = ['source', 'frequency', 'format'].filter((id) => topTopicIds.includes(id)).length >= 2;
+      const shouldUseLifeSystemLabel = ['economic-pressure', 'career-choice', 'relationship-pain', 'life-stage'].filter((id) => topTopicIds.includes(id)).length >= 2;
+
+      const coreTopic = {
+        id: 'system',
+        label: shouldUseLifeSystemLabel
+          ? '人生决策系统'
+          : shouldUseInfoSystemLabel
+          ? '信息获取系统'
+          : combinedTopics[0]?.label
+            ? `${combinedTopics[0].label}系统`
+            : (segmentsRaw[0]?.includes('信息') ? '信息获取系统' : '思维主问题'),
+        type: 'core',
+        tags: ['核心母题', '自动生成'],
+        description: combinedTopics.length
+          ? `系统判定你当前最强的母题是“${combinedTopics[0].label}”，并把它与其他高频主题组织成网状关系。`
+          : '系统会把整段表达视为一个总问题，再把高频母题和未展开分支挂在它周围。'
+      };
+
+      const nodes = [coreTopic];
+      combinedTopics.forEach((topic, index) => {
+        const hitCount = (topicHits.get(topic.id) || 0) + (genericHits.get(topic.id) || 0);
+        const totalScore = (topicScores.get(topic.id) || 0) + (genericScores.get(topic.id) || 0);
+        const baseType = topic.type || 'topic';
+        const isLoop = (hitCount >= 2 || totalScore >= 4) && baseType !== 'pending';
+        const type = baseType === 'pending' ? 'pending' : isLoop ? 'loop' : baseType;
+        const layout = LAYOUTS[index + 1] || { x: 50 + index * 2, y: 50 + index * 2 };
+        nodes.push({
+          id: topic.id,
+          label: topic.label,
+          type,
+          x: layout.x,
+          y: layout.y,
+          tags: unique([
+            type === 'pending' ? '未展开' : null,
+            type === 'loop' ? '回访节点' : null,
+            hitCount > 0 ? `提及 ${hitCount} 次` : '预置分支',
+            totalScore > 0 ? `权重 ${Math.round(totalScore * 10) / 10}` : null
+          ]),
+          description: topic.description
+        });
+      });
+
+      const existingIds = new Set(nodes.map((node) => node.id));
+      const openQuestionNodes = extractOpenQuestionNodes(segmentsRaw, existingIds);
+      openQuestionNodes.forEach((node, index) => {
+        const layout = LAYOUTS[nodes.length + index] || { x: 88 - index * 6, y: 82 - index * 6 };
+        node.x = layout.x;
+        node.y = layout.y;
+        nodes.push(node);
+      });
+
+      const phraseNodes = extractAutoPhraseNodes(
+        segmentsRaw,
+        new Set([...existingIds, ...openQuestionNodes.map((node) => node.id)]),
+        nodes.map((node) => node.label)
+      );
+      phraseNodes.forEach((node, index) => {
+        const layout = LAYOUTS[nodes.length + index] || { x: 18 + index * 20, y: 86 - index * 7 };
+        node.x = layout.x;
+        node.y = layout.y;
+        nodes.push(node);
+      });
+
+      nodes.forEach((node, index) => {
+        if (index === 0 || (node.x && node.y)) return;
+        const layout = LAYOUTS[index] || { x: 50, y: 50 };
+        node.x = layout.x;
+        node.y = layout.y;
+      });
+
+      nodes.forEach((node) => {
+        node.displayParent = inferDisplayParent(node.id, node.label);
+        node.visualPriority = classifyVisualPriority(node);
+      });
+
+      layoutChildNodesAroundParents(nodes);
+
+      const availableIds = new Set(nodes.map((node) => node.id));
+      const edges = [];
+      nodes.slice(1).forEach((node) => {
+        edges.push(['system', node.id]);
+      });
+
+      segmentsRaw.forEach((sentence) => {
+        const related = [...detectGenericTopics(sentence), ...detectTopics(sentence)]
+          .map((topic) => topic.id)
+          .filter((id, index, array) => availableIds.has(id) && array.indexOf(id) === index);
+        related.forEach((topicId, index) => {
+          const nextId = related[index + 1];
+          if (nextId) {
+            edges.push([topicId, nextId]);
+          }
+        });
+        if (isQuestionSentence(sentence)) {
+          const pendingNode = openQuestionNodes.find((node) => sentence.includes(node.label.replace(/…$/, '')));
+          if (pendingNode && related[0]) {
+            edges.push([related[0], pendingNode.id]);
+          }
+        }
+        const relatedPhraseNodes = phraseNodes
+          .filter((node) => sentence.includes(node.label))
+          .map((node) => node.id);
+        if (related[0]) {
+          relatedPhraseNodes.forEach((phraseId) => {
+            edges.push([related[0], phraseId]);
+          });
+        } else {
+          relatedPhraseNodes.forEach((phraseId) => {
+            edges.push(['system', phraseId]);
+          });
+        }
+      });
+
+      const uniqueEdges = unique(edges.map(([from, to]) => `${from}|${to}`)).map((pair) => pair.split('|'));
+      const cappedEdges = uniqueEdges.slice(0, 18);
+
+      const segments = segmentsRaw.map((sentence, index) => {
+        const detected = [...detectGenericTopics(sentence), ...detectTopics(sentence)]
+          .filter((topic, idx, array) => array.findIndex((item) => item.id === topic.id) === idx);
+        const relatedTopics = detected.map((topic) => topic.id).filter((id) => availableIds.has(id));
+        const uniqueRelated = unique(relatedTopics);
+        const questionPending = openQuestionNodes
+          .filter((node) => sentence.includes(node.label.replace(/…$/, '')))
+          .map((node) => node.id);
+        const phraseRelated = phraseNodes
+          .filter((node) => sentence.includes(node.label))
+          .map((node) => node.id);
+        const loops = uniqueRelated.filter((id) => {
+          const totalScore = topicScores.get(id) || 0;
+          return (topicHits.get(id) >= 2 || totalScore >= 4) && id !== uniqueRelated[0];
+        });
+        const pending = unique([
+          ...uniqueRelated.filter((id) => nodes.find((node) => node.id === id)?.type === 'pending'),
+          ...questionPending,
+          ...phraseRelated.filter((id) => nodes.find((node) => node.id === id)?.type === 'pending')
+        ]);
+        const focus = uniqueRelated[0] || phraseRelated[0] || pending[0] || (nodes[1] && nodes[1].id) || 'system';
+        const active = unique(['system', focus, ...uniqueRelated.slice(1, 3), ...phraseRelated.slice(0, 2), ...questionPending.slice(0, 1)]);
+        const focusMeta = detected[0];
+        const theme = focusMeta?.label || nodes.find((node) => node.id === focus)?.label || `片段 ${index + 1}`;
+        return {
+          id: `seg-${index + 1}`,
+          theme,
+          text: sentence,
+          focus,
+          active,
+          loops,
+          pending
+        };
+      });
+
+      return {
+        nodes,
+        edges: cappedEdges,
+        segments: segments.length ? segments : [{
+          id: 'seg-1',
+          theme: '整体',
+          text: text.trim(),
+          focus: 'system',
+          active: ['system'],
+          loops: [],
+          pending: nodes.filter((node) => node.type === 'pending').map((node) => node.id).slice(0, 2)
+        }],
+        modelMeta: {
+          mode: 'local-candidate',
+          payload: null
+        }
+      };
+    }
+
+    function makeModelPayload(text, graphState) {
+      return {
+        protocol: {
+          schema_version: MODEL_SCHEMA_VERSION,
+          schema_path: MODEL_SCHEMA_PATH
+        },
+        schema_version: MODEL_SCHEMA_VERSION,
+        session: {
+          session_id: 'local-prototype-session',
+          request_id: `req_${Date.now()}_${requestSerial + 1}`
+        },
+        window: {
+          raw_text: text,
+          window_summary: buildWindowSummary(graphState),
+          segments: graphState.segments.map((segment) => ({
+            id: segment.id,
+            text: segment.text,
+            focus: segment.focus
+          }))
+        },
+        graph_snapshot: {
+          node_count: graphState.nodes.length,
+          edge_count: graphState.edges.length,
+        nodes: graphState.nodes.map((node) => ({
+          id: node.id,
+          label: node.label,
+          node_type: node.type,
+          display_parent: node.displayParent || null,
+          tags: node.tags,
+          description: node.description
+        })),
+          edges: graphState.edges.map(([from, to]) => ({
+            source: from,
+            target: to
+          }))
+        },
+        candidate_nodes: graphState.nodes
+          .filter((node) => node.id !== 'system')
+          .map((node) => ({
+            id: node.id,
+            label: node.label,
+            role_hint: node.type,
+            tags: node.tags
+          })),
+        instructions: {
+          goal: 'Refine candidate thought graph into a more stable, reusable structure.',
+          allowed_operations: [
+            'merge_node',
+            'set_node_type',
+            'add_pending_node',
+            'rename_node',
+            'update_node_description',
+            'add_edge',
+            'remove_edge',
+            'mark_revisited',
+            'set_focus'
+          ]
+        }
+      };
+    }
+
+    function findNodeByLabel(label, graphState) {
+      return graphState.nodes.find((node) => node.label === label);
+    }
+
+    function resolveNodeRef(ref, graphState) {
+      if (!ref) return null;
+      if (ref.by === 'label') return findNodeByLabel(ref.value, graphState);
+      if (ref.by === 'id') return graphState.nodes.find((node) => node.id === ref.value);
+      return null;
+    }
+
+    function localMockModelRefine(payload) {
+      const candidateLabels = payload.candidate_nodes.map((node) => node.label);
+      const operations = [];
+      let focusLabel = candidateLabels[0] || '思维主问题';
+
+      if (candidateLabels.includes('我该信谁') && candidateLabels.includes('信息可信度')) {
+        operations.push({
+          op: 'merge_node',
+          from: { by: 'label', value: '我该信谁' },
+          to: { by: 'label', value: '信息可信度' }
+        });
+        focusLabel = '信息可信度';
+      }
+
+      if (candidateLabels.includes('要不要追求一手源') && candidateLabels.includes('信源选择')) {
+        operations.push({
+          op: 'merge_node',
+          from: { by: 'label', value: '要不要追求一手源' },
+          to: { by: 'label', value: '信源选择' }
+        });
+      }
+
+      if (payload.window.raw_text.includes('每天') && payload.window.raw_text.includes('每周') && payload.window.raw_text.includes('每月')) {
+        operations.push({
+          op: 'add_pending_node',
+          node: {
+            label: '信息节律规则',
+            description: '把“每天 / 每周 / 每月看什么”沉淀成明确节律规则。'
+          },
+          connect_to: { by: 'id', value: 'system' }
+        });
+        focusLabel = '信息频率';
+      }
+
+      if (payload.window.raw_text.includes('原文') && payload.window.raw_text.includes('总结')) {
+        operations.push({
+          op: 'set_node_type',
+          target: { by: 'label', value: '原文 vs AI总结' },
+          node_type: 'loop'
+        });
+        operations.push({
+          op: 'mark_revisited',
+          target: { by: 'label', value: '原文 vs AI总结' }
+        });
+      }
+
+      if (payload.window.raw_text.includes('评论区') && payload.window.raw_text.includes('陪伴感')) {
+        operations.push({
+          op: 'add_pending_node',
+          node: {
+            label: '评论区的真实增量',
+            description: '评论区带来的到底是信息增量，还是陪伴感和在场感。'
+          },
+          connect_to: { by: 'id', value: 'commentary' }
+        });
+        operations.push({
+          op: 'rename_node',
+          target: { by: 'id', value: 'commentary' },
+          new_label: '评论区意义'
+        });
+      }
+
+      if (payload.window.raw_text.includes('一手') && payload.window.raw_text.includes('二手')) {
+        operations.push({
+          op: 'add_edge',
+          source: { by: 'label', value: '信源选择' },
+          target: { by: 'label', value: '信息可信度' }
+        });
+      }
+
+      if (payload.window.raw_text.includes('FOMO') || payload.window.raw_text.includes('漏掉')) {
+        operations.push({
+          op: 'mark_revisited',
+          target: { by: 'label', value: 'FOMO' }
+        });
+      }
+
+      if (payload.window.raw_text.includes('评论区') && payload.window.raw_text.includes('陪伴感')) {
+        operations.push({
+          op: 'remove_edge',
+          source: { by: 'id', value: 'system' },
+          target: { by: 'id', value: 'commentary' }
+        });
+        operations.push({
+          op: 'add_edge',
+          source: { by: 'label', value: '信息载体' },
+          target: { by: 'id', value: 'commentary' }
+        });
+      }
+
+      operations.push({
+        op: 'set_focus',
+        target: { by: 'label', value: focusLabel }
+      });
+
+      return new Promise((resolve) => {
+        window.setTimeout(() => {
+          resolve({
+            schema_version: MODEL_SCHEMA_VERSION,
+            request_id: payload.session.request_id,
+            summary: {
+              reasoning_mode: 'mock',
+              operation_count: operations.length
+            },
+            operations
+          });
+        }, 900);
+      });
+    }
+
+    async function refineWithBackend(payload) {
+      const response = await fetch('/api/graph-refine', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => ({}));
+        throw new Error(errorPayload.error || `Backend refine failed: ${response.status}`);
+      }
+      return response.json();
+    }
+
+    async function refineGraph(payload) {
+      try {
+        return await refineWithBackend(payload);
+      } catch (error) {
+        console.warn('Backend refine unavailable, fallback to local mock:', error);
+        return localMockModelRefine(payload);
+      }
+    }
+
+    function applyModelOps(graphState, modelResult) {
+      const nextState = {
+        nodes: graphState.nodes.map((node) => ({ ...node, tags: [...node.tags] })),
+        edges: graphState.edges.map((edge) => [...edge]),
+        segments: graphState.segments.map((segment) => ({
+          ...segment,
+          active: [...segment.active],
+          loops: [...segment.loops],
+          pending: [...segment.pending]
+        })),
+        modelMeta: {
+          mode: 'mock-model-refined',
+          result: modelResult
+        }
+      };
+
+      let requestedFocusLabel = null;
+      const weakFocusLabels = new Set(['处理能力有限', 'FOMO']);
+      const preferredFocusLabels = ['信源选择', '信息可信度', '信息频率', '信息载体'];
+
+      modelResult.operations.forEach((op) => {
+        if (op.op === 'merge_node') {
+          const fromNode = resolveNodeRef(op.from, nextState);
+          const toNode = resolveNodeRef(op.to, nextState);
+          if (!fromNode || !toNode || fromNode.id === toNode.id) return;
+
+          nextState.edges = unique(nextState.edges.map(([from, to]) => {
+            const nextFrom = from === fromNode.id ? toNode.id : from;
+            const nextTo = to === fromNode.id ? toNode.id : to;
+            return `${nextFrom}|${nextTo}`;
+          })).map((item) => item.split('|')).filter(([from, to]) => from !== to);
+
+          nextState.segments.forEach((segment) => {
+            segment.focus = segment.focus === fromNode.id ? toNode.id : segment.focus;
+            segment.active = unique(segment.active.map((id) => id === fromNode.id ? toNode.id : id));
+            segment.loops = unique(segment.loops.map((id) => id === fromNode.id ? toNode.id : id));
+            segment.pending = unique(segment.pending.map((id) => id === fromNode.id ? toNode.id : id));
+          });
+
+          toNode.tags = unique([...toNode.tags, '模型归并']);
+          nextState.nodes = nextState.nodes.filter((node) => node.id !== fromNode.id);
+        }
+
+        if (op.op === 'set_node_type') {
+          const node = resolveNodeRef(op.target, nextState);
+          if (!node) return;
+          node.type = op.node_type;
+          node.tags = unique([...node.tags, '模型校正']);
+        }
+
+        if (op.op === 'rename_node') {
+          const node = resolveNodeRef(op.target, nextState);
+          if (!node || !op.new_label) return;
+          node.label = op.new_label;
+          node.tags = unique([...node.tags, '模型改名']);
+        }
+
+        if (op.op === 'update_node_description') {
+          const node = resolveNodeRef(op.target, nextState);
+          if (!node || !op.description) return;
+          node.description = op.description;
+          node.tags = unique([...node.tags, '模型补充说明']);
+        }
+
+        if (op.op === 'add_pending_node') {
+          if (findNodeByLabel(op.node.label, nextState)) return;
+          const layout = LAYOUTS[nextState.nodes.length] || { x: 84, y: 84 };
+          const id = `model-${op.node.label.replace(/[^a-z0-9\u4e00-\u9fa5]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase()}`;
+          nextState.nodes.push({
+            id,
+            label: op.node.label,
+            type: 'pending',
+            x: layout.x,
+            y: layout.y,
+            tags: ['未展开', '模型补充'],
+            description: op.node.description
+          });
+          const resolvedParent = resolveNodeRef(op.connect_to, nextState) || nextState.nodes[0];
+          nextState.edges.push([resolvedParent.id, id]);
+          nextState.segments.forEach((segment) => {
+            if (segment.focus === resolvedParent.id || segment.active.includes(resolvedParent.id)) {
+              segment.pending = unique([...segment.pending, id]);
+            }
+          });
+        }
+
+        if (op.op === 'add_edge') {
+          const source = resolveNodeRef(op.source, nextState);
+          const target = resolveNodeRef(op.target, nextState);
+          if (!source || !target || source.id === target.id) return;
+          nextState.edges = unique([...nextState.edges.map(([from, to]) => `${from}|${to}`), `${source.id}|${target.id}`])
+            .map((item) => item.split('|'));
+        }
+
+        if (op.op === 'remove_edge') {
+          const source = resolveNodeRef(op.source, nextState);
+          const target = resolveNodeRef(op.target, nextState);
+          if (!source || !target) return;
+          nextState.edges = nextState.edges.filter(([from, to]) => !(from === source.id && to === target.id));
+        }
+
+        if (op.op === 'mark_revisited') {
+          const node = resolveNodeRef(op.target, nextState);
+          if (!node) return;
+          node.type = 'loop';
+          node.tags = unique([...node.tags, '模型标记回访']);
+          nextState.segments.forEach((segment) => {
+            if (segment.focus === node.id || segment.active.includes(node.id)) {
+              segment.loops = unique([...segment.loops, node.id]);
+            }
+          });
+        }
+
+        if (op.op === 'set_focus') {
+          const node = resolveNodeRef(op.target, nextState);
+          requestedFocusLabel = node?.label || requestedFocusLabel;
+        }
+      });
+
+      if (requestedFocusLabel && weakFocusLabels.has(requestedFocusLabel)) {
+        requestedFocusLabel = preferredFocusLabels.find((label) => findNodeByLabel(label, nextState)) || requestedFocusLabel;
+      }
+
+      const focusNode = requestedFocusLabel ? findNodeByLabel(requestedFocusLabel, nextState) : null;
+      if (focusNode) {
+        nextState.segments.forEach((segment, index) => {
+          if (index === 0 || segment.active.includes(focusNode.id) || segment.focus === focusNode.id) {
+            segment.focus = focusNode.id;
+            segment.active = unique(['system', focusNode.id, ...segment.active]);
+          }
+        });
+      }
+
+      return nextState;
+    }
+
+    function renderGraph() {
+      graphStage.querySelectorAll('.node').forEach((node) => node.remove());
+      graphSvg.innerHTML = state.edges.map(([fromId, toId]) => {
+        const from = state.nodes.find((node) => node.id === fromId);
+        const to = state.nodes.find((node) => node.id === toId);
+        if (!from || !to) return '';
+        return `<path class="edge" data-edge="${fromId}-${toId}" d="${createEdgePath(from, to)}"></path>`;
+      }).join('');
+
+      state.nodes.forEach((node) => {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'node';
+        el.dataset.nodeId = node.id;
+        if (node.displayParent) {
+          el.dataset.displayParent = node.displayParent;
+          el.style.setProperty('--node-offset-x', '0px');
+          el.style.setProperty('--node-offset-y', '0px');
+        }
+        el.style.left = `${node.x}%`;
+        el.style.top = `${node.y}%`;
+        el.innerHTML = `
+          <span class="node-ring"></span>
+          <small>${node.type === 'core' ? 'Core' : node.type === 'pending' ? 'Pending' : node.type === 'loop' ? 'Loop' : 'Topic'}</small>
+          <strong>${node.label}</strong>
+        `;
+        if (node.type === 'core') el.classList.add('is-core');
+        if (node.type === 'pending') el.classList.add('is-pending');
+        if (node.type === 'loop') el.classList.add('is-return');
+        if (node.visualPriority === 'major') el.classList.add('is-major');
+        if (node.visualPriority === 'secondary') el.classList.add('is-secondary');
+        if (node.visualPriority === 'peripheral') el.classList.add('is-peripheral');
+        el.addEventListener('click', () => {
+          if (playing) {
+            playing = false;
+            playToggle.textContent = '继续演示';
+            restartTimer();
+          }
+          const step = state.segments.findIndex((segment) => segment.focus === node.id || segment.active.includes(node.id));
+          if (step >= 0) {
+            setStep(step, false);
+          } else {
+            updateDetails(node, [], state.nodes.filter((item) => item.type === 'pending').slice(0, 3));
+          }
+        });
+        graphViewport.appendChild(el);
+      });
+    }
+
+    function renderSegments() {
+      const liveDraftMarkup = buildLiveDraftSegmentMarkup();
+      segmentList.innerHTML = state.segments.map((segment, index) => `
+        <button class="segment" data-segment-id="${segment.id}" type="button">
+          <div class="segment-top">
+            <span class="segment-index">Step ${index + 1}</span>
+            <span class="segment-tag">${clampText(segment.theme, 16)}</span>
+          </div>
+          <p>${segment.text}</p>
+        </button>
+      `).join('') + liveDraftMarkup;
+
+      segmentList.querySelectorAll('.segment').forEach((button, index) => {
+        button.addEventListener('click', () => {
+          if (playing) {
+            playing = false;
+            playToggle.textContent = '继续演示';
+            restartTimer();
+          }
+          setStep(index, false);
+        });
+      });
+    }
+
+    function extractCurrentDraftSentence(text) {
+      const clean = text.replace(/\s+/g, ' ').trim();
+      if (!clean) return '';
+      const parts = clean.split(/(?<=[。！？!?])/).map((item) => item.trim()).filter(Boolean);
+      const last = parts[parts.length - 1] || clean;
+      return clampText(last, 140);
+    }
+
+    function buildLiveDraftSegmentMarkup() {
+      if (!['typing', 'waiting'].includes(liveInputState)) return '';
+      const draft = extractCurrentDraftSentence(sourceInput.value);
+      if (!draft) return '';
+      const label = liveInputState === 'typing' ? 'Live' : 'Queued';
+      const title = liveInputState === 'typing' ? '正在处理' : '准备更新';
+      return `
+        <article class="segment is-live" aria-live="polite">
+          <div class="segment-top">
+            <span class="segment-index">${label}</span>
+            <span class="segment-tag">${title}</span>
+          </div>
+          <p>${draft}</p>
+        </article>
+      `;
+    }
+
+    function updateDetails(focusNode, loopNodes, pendingNodes) {
+      const coreNode = state.nodes.find((node) => node.id === 'system');
+      if (coreTopicLabel) {
+        coreTopicLabel.textContent = coreNode?.label || '等待输入';
+      }
+      if (currentFocusLabel) {
+        currentFocusLabel.textContent = focusNode?.label || '等待输入';
+      }
+      activeTags.innerHTML = focusNode.tags.map((tag) => `<span class="chip">${tag}</span>`).join('');
+      activeDescription.textContent = focusNode.description;
+      pendingNotes.innerHTML = pendingNodes.length
+        ? pendingNodes.map((node) => `
+          <div class="note">
+            <strong>${node.label}</strong>
+            <span>${node.description}</span>
+          </div>
+        `).join('')
+        : `<div class="note"><strong>暂无</strong><span>这个片段里没有额外的未展开分支。</span></div>`;
+    }
+
+    function setStep(index, resumeAuto = true) {
+      currentStep = index;
+      const step = state.segments[index];
+      const focusNode = state.nodes.find((node) => node.id === step.focus) || state.nodes[0];
+      const loopNodes = step.loops.map((id) => state.nodes.find((node) => node.id === id)).filter(Boolean);
+      const pendingNodes = step.pending.map((id) => state.nodes.find((node) => node.id === id)).filter(Boolean);
+
+      document.querySelectorAll('.segment').forEach((segment, segmentIndex) => {
+        segment.classList.toggle('is-active', segmentIndex === index);
+      });
+
+      document.querySelectorAll('.node').forEach((nodeEl) => {
+        const id = nodeEl.dataset.nodeId;
+        const isActive = step.active.includes(id) || id === step.focus;
+        const isLoop = step.loops.includes(id);
+        const nodeMeta = state.nodes.find((node) => node.id === id);
+        const isPending = step.pending.includes(id) || nodeMeta?.type === 'pending';
+        const isPrimaryTopic = !nodeMeta?.displayParent && id !== 'system';
+        const shouldExpand = !!nodeMeta?.displayParent && (nodeMeta.displayParent === focusNode.id || nodeMeta.displayParent === step.focus);
+        const isCollapsed = !!nodeMeta?.displayParent && !shouldExpand;
+        if (nodeMeta?.displayParent) {
+          nodeEl.style.setProperty('--node-offset-x', shouldExpand ? (nodeMeta.expandOffsetX || '0px') : '0px');
+          nodeEl.style.setProperty('--node-offset-y', shouldExpand ? (nodeMeta.expandOffsetY || '0px') : '0px');
+          const expandedScale = nodeMeta.visualPriority === 'major' ? '1.08' : nodeMeta.visualPriority === 'secondary' ? '1' : '.92';
+          nodeEl.style.setProperty('--node-scale', shouldExpand ? expandedScale : '.82');
+        } else {
+          const baseScale = nodeMeta?.visualPriority === 'major' ? '1.12' : nodeMeta?.visualPriority === 'secondary' ? '1' : '.94';
+          nodeEl.style.setProperty('--node-offset-x', '0px');
+          nodeEl.style.setProperty('--node-offset-y', '0px');
+          nodeEl.style.setProperty('--node-scale', baseScale);
+        }
+        nodeEl.classList.toggle('is-active', isActive);
+        nodeEl.classList.toggle('is-return', isLoop || nodeMeta?.type === 'loop');
+        nodeEl.classList.toggle('is-pending', isPending);
+        nodeEl.classList.toggle('is-collapsed', isCollapsed);
+        nodeEl.classList.toggle('is-dim', !isCollapsed && !isActive && !isLoop && !isPending && !isPrimaryTopic && id !== 'system');
+      });
+
+      document.querySelectorAll('.edge').forEach((edgeEl) => {
+        const [from, to] = edgeEl.dataset.edge.split('-');
+        const connected = step.active.includes(from) && step.active.includes(to);
+        const loopConnected = step.loops.includes(from) || step.loops.includes(to);
+        const fromMeta = state.nodes.find((node) => node.id === from);
+        const toMeta = state.nodes.find((node) => node.id === to);
+        const isCollapsed = [fromMeta, toMeta].some((node) => node?.displayParent && node.displayParent !== focusNode.id && node.displayParent !== step.focus);
+        edgeEl.classList.toggle('is-active', connected);
+        edgeEl.classList.toggle('is-return', loopConnected);
+        edgeEl.classList.toggle('is-collapsed', isCollapsed);
+      });
+
+      autoFocusViewportOnNode(focusNode);
+
+      stepIndicator.textContent = `步骤 ${index + 1} / ${state.segments.length}`;
+      updateDetails(focusNode, loopNodes, pendingNodes);
+
+      if (resumeAuto && playing) {
+        restartTimer();
+      }
+    }
+
+    function restartTimer() {
+      clearInterval(timer);
+      if (!playing || state.segments.length <= 1) return;
+      timer = setInterval(() => {
+        const next = (currentStep + 1) % state.segments.length;
+        setStep(next, false);
+      }, 2600);
+    }
+
+    function setPhase(mode, extraText = '') {
+      phasePill.className = 'phase-pill';
+      if (mode === 'thinking') {
+        phasePill.classList.add('is-thinking');
+        phasePill.textContent = '阶段：mock 模型校正中';
+      } else if (mode === 'done') {
+        phasePill.classList.add('is-done');
+        phasePill.textContent = `阶段：模型已校正${extraText ? ` · ${extraText}` : ''}`;
+      } else {
+        phasePill.textContent = '阶段：本地候选';
+      }
+    }
+
+    function setLiveInputState(nextState, extraText = '') {
+      liveInputState = nextState;
+      autoModePill.classList.remove('is-typing', 'is-updating');
+      if (nextState === 'typing') {
+        autoModePill.classList.add('is-typing');
+        autoModePill.textContent = '自动更新：正在输入';
+      } else if (nextState === 'waiting') {
+        autoModePill.classList.add('is-typing');
+        autoModePill.textContent = `自动更新：停顿中（${LIVE_UPDATE_DELAY_MS}ms）`;
+      } else if (nextState === 'updating') {
+        autoModePill.classList.add('is-updating');
+        autoModePill.textContent = '自动更新：正在更新图谱';
+      } else {
+        autoModePill.textContent = `自动更新：开启（${LIVE_UPDATE_DELAY_MS}ms）${extraText ? ` · ${extraText}` : ''}`;
+      }
+      renderSegments();
+    }
+
+    function applyViewportTransform() {
+      if (!graphViewport) return;
+      graphViewport.style.transform = `translate(${viewportState.x}px, ${viewportState.y}px) scale(${viewportState.scale})`;
+    }
+
+    function pauseForManualViewport() {
+      manualViewportUntil = Date.now() + MANUAL_VIEWPORT_HOLD_MS;
+      if (playing) {
+        playing = false;
+        playToggle.textContent = '继续演示';
+        restartTimer();
+      }
+    }
+
+    function autoFocusViewportOnNode(focusNode) {
+      if (!graphStage || !focusNode) return;
+      if (Date.now() < manualViewportUntil) return;
+      const rect = graphStage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const nodeX = rect.width * (focusNode.x / 100);
+      const nodeY = rect.height * (focusNode.y / 100);
+      viewportState.scale = 1.08;
+      viewportState.x = (rect.width / 2 - nodeX) * 0.78;
+      viewportState.y = (rect.height / 2 - nodeY) * 0.78;
+      applyViewportTransform();
+    }
+
+    function renderDebugPanel(payload = null, modelResult = null) {
+      debugPayload.textContent = payload ? JSON.stringify(payload, null, 2) : '暂无 payload';
+      debugRawResponse.textContent = modelResult?.summary?.debug?.raw_model_response
+        ? JSON.stringify(modelResult.summary.debug.raw_model_response, null, 2)
+        : '暂无模型原始返回';
+      debugFinalOps.textContent = modelResult
+        ? JSON.stringify({
+          client_build: CLIENT_BUILD,
+          server_build: modelResult.summary?.server_build,
+          reasoning_mode: modelResult.summary?.reasoning_mode,
+          operation_count: modelResult.summary?.operation_count,
+          operations: modelResult.operations
+        }, null, 2)
+        : '暂无最终操作';
+    }
+
+    async function copyDebugText(targetId, button) {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const text = target.textContent || '';
+      await copyTextWithFeedback(text, button);
+    }
+
+    async function copyTextWithFeedback(text, button) {
+      try {
+        await navigator.clipboard.writeText(text);
+        const original = button.textContent;
+        button.textContent = '已复制';
+        button.classList.add('is-copied');
+        window.setTimeout(() => {
+          button.textContent = original;
+          button.classList.remove('is-copied');
+        }, 1200);
+      } catch (error) {
+        console.warn('Copy failed:', error);
+        button.textContent = '复制失败';
+        window.setTimeout(() => {
+          button.textContent = '复制';
+        }, 1200);
+      }
+    }
+
+    function buildDebugBundle() {
+      return [
+        '=== Payload ===',
+        debugPayload.textContent || '',
+        '',
+        '=== Raw Model Response ===',
+        debugRawResponse.textContent || '',
+        '',
+        '=== Final Operations ===',
+        debugFinalOps.textContent || ''
+      ].join('\n');
+    }
+
+    async function applyGraph(text) {
+      const normalized = text.trim();
+      if (!normalized) {
+        state = {
+          nodes: [],
+          edges: [],
+          segments: [],
+          modelMeta: null
+        };
+        segmentList.innerHTML = '';
+        graphStage.querySelectorAll('.node').forEach((node) => node.remove());
+        graphSvg.innerHTML = '';
+        activeTags.innerHTML = '';
+        activeDescription.textContent = '输入内容后，这里会显示当前节点说明。';
+        pendingNotes.innerHTML = `<div class="note"><strong>暂无</strong><span>输入内容后，这里会显示未展开分支。</span></div>`;
+        stepIndicator.textContent = '步骤 0 / 0';
+        renderDebugPanel(null, null);
+        setPhase('local');
+        setLiveInputState('idle');
+        inputMeta.textContent = '输入内容后会自动更新图谱，也可以手动点击生成。';
+        return;
+      }
+      setLiveInputState('updating');
+      const currentRequest = ++requestSerial;
+      state = buildGraphFromText(normalized);
+      inputMeta.textContent = `已抽取 ${state.nodes.length} 个节点，${state.edges.length} 条关系，${state.segments.length} 个片段。`;
+      setPhase('local');
+      renderSegments();
+      renderGraph();
+      setStep(0, false);
+      restartTimer();
+      const conflictLabels = detectConflictLabels(normalized);
+      if (conflictLabels.length) {
+        inputMeta.textContent += ` 当前冲突：${conflictLabels.join(' / ')}`;
+      }
+
+      const payload = makeModelPayload(normalized, state);
+      state.modelMeta = {
+        mode: 'mock-model-pending',
+        payload
+      };
+      renderDebugPanel(payload, null);
+      setPhase('thinking');
+      const modelResult = await refineGraph(payload);
+      if (currentRequest !== requestSerial) return;
+      state = applyModelOps(state, modelResult);
+      renderDebugPanel(payload, modelResult);
+      renderSegments();
+      renderGraph();
+      setStep(0, false);
+      restartTimer();
+      inputMeta.textContent = `已抽取 ${state.nodes.length} 个节点，${state.edges.length} 条关系，${state.segments.length} 个片段。${modelResult.summary.reasoning_mode} 执行了 ${modelResult.summary.operation_count} 个校正操作。`;
+      setPhase('done', `${modelResult.summary.operation_count} ops`);
+      setLiveInputState('idle', '已同步');
+    }
+
+    function scheduleLiveUpdate() {
+      const normalized = sourceInput.value.trim();
+      clearTimeout(liveUpdateTimer);
+      if (normalized.length < LIVE_UPDATE_MIN_LENGTH) {
+        inputMeta.textContent = `输入太短，达到 ${LIVE_UPDATE_MIN_LENGTH} 个字符后会自动更新。`;
+        setLiveInputState('typing');
+        return;
+      }
+      inputMeta.textContent = `检测到输入变化，将在 ${LIVE_UPDATE_DELAY_MS}ms 停顿后自动更新图谱。`;
+      setLiveInputState('waiting');
+      liveUpdateTimer = window.setTimeout(() => {
+        applyGraph(normalized);
+      }, LIVE_UPDATE_DELAY_MS);
+    }
+
+    playToggle.addEventListener('click', () => {
+      playing = !playing;
+      if (playing) {
+        manualViewportUntil = 0;
+      }
+      playToggle.textContent = playing ? '暂停演示' : '继续演示';
+      restartTimer();
+    });
+
+    graphStage.addEventListener('pointerdown', (event) => {
+      if (event.target.closest('.node')) return;
+      isPanningViewport = true;
+      panStart = {
+        x: event.clientX,
+        y: event.clientY,
+        viewportX: viewportState.x,
+        viewportY: viewportState.y
+      };
+      graphStage.classList.add('is-panning');
+      pauseForManualViewport();
+    });
+
+    window.addEventListener('pointermove', (event) => {
+      if (!isPanningViewport || !panStart) return;
+      viewportState.x = panStart.viewportX + (event.clientX - panStart.x);
+      viewportState.y = panStart.viewportY + (event.clientY - panStart.y);
+      applyViewportTransform();
+    });
+
+    window.addEventListener('pointerup', () => {
+      isPanningViewport = false;
+      panStart = null;
+      graphStage.classList.remove('is-panning');
+    });
+
+    graphStage.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const rect = graphStage.getBoundingClientRect();
+      const pointerX = event.clientX - rect.left;
+      const pointerY = event.clientY - rect.top;
+      const nextScale = clampNumber(
+        viewportState.scale * (event.deltaY > 0 ? 0.92 : 1.08),
+        VIEWPORT_MIN_SCALE,
+        VIEWPORT_MAX_SCALE
+      );
+      const worldX = (pointerX - viewportState.x) / viewportState.scale;
+      const worldY = (pointerY - viewportState.y) / viewportState.scale;
+      viewportState.x = pointerX - worldX * nextScale;
+      viewportState.y = pointerY - worldY * nextScale;
+      viewportState.scale = nextScale;
+      pauseForManualViewport();
+      applyViewportTransform();
+    }, { passive: false });
+
+    generateMap.addEventListener('click', () => {
+      clearTimeout(liveUpdateTimer);
+      applyGraph(sourceInput.value);
+    });
+
+    copyButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        copyDebugText(button.dataset.copyTarget, button);
+      });
+    });
+
+    if (copyDebugBundle) {
+      copyDebugBundle.addEventListener('click', () => {
+        copyTextWithFeedback(buildDebugBundle(), copyDebugBundle);
+      });
+    }
+
+    sourceInput.addEventListener('input', () => {
+      setLiveInputState('typing');
+      scheduleLiveUpdate();
+    });
+
+    sourceInput.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        clearTimeout(liveUpdateTimer);
+        applyGraph(sourceInput.value);
+      }
+    });
+
+    applyViewportTransform();
+    applyGraph('');
+  </script>
+</body>
+</html>

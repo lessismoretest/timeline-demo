@@ -1,0 +1,1403 @@
+{
+  "generatedAt": "2026-03-27T06:36:53.170599+00:00",
+  "source": {
+    "name": "National Bureau of Statistics of China - National Data",
+    "url": "https://data.stats.gov.cn/english/easyquery.htm",
+    "database": "hgnd",
+    "indicators": {
+      "populationTotal": "A030101",
+      "birthRate": "A030201"
+    }
+  },
+  "notes": [
+    "所有数值单位均为万人。",
+    "出生人口由国家统计局年末总人口与人口出生率按年均人口近似推算。",
+    "上图展示 1976-2025 近 50 年出生人口。",
+    "下图展示 2009-2045 的 cohort 推算结果，只使用 1949-2025 的真实出生数据。",
+    "不同年龄段的最远可完整推算年份不同：学龄前到 2025、小学到 2031、初中到 2037、高中到 2040、大学生到 2043、职场和银发可到 2045。",
+    "退休/银发人群统一按 60 岁及以上口径处理，未按性别法定退休年龄拆分。",
+    "银发简化生存率模式采用分段近似：60-69岁按88%，70-79岁按68%，80岁及以上按38%。",
+    "高校毕业生采用国家统计局教育口径：普通高等学校毕业生。",
+    "毕业转化率=高校毕业生/22岁cohort，仅用于趋势参考，不代表真实升学路径转化统计。"
+  ],
+  "ageBands": [
+    {
+      "key": "preschoolWan",
+      "label": "学龄前儿童",
+      "ageRange": "0-5"
+    },
+    {
+      "key": "primaryWan",
+      "label": "小学",
+      "ageRange": "6-11"
+    },
+    {
+      "key": "juniorWan",
+      "label": "初中",
+      "ageRange": "12-14"
+    },
+    {
+      "key": "seniorWan",
+      "label": "高中",
+      "ageRange": "15-17"
+    },
+    {
+      "key": "k12Wan",
+      "label": "K12",
+      "ageRange": "6-17"
+    },
+    {
+      "key": "collegeWan",
+      "label": "大学生",
+      "ageRange": "18-21"
+    },
+    {
+      "key": "age22Wan",
+      "label": "22岁 cohort",
+      "ageRange": "22"
+    },
+    {
+      "key": "graduatesWan",
+      "label": "高校毕业生",
+      "ageRange": "official"
+    },
+    {
+      "key": "graduateConversionRate",
+      "label": "毕业转化率",
+      "ageRange": "ratio"
+    },
+    {
+      "key": "workforceWan",
+      "label": "职场人群",
+      "ageRange": "22-59"
+    },
+    {
+      "key": "silverWan",
+      "label": "退休/银发",
+      "ageRange": "60+"
+    }
+  ],
+  "birthSeries": [
+    {
+      "year": 1949,
+      "populationWan": 54167.0,
+      "birthRatePerThousand": 36.0,
+      "birthsWan": 1950.0
+    },
+    {
+      "year": 1950,
+      "populationWan": 55196.0,
+      "birthRatePerThousand": 37.0,
+      "birthsWan": 2023.2
+    },
+    {
+      "year": 1951,
+      "populationWan": 56300.0,
+      "birthRatePerThousand": 37.8,
+      "birthsWan": 2107.3
+    },
+    {
+      "year": 1952,
+      "populationWan": 57482.0,
+      "birthRatePerThousand": 37.0,
+      "birthsWan": 2105.0
+    },
+    {
+      "year": 1953,
+      "populationWan": 58796.0,
+      "birthRatePerThousand": 37.0,
+      "birthsWan": 2151.1
+    },
+    {
+      "year": 1954,
+      "populationWan": 60266.4,
+      "birthRatePerThousand": 37.97,
+      "birthsWan": 2260.4
+    },
+    {
+      "year": 1955,
+      "populationWan": 61465.0,
+      "birthRatePerThousand": 32.6,
+      "birthsWan": 1984.2
+    },
+    {
+      "year": 1956,
+      "populationWan": 62828.3,
+      "birthRatePerThousand": 31.9,
+      "birthsWan": 1982.5
+    },
+    {
+      "year": 1957,
+      "populationWan": 64653.3,
+      "birthRatePerThousand": 34.03,
+      "birthsWan": 2169.1
+    },
+    {
+      "year": 1958,
+      "populationWan": 65994.3,
+      "birthRatePerThousand": 29.22,
+      "birthsWan": 1908.8
+    },
+    {
+      "year": 1959,
+      "populationWan": 67206.9,
+      "birthRatePerThousand": 24.78,
+      "birthsWan": 1650.4
+    },
+    {
+      "year": 1960,
+      "populationWan": 66207.0,
+      "birthRatePerThousand": 20.86,
+      "birthsWan": 1391.5
+    },
+    {
+      "year": 1961,
+      "populationWan": 65859.1,
+      "birthRatePerThousand": 18.13,
+      "birthsWan": 1197.2
+    },
+    {
+      "year": 1962,
+      "populationWan": 67295.5,
+      "birthRatePerThousand": 37.22,
+      "birthsWan": 2478.0
+    },
+    {
+      "year": 1963,
+      "populationWan": 69172.0,
+      "birthRatePerThousand": 43.6,
+      "birthsWan": 2975.0
+    },
+    {
+      "year": 1964,
+      "populationWan": 70499.1,
+      "birthRatePerThousand": 39.34,
+      "birthsWan": 2747.3
+    },
+    {
+      "year": 1965,
+      "populationWan": 72538.0,
+      "birthRatePerThousand": 38.0,
+      "birthsWan": 2717.7
+    },
+    {
+      "year": 1966,
+      "populationWan": 74542.0,
+      "birthRatePerThousand": 35.21,
+      "birthsWan": 2589.3
+    },
+    {
+      "year": 1967,
+      "populationWan": 76368.2,
+      "birthRatePerThousand": 34.12,
+      "birthsWan": 2574.5
+    },
+    {
+      "year": 1968,
+      "populationWan": 78534.2,
+      "birthRatePerThousand": 35.75,
+      "birthsWan": 2768.9
+    },
+    {
+      "year": 1969,
+      "populationWan": 80671.2,
+      "birthRatePerThousand": 34.25,
+      "birthsWan": 2726.4
+    },
+    {
+      "year": 1970,
+      "populationWan": 82992.0,
+      "birthRatePerThousand": 33.59,
+      "birthsWan": 2748.7
+    },
+    {
+      "year": 1971,
+      "populationWan": 85229.0,
+      "birthRatePerThousand": 30.74,
+      "birthsWan": 2585.6
+    },
+    {
+      "year": 1972,
+      "populationWan": 87177.0,
+      "birthRatePerThousand": 29.92,
+      "birthsWan": 2579.2
+    },
+    {
+      "year": 1973,
+      "populationWan": 89211.0,
+      "birthRatePerThousand": 28.07,
+      "birthsWan": 2475.6
+    },
+    {
+      "year": 1974,
+      "populationWan": 90859.0,
+      "birthRatePerThousand": 24.95,
+      "birthsWan": 2246.4
+    },
+    {
+      "year": 1975,
+      "populationWan": 92420.0,
+      "birthRatePerThousand": 23.13,
+      "birthsWan": 2119.6
+    },
+    {
+      "year": 1976,
+      "populationWan": 93717.0,
+      "birthRatePerThousand": 20.01,
+      "birthsWan": 1862.3
+    },
+    {
+      "year": 1977,
+      "populationWan": 94974.0,
+      "birthRatePerThousand": 19.03,
+      "birthsWan": 1795.4
+    },
+    {
+      "year": 1978,
+      "populationWan": 96259.0,
+      "birthRatePerThousand": 18.25,
+      "birthsWan": 1745.0
+    },
+    {
+      "year": 1979,
+      "populationWan": 97542.0,
+      "birthRatePerThousand": 17.82,
+      "birthsWan": 1726.8
+    },
+    {
+      "year": 1980,
+      "populationWan": 98705.0,
+      "birthRatePerThousand": 18.21,
+      "birthsWan": 1786.8
+    },
+    {
+      "year": 1981,
+      "populationWan": 100072.0,
+      "birthRatePerThousand": 20.91,
+      "birthsWan": 2078.2
+    },
+    {
+      "year": 1982,
+      "populationWan": 101654.0,
+      "birthRatePerThousand": 22.28,
+      "birthsWan": 2247.2
+    },
+    {
+      "year": 1983,
+      "populationWan": 103008.0,
+      "birthRatePerThousand": 20.19,
+      "birthsWan": 2066.1
+    },
+    {
+      "year": 1984,
+      "populationWan": 104357.0,
+      "birthRatePerThousand": 19.9,
+      "birthsWan": 2063.3
+    },
+    {
+      "year": 1985,
+      "populationWan": 105851.0,
+      "birthRatePerThousand": 21.04,
+      "birthsWan": 2211.4
+    },
+    {
+      "year": 1986,
+      "populationWan": 107507.0,
+      "birthRatePerThousand": 22.43,
+      "birthsWan": 2392.8
+    },
+    {
+      "year": 1987,
+      "populationWan": 109300.0,
+      "birthRatePerThousand": 23.33,
+      "birthsWan": 2529.1
+    },
+    {
+      "year": 1988,
+      "populationWan": 111026.0,
+      "birthRatePerThousand": 22.37,
+      "birthsWan": 2464.3
+    },
+    {
+      "year": 1989,
+      "populationWan": 112704.0,
+      "birthRatePerThousand": 21.58,
+      "birthsWan": 2414.0
+    },
+    {
+      "year": 1990,
+      "populationWan": 114333.0,
+      "birthRatePerThousand": 21.06,
+      "birthsWan": 2390.7
+    },
+    {
+      "year": 1991,
+      "populationWan": 115823.0,
+      "birthRatePerThousand": 19.68,
+      "birthsWan": 2264.7
+    },
+    {
+      "year": 1992,
+      "populationWan": 117171.0,
+      "birthRatePerThousand": 18.24,
+      "birthsWan": 2124.9
+    },
+    {
+      "year": 1993,
+      "populationWan": 118517.0,
+      "birthRatePerThousand": 18.09,
+      "birthsWan": 2131.8
+    },
+    {
+      "year": 1994,
+      "populationWan": 119850.0,
+      "birthRatePerThousand": 17.7,
+      "birthsWan": 2109.5
+    },
+    {
+      "year": 1995,
+      "populationWan": 121121.0,
+      "birthRatePerThousand": 17.12,
+      "birthsWan": 2062.7
+    },
+    {
+      "year": 1996,
+      "populationWan": 122389.0,
+      "birthRatePerThousand": 16.98,
+      "birthsWan": 2067.4
+    },
+    {
+      "year": 1997,
+      "populationWan": 123626.0,
+      "birthRatePerThousand": 16.57,
+      "birthsWan": 2038.2
+    },
+    {
+      "year": 1998,
+      "populationWan": 124761.0,
+      "birthRatePerThousand": 15.64,
+      "birthsWan": 1942.4
+    },
+    {
+      "year": 1999,
+      "populationWan": 125786.0,
+      "birthRatePerThousand": 14.64,
+      "birthsWan": 1834.0
+    },
+    {
+      "year": 2000,
+      "populationWan": 126743.0,
+      "birthRatePerThousand": 14.03,
+      "birthsWan": 1771.5
+    },
+    {
+      "year": 2001,
+      "populationWan": 127627.0,
+      "birthRatePerThousand": 13.38,
+      "birthsWan": 1701.7
+    },
+    {
+      "year": 2002,
+      "populationWan": 128453.0,
+      "birthRatePerThousand": 12.86,
+      "birthsWan": 1646.6
+    },
+    {
+      "year": 2003,
+      "populationWan": 129227.0,
+      "birthRatePerThousand": 12.41,
+      "birthsWan": 1598.9
+    },
+    {
+      "year": 2004,
+      "populationWan": 129988.0,
+      "birthRatePerThousand": 12.29,
+      "birthsWan": 1592.9
+    },
+    {
+      "year": 2005,
+      "populationWan": 130756.0,
+      "birthRatePerThousand": 12.4,
+      "birthsWan": 1616.6
+    },
+    {
+      "year": 2006,
+      "populationWan": 131448.0,
+      "birthRatePerThousand": 12.09,
+      "birthsWan": 1585.0
+    },
+    {
+      "year": 2007,
+      "populationWan": 132129.0,
+      "birthRatePerThousand": 12.1,
+      "birthsWan": 1594.6
+    },
+    {
+      "year": 2008,
+      "populationWan": 132802.0,
+      "birthRatePerThousand": 12.14,
+      "birthsWan": 1608.1
+    },
+    {
+      "year": 2009,
+      "populationWan": 133450.0,
+      "birthRatePerThousand": 11.95,
+      "birthsWan": 1590.9
+    },
+    {
+      "year": 2010,
+      "populationWan": 134091.0,
+      "birthRatePerThousand": 11.9,
+      "birthsWan": 1591.9
+    },
+    {
+      "year": 2011,
+      "populationWan": 134916.0,
+      "birthRatePerThousand": 13.27,
+      "birthsWan": 1784.9
+    },
+    {
+      "year": 2012,
+      "populationWan": 135922.0,
+      "birthRatePerThousand": 14.57,
+      "birthsWan": 1973.1
+    },
+    {
+      "year": 2013,
+      "populationWan": 136726.0,
+      "birthRatePerThousand": 13.03,
+      "birthsWan": 1776.3
+    },
+    {
+      "year": 2014,
+      "populationWan": 137646.0,
+      "birthRatePerThousand": 13.83,
+      "birthsWan": 1897.3
+    },
+    {
+      "year": 2015,
+      "populationWan": 138326.0,
+      "birthRatePerThousand": 11.99,
+      "birthsWan": 1654.5
+    },
+    {
+      "year": 2016,
+      "populationWan": 139232.0,
+      "birthRatePerThousand": 13.57,
+      "birthsWan": 1883.2
+    },
+    {
+      "year": 2017,
+      "populationWan": 140011.0,
+      "birthRatePerThousand": 12.64,
+      "birthsWan": 1764.8
+    },
+    {
+      "year": 2018,
+      "populationWan": 140541.0,
+      "birthRatePerThousand": 10.86,
+      "birthsWan": 1523.4
+    },
+    {
+      "year": 2019,
+      "populationWan": 141008.0,
+      "birthRatePerThousand": 10.41,
+      "birthsWan": 1465.5
+    },
+    {
+      "year": 2020,
+      "populationWan": 141212.0,
+      "birthRatePerThousand": 8.52,
+      "birthsWan": 1202.3
+    },
+    {
+      "year": 2021,
+      "populationWan": 141260.0,
+      "birthRatePerThousand": 7.52,
+      "birthsWan": 1062.1
+    },
+    {
+      "year": 2022,
+      "populationWan": 141175.0,
+      "birthRatePerThousand": 6.77,
+      "birthsWan": 956.0
+    },
+    {
+      "year": 2023,
+      "populationWan": 140967.0,
+      "birthRatePerThousand": 6.39,
+      "birthsWan": 901.4
+    },
+    {
+      "year": 2024,
+      "populationWan": 140828.0,
+      "birthRatePerThousand": 6.77,
+      "birthsWan": 953.9
+    },
+    {
+      "year": 2025,
+      "populationWan": 140489.0,
+      "birthRatePerThousand": 5.63,
+      "birthsWan": 791.9
+    }
+  ],
+  "birthSeriesLast50": [
+    {
+      "year": 1976,
+      "populationWan": 93717.0,
+      "birthRatePerThousand": 20.01,
+      "birthsWan": 1862.3
+    },
+    {
+      "year": 1977,
+      "populationWan": 94974.0,
+      "birthRatePerThousand": 19.03,
+      "birthsWan": 1795.4
+    },
+    {
+      "year": 1978,
+      "populationWan": 96259.0,
+      "birthRatePerThousand": 18.25,
+      "birthsWan": 1745.0
+    },
+    {
+      "year": 1979,
+      "populationWan": 97542.0,
+      "birthRatePerThousand": 17.82,
+      "birthsWan": 1726.8
+    },
+    {
+      "year": 1980,
+      "populationWan": 98705.0,
+      "birthRatePerThousand": 18.21,
+      "birthsWan": 1786.8
+    },
+    {
+      "year": 1981,
+      "populationWan": 100072.0,
+      "birthRatePerThousand": 20.91,
+      "birthsWan": 2078.2
+    },
+    {
+      "year": 1982,
+      "populationWan": 101654.0,
+      "birthRatePerThousand": 22.28,
+      "birthsWan": 2247.2
+    },
+    {
+      "year": 1983,
+      "populationWan": 103008.0,
+      "birthRatePerThousand": 20.19,
+      "birthsWan": 2066.1
+    },
+    {
+      "year": 1984,
+      "populationWan": 104357.0,
+      "birthRatePerThousand": 19.9,
+      "birthsWan": 2063.3
+    },
+    {
+      "year": 1985,
+      "populationWan": 105851.0,
+      "birthRatePerThousand": 21.04,
+      "birthsWan": 2211.4
+    },
+    {
+      "year": 1986,
+      "populationWan": 107507.0,
+      "birthRatePerThousand": 22.43,
+      "birthsWan": 2392.8
+    },
+    {
+      "year": 1987,
+      "populationWan": 109300.0,
+      "birthRatePerThousand": 23.33,
+      "birthsWan": 2529.1
+    },
+    {
+      "year": 1988,
+      "populationWan": 111026.0,
+      "birthRatePerThousand": 22.37,
+      "birthsWan": 2464.3
+    },
+    {
+      "year": 1989,
+      "populationWan": 112704.0,
+      "birthRatePerThousand": 21.58,
+      "birthsWan": 2414.0
+    },
+    {
+      "year": 1990,
+      "populationWan": 114333.0,
+      "birthRatePerThousand": 21.06,
+      "birthsWan": 2390.7
+    },
+    {
+      "year": 1991,
+      "populationWan": 115823.0,
+      "birthRatePerThousand": 19.68,
+      "birthsWan": 2264.7
+    },
+    {
+      "year": 1992,
+      "populationWan": 117171.0,
+      "birthRatePerThousand": 18.24,
+      "birthsWan": 2124.9
+    },
+    {
+      "year": 1993,
+      "populationWan": 118517.0,
+      "birthRatePerThousand": 18.09,
+      "birthsWan": 2131.8
+    },
+    {
+      "year": 1994,
+      "populationWan": 119850.0,
+      "birthRatePerThousand": 17.7,
+      "birthsWan": 2109.5
+    },
+    {
+      "year": 1995,
+      "populationWan": 121121.0,
+      "birthRatePerThousand": 17.12,
+      "birthsWan": 2062.7
+    },
+    {
+      "year": 1996,
+      "populationWan": 122389.0,
+      "birthRatePerThousand": 16.98,
+      "birthsWan": 2067.4
+    },
+    {
+      "year": 1997,
+      "populationWan": 123626.0,
+      "birthRatePerThousand": 16.57,
+      "birthsWan": 2038.2
+    },
+    {
+      "year": 1998,
+      "populationWan": 124761.0,
+      "birthRatePerThousand": 15.64,
+      "birthsWan": 1942.4
+    },
+    {
+      "year": 1999,
+      "populationWan": 125786.0,
+      "birthRatePerThousand": 14.64,
+      "birthsWan": 1834.0
+    },
+    {
+      "year": 2000,
+      "populationWan": 126743.0,
+      "birthRatePerThousand": 14.03,
+      "birthsWan": 1771.5
+    },
+    {
+      "year": 2001,
+      "populationWan": 127627.0,
+      "birthRatePerThousand": 13.38,
+      "birthsWan": 1701.7
+    },
+    {
+      "year": 2002,
+      "populationWan": 128453.0,
+      "birthRatePerThousand": 12.86,
+      "birthsWan": 1646.6
+    },
+    {
+      "year": 2003,
+      "populationWan": 129227.0,
+      "birthRatePerThousand": 12.41,
+      "birthsWan": 1598.9
+    },
+    {
+      "year": 2004,
+      "populationWan": 129988.0,
+      "birthRatePerThousand": 12.29,
+      "birthsWan": 1592.9
+    },
+    {
+      "year": 2005,
+      "populationWan": 130756.0,
+      "birthRatePerThousand": 12.4,
+      "birthsWan": 1616.6
+    },
+    {
+      "year": 2006,
+      "populationWan": 131448.0,
+      "birthRatePerThousand": 12.09,
+      "birthsWan": 1585.0
+    },
+    {
+      "year": 2007,
+      "populationWan": 132129.0,
+      "birthRatePerThousand": 12.1,
+      "birthsWan": 1594.6
+    },
+    {
+      "year": 2008,
+      "populationWan": 132802.0,
+      "birthRatePerThousand": 12.14,
+      "birthsWan": 1608.1
+    },
+    {
+      "year": 2009,
+      "populationWan": 133450.0,
+      "birthRatePerThousand": 11.95,
+      "birthsWan": 1590.9
+    },
+    {
+      "year": 2010,
+      "populationWan": 134091.0,
+      "birthRatePerThousand": 11.9,
+      "birthsWan": 1591.9
+    },
+    {
+      "year": 2011,
+      "populationWan": 134916.0,
+      "birthRatePerThousand": 13.27,
+      "birthsWan": 1784.9
+    },
+    {
+      "year": 2012,
+      "populationWan": 135922.0,
+      "birthRatePerThousand": 14.57,
+      "birthsWan": 1973.1
+    },
+    {
+      "year": 2013,
+      "populationWan": 136726.0,
+      "birthRatePerThousand": 13.03,
+      "birthsWan": 1776.3
+    },
+    {
+      "year": 2014,
+      "populationWan": 137646.0,
+      "birthRatePerThousand": 13.83,
+      "birthsWan": 1897.3
+    },
+    {
+      "year": 2015,
+      "populationWan": 138326.0,
+      "birthRatePerThousand": 11.99,
+      "birthsWan": 1654.5
+    },
+    {
+      "year": 2016,
+      "populationWan": 139232.0,
+      "birthRatePerThousand": 13.57,
+      "birthsWan": 1883.2
+    },
+    {
+      "year": 2017,
+      "populationWan": 140011.0,
+      "birthRatePerThousand": 12.64,
+      "birthsWan": 1764.8
+    },
+    {
+      "year": 2018,
+      "populationWan": 140541.0,
+      "birthRatePerThousand": 10.86,
+      "birthsWan": 1523.4
+    },
+    {
+      "year": 2019,
+      "populationWan": 141008.0,
+      "birthRatePerThousand": 10.41,
+      "birthsWan": 1465.5
+    },
+    {
+      "year": 2020,
+      "populationWan": 141212.0,
+      "birthRatePerThousand": 8.52,
+      "birthsWan": 1202.3
+    },
+    {
+      "year": 2021,
+      "populationWan": 141260.0,
+      "birthRatePerThousand": 7.52,
+      "birthsWan": 1062.1
+    },
+    {
+      "year": 2022,
+      "populationWan": 141175.0,
+      "birthRatePerThousand": 6.77,
+      "birthsWan": 956.0
+    },
+    {
+      "year": 2023,
+      "populationWan": 140967.0,
+      "birthRatePerThousand": 6.39,
+      "birthsWan": 901.4
+    },
+    {
+      "year": 2024,
+      "populationWan": 140828.0,
+      "birthRatePerThousand": 6.77,
+      "birthsWan": 953.9
+    },
+    {
+      "year": 2025,
+      "populationWan": 140489.0,
+      "birthRatePerThousand": 5.63,
+      "birthsWan": 791.9
+    }
+  ],
+  "cohortSeries": [
+    {
+      "year": 2009,
+      "preschoolWan": 9588.1,
+      "primaryWan": 10495.1,
+      "juniorWan": 6168.3,
+      "seniorWan": 6366.2,
+      "k12Wan": 23029.6,
+      "collegeWan": 9533.7,
+      "age22Wan": 2529.1,
+      "graduatesWan": 531.1,
+      "workforceWan": 83767.3,
+      "silverWan": 1950.0,
+      "silverAdjustedWan": 1716.0,
+      "graduateConversionRate": 21.0
+    },
+    {
+      "year": 2010,
+      "preschoolWan": 9587.1,
+      "primaryWan": 10145.6,
+      "juniorWan": 6048.0,
+      "seniorWan": 6304.0,
+      "k12Wan": 22497.6,
+      "collegeWan": 9194.3,
+      "age22Wan": 2464.3,
+      "graduatesWan": 575.4,
+      "workforceWan": 84208.4,
+      "silverWan": 3973.2,
+      "silverAdjustedWan": 3496.4,
+      "graduateConversionRate": 23.3
+    },
+    {
+      "year": 2011,
+      "preschoolWan": 9755.4,
+      "primaryWan": 9928.2,
+      "juniorWan": 5814.6,
+      "seniorWan": 6239.6,
+      "k12Wan": 21982.4,
+      "collegeWan": 8912.1,
+      "age22Wan": 2414.0,
+      "graduatesWan": 608.2,
+      "workforceWan": 84515.1,
+      "silverWan": 6080.5,
+      "silverAdjustedWan": 5350.8,
+      "graduateConversionRate": 25.2
+    },
+    {
+      "year": 2012,
+      "preschoolWan": 10143.5,
+      "primaryWan": 9741.7,
+      "juniorWan": 5547.9,
+      "seniorWan": 6168.3,
+      "k12Wan": 21457.9,
+      "collegeWan": 8630.9,
+      "age22Wan": 2390.7,
+      "graduatesWan": 624.7,
+      "workforceWan": 84800.8,
+      "silverWan": 8185.5,
+      "silverAdjustedWan": 7203.2,
+      "graduateConversionRate": 26.1
+    },
+    {
+      "year": 2013,
+      "preschoolWan": 10325.2,
+      "primaryWan": 9634.6,
+      "juniorWan": 5307.2,
+      "seniorWan": 6048.0,
+      "k12Wan": 20989.8,
+      "collegeWan": 8428.9,
+      "age22Wan": 2264.7,
+      "graduatesWan": 638.7,
+      "workforceWan": 84914.4,
+      "silverWan": 10336.6,
+      "silverAdjustedWan": 9096.2,
+      "graduateConversionRate": 28.2
+    },
+    {
+      "year": 2014,
+      "preschoolWan": 10614.4,
+      "primaryWan": 9596.1,
+      "juniorWan": 5119.8,
+      "seniorWan": 5814.6,
+      "k12Wan": 20530.5,
+      "collegeWan": 8371.4,
+      "age22Wan": 2124.9,
+      "graduatesWan": 659.4,
+      "workforceWan": 84778.9,
+      "silverWan": 12597.0,
+      "silverAdjustedWan": 11085.4,
+      "graduateConversionRate": 31.0
+    },
+    {
+      "year": 2015,
+      "preschoolWan": 10678.0,
+      "primaryWan": 9588.1,
+      "juniorWan": 4947.2,
+      "seniorWan": 5547.9,
+      "k12Wan": 20083.2,
+      "collegeWan": 8277.8,
+      "age22Wan": 2131.8,
+      "graduatesWan": 680.9,
+      "workforceWan": 84926.5,
+      "silverWan": 14581.2,
+      "silverAdjustedWan": 12831.5,
+      "graduateConversionRate": 31.9
+    },
+    {
+      "year": 2016,
+      "preschoolWan": 10969.3,
+      "primaryWan": 9587.1,
+      "juniorWan": 4838.4,
+      "seniorWan": 5307.2,
+      "k12Wan": 19732.7,
+      "collegeWan": 8110.7,
+      "age22Wan": 2109.5,
+      "graduatesWan": 704.2,
+      "workforceWan": 85053.5,
+      "silverWan": 16563.7,
+      "silverAdjustedWan": 14576.1,
+      "graduateConversionRate": 33.4
+    },
+    {
+      "year": 2017,
+      "preschoolWan": 10949.2,
+      "primaryWan": 9755.4,
+      "juniorWan": 4808.4,
+      "seniorWan": 5119.8,
+      "k12Wan": 19683.6,
+      "collegeWan": 7882.0,
+      "age22Wan": 2062.7,
+      "graduatesWan": 735.8,
+      "workforceWan": 84947.1,
+      "silverWan": 18732.8,
+      "silverAdjustedWan": 16484.9,
+      "graduateConversionRate": 35.7
+    },
+    {
+      "year": 2018,
+      "preschoolWan": 10499.5,
+      "primaryWan": 10143.5,
+      "juniorWan": 4794.5,
+      "seniorWan": 4947.2,
+      "k12Wan": 19885.2,
+      "collegeWan": 7586.1,
+      "age22Wan": 2067.4,
+      "graduatesWan": 753.3,
+      "workforceWan": 85105.7,
+      "silverWan": 20641.6,
+      "silverAdjustedWan": 18164.6,
+      "graduateConversionRate": 36.4
+    },
+    {
+      "year": 2019,
+      "preschoolWan": 10188.7,
+      "primaryWan": 10325.2,
+      "juniorWan": 4796.2,
+      "seniorWan": 4838.4,
+      "k12Wan": 19959.8,
+      "collegeWan": 7249.6,
+      "age22Wan": 2038.2,
+      "graduatesWan": 758.5,
+      "workforceWan": 85493.5,
+      "silverWan": 22292.0,
+      "silverAdjustedWan": 19227.0,
+      "graduateConversionRate": 37.2
+    },
+    {
+      "year": 2020,
+      "preschoolWan": 9493.7,
+      "primaryWan": 10614.4,
+      "juniorWan": 4787.7,
+      "seniorWan": 4808.4,
+      "k12Wan": 20210.5,
+      "collegeWan": 6953.8,
+      "age22Wan": 1942.4,
+      "graduatesWan": 797.2,
+      "workforceWan": 86044.4,
+      "silverWan": 23683.5,
+      "silverAdjustedWan": 20046.8,
+      "graduateConversionRate": 41.0
+    },
+    {
+      "year": 2021,
+      "preschoolWan": 8901.3,
+      "primaryWan": 10678.0,
+      "juniorWan": 4793.6,
+      "seniorWan": 4794.5,
+      "k12Wan": 20266.1,
+      "collegeWan": 6718.7,
+      "age22Wan": 1834.0,
+      "graduatesWan": 826.5,
+      "workforceWan": 86681.2,
+      "silverWan": 24880.7,
+      "silverAdjustedWan": 20678.9,
+      "graduateConversionRate": 45.1
+    },
+    {
+      "year": 2022,
+      "preschoolWan": 7974.1,
+      "primaryWan": 10969.3,
+      "juniorWan": 4790.9,
+      "seniorWan": 4796.2,
+      "k12Wan": 20556.4,
+      "collegeWan": 6540.1,
+      "age22Wan": 1771.5,
+      "graduatesWan": 967.3,
+      "workforceWan": 85974.7,
+      "silverWan": 27358.7,
+      "silverAdjustedWan": 22438.6,
+      "graduateConversionRate": 54.6
+    },
+    {
+      "year": 2023,
+      "preschoolWan": 7110.7,
+      "primaryWan": 10949.2,
+      "juniorWan": 4967.7,
+      "seniorWan": 4787.7,
+      "k12Wan": 20704.6,
+      "collegeWan": 6455.0,
+      "age22Wan": 1701.7,
+      "graduatesWan": 1047.0,
+      "workforceWan": 84701.4,
+      "silverWan": 30333.7,
+      "silverAdjustedWan": 24626.3,
+      "graduateConversionRate": 61.5
+    },
+    {
+      "year": 2024,
+      "preschoolWan": 6541.2,
+      "primaryWan": 10499.5,
+      "juniorWan": 5349.9,
+      "seniorWan": 4793.6,
+      "k12Wan": 20643.0,
+      "collegeWan": 6393.4,
+      "age22Wan": 1646.6,
+      "graduatesWan": 1059.4,
+      "workforceWan": 83600.7,
+      "silverWan": 33081.0,
+      "silverAdjustedWan": 26591.9,
+      "graduateConversionRate": 64.3
+    },
+    {
+      "year": 2025,
+      "preschoolWan": 5867.6,
+      "primaryWan": 10188.7,
+      "juniorWan": 5534.3,
+      "seniorWan": 4790.9,
+      "k12Wan": 20513.9,
+      "collegeWan": 6389.1,
+      "age22Wan": 1598.9,
+      "graduatesWan": 1105.1,
+      "workforceWan": 82481.9,
+      "silverWan": 35798.7,
+      "silverAdjustedWan": 28586.6,
+      "graduateConversionRate": 69.1
+    },
+    {
+      "year": 2026,
+      "preschoolWan": null,
+      "primaryWan": 9493.7,
+      "juniorWan": 5646.7,
+      "seniorWan": 4967.7,
+      "k12Wan": 20108.1,
+      "collegeWan": 6404.3,
+      "age22Wan": 1592.9,
+      "graduatesWan": null,
+      "workforceWan": 81485.5,
+      "silverWan": 38388.0,
+      "silverAdjustedWan": 30468.7,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2027,
+      "preschoolWan": null,
+      "primaryWan": 8901.3,
+      "juniorWan": 5328.1,
+      "seniorWan": 5349.9,
+      "k12Wan": 19579.3,
+      "collegeWan": 6378.6,
+      "age22Wan": 1616.6,
+      "graduatesWan": null,
+      "workforceWan": 80527.6,
+      "silverWan": 40962.5,
+      "silverAdjustedWan": 32300.4,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2028,
+      "preschoolWan": null,
+      "primaryWan": 7974.1,
+      "juniorWan": 5435.0,
+      "seniorWan": 5534.3,
+      "k12Wan": 18943.4,
+      "collegeWan": 6385.5,
+      "age22Wan": 1585.0,
+      "graduatesWan": null,
+      "workforceWan": 79343.7,
+      "silverWan": 43731.4,
+      "silverAdjustedWan": 34355.3,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2029,
+      "preschoolWan": null,
+      "primaryWan": 7110.7,
+      "juniorWan": 5302.5,
+      "seniorWan": 5646.7,
+      "k12Wan": 18059.9,
+      "collegeWan": 6575.8,
+      "age22Wan": 1594.6,
+      "graduatesWan": null,
+      "workforceWan": 78211.9,
+      "silverWan": 46457.8,
+      "silverAdjustedWan": 35839.5,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2030,
+      "preschoolWan": null,
+      "primaryWan": 6541.2,
+      "juniorWan": 5171.4,
+      "seniorWan": 5328.1,
+      "k12Wan": 17040.7,
+      "collegeWan": 6940.8,
+      "age22Wan": 1608.1,
+      "graduatesWan": null,
+      "workforceWan": 77071.3,
+      "silverWan": 49206.5,
+      "silverAdjustedWan": 37373.1,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2031,
+      "preschoolWan": null,
+      "primaryWan": 5867.6,
+      "juniorWan": 4753.7,
+      "seniorWan": 5435.0,
+      "k12Wan": 16056.3,
+      "collegeWan": 7126.2,
+      "age22Wan": 1590.9,
+      "graduatesWan": null,
+      "workforceWan": 76076.6,
+      "silverWan": 51792.1,
+      "silverAdjustedWan": 38776.8,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2032,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": 4191.2,
+      "seniorWan": 5302.5,
+      "k12Wan": null,
+      "collegeWan": 7431.6,
+      "age22Wan": 1591.9,
+      "graduatesWan": null,
+      "workforceWan": 75089.3,
+      "silverWan": 54371.3,
+      "silverAdjustedWan": 39919.4,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2033,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": 3729.9,
+      "seniorWan": 5171.4,
+      "k12Wan": null,
+      "collegeWan": 7301.2,
+      "age22Wan": 1784.9,
+      "graduatesWan": null,
+      "workforceWan": 74398.6,
+      "silverWan": 56846.9,
+      "silverAdjustedWan": 40857.6,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2034,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": 3220.4,
+      "seniorWan": 4753.7,
+      "k12Wan": null,
+      "collegeWan": 7211.3,
+      "age22Wan": 1973.1,
+      "graduatesWan": null,
+      "workforceWan": 74125.3,
+      "silverWan": 59093.3,
+      "silverAdjustedWan": 41606.8,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2035,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": 2919.5,
+      "seniorWan": 4191.2,
+      "k12Wan": null,
+      "collegeWan": 7199.8,
+      "age22Wan": 1776.3,
+      "graduatesWan": null,
+      "workforceWan": 73782.0,
+      "silverWan": 61212.9,
+      "silverAdjustedWan": 42333.3,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2036,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": 2811.3,
+      "seniorWan": 3729.9,
+      "k12Wan": null,
+      "collegeWan": 6825.9,
+      "age22Wan": 1897.3,
+      "graduatesWan": null,
+      "workforceWan": 73817.0,
+      "silverWan": 63075.2,
+      "silverAdjustedWan": 42859.5,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2037,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": 2647.2,
+      "seniorWan": 3220.4,
+      "k12Wan": null,
+      "collegeWan": 6636.9,
+      "age22Wan": 1654.5,
+      "graduatesWan": null,
+      "workforceWan": 73676.1,
+      "silverWan": 64870.6,
+      "silverAdjustedWan": 43273.8,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2038,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": null,
+      "seniorWan": 2919.5,
+      "k12Wan": null,
+      "collegeWan": 5956.0,
+      "age22Wan": 1883.2,
+      "graduatesWan": null,
+      "workforceWan": 73814.3,
+      "silverWan": 66615.6,
+      "silverAdjustedWan": 43683.0,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2039,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": null,
+      "seniorWan": 2811.3,
+      "k12Wan": null,
+      "collegeWan": 5253.3,
+      "age22Wan": 1764.8,
+      "graduatesWan": null,
+      "workforceWan": 73852.3,
+      "silverWan": 68342.4,
+      "silverAdjustedWan": 44162.2,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2040,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": null,
+      "seniorWan": 2647.2,
+      "k12Wan": null,
+      "collegeWan": 4685.9,
+      "age22Wan": 1523.4,
+      "graduatesWan": null,
+      "workforceWan": 73588.9,
+      "silverWan": 70129.2,
+      "silverAdjustedWan": 44767.3,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2041,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": null,
+      "seniorWan": null,
+      "k12Wan": null,
+      "collegeWan": 4121.8,
+      "age22Wan": 1465.5,
+      "graduatesWan": null,
+      "workforceWan": 72976.2,
+      "silverWan": 72207.4,
+      "silverAdjustedWan": 45719.9,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2042,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": null,
+      "seniorWan": null,
+      "k12Wan": null,
+      "collegeWan": 3873.4,
+      "age22Wan": 1202.3,
+      "graduatesWan": null,
+      "workforceWan": 71931.3,
+      "silverWan": 74454.6,
+      "silverAdjustedWan": 46438.2,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2043,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": null,
+      "seniorWan": null,
+      "k12Wan": null,
+      "collegeWan": 3603.2,
+      "age22Wan": 1062.1,
+      "graduatesWan": null,
+      "workforceWan": 70927.3,
+      "silverWan": 76520.7,
+      "silverAdjustedWan": 46868.7,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2044,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": null,
+      "seniorWan": null,
+      "k12Wan": null,
+      "collegeWan": null,
+      "age22Wan": 956.0,
+      "graduatesWan": null,
+      "workforceWan": 69820.0,
+      "silverWan": 78584.0,
+      "silverAdjustedWan": 47411.0,
+      "graduateConversionRate": null
+    },
+    {
+      "year": 2045,
+      "preschoolWan": null,
+      "primaryWan": null,
+      "juniorWan": null,
+      "seniorWan": null,
+      "k12Wan": null,
+      "collegeWan": null,
+      "age22Wan": 901.4,
+      "graduatesWan": null,
+      "workforceWan": 68510.0,
+      "silverWan": 80795.4,
+      "silverAdjustedWan": 48117.8,
+      "graduateConversionRate": null
+    }
+  ]
+}

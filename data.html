@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>taste2 Data</title>
+  <link rel="stylesheet" href="/assets/shared-nav.css" />
+  <script src="/assets/shared-nav.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <style>
+    :root{
+      color-scheme: light;
+      --bg:#f5f5f7;
+      --card:#ffffff;
+      --line:#e5e7eb;
+      --text:#111827;
+      --muted:#6b7280;
+      --green:#166534;
+      --blue:#2563eb;
+      --amber:#d97706;
+      --rose:#be123c;
+      --slate:#475569;
+      --shadow:0 18px 48px rgba(15,23,42,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.08), transparent 26%),
+        radial-gradient(circle at top right, rgba(22,101,52,.08), transparent 24%),
+        linear-gradient(180deg,#f8fafc 0%,var(--bg) 100%);
+    }
+    .page-shell__body{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .hero,
+    .panel,
+    .note-card{
+      background:rgba(255,255,255,.94);
+      border:1px solid rgba(148,163,184,.18);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+    .hero{
+      padding:24px;
+      overflow:hidden;
+      position:relative;
+    }
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-60px;
+      bottom:-80px;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(37,99,235,.14) 0%, rgba(37,99,235,0) 70%);
+      pointer-events:none;
+    }
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .hero-copy{
+      max-width:780px;
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#e8f0ff;
+      color:#1d4ed8;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.04em;
+      margin-bottom:10px;
+    }
+    .hero h2{
+      margin:0 0 10px;
+      font-size:31px;
+      line-height:1.08;
+      letter-spacing:-0.04em;
+    }
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.75;
+      font-size:14px;
+    }
+    .hero-pills{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(150px,1fr));
+      gap:10px;
+      min-width:min(100%,340px);
+    }
+    .pill{
+      padding:14px 16px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid rgba(148,163,184,.16);
+    }
+    .pill-label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .pill-value{
+      display:block;
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:-0.03em;
+      margin-bottom:4px;
+    }
+    .pill-note{
+      display:block;
+      font-size:12px;
+      color:#475569;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+    .stat-card{
+      padding:18px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid rgba(148,163,184,.16);
+    }
+    .stat-card strong{
+      display:block;
+      font-size:28px;
+      line-height:1;
+      letter-spacing:-0.05em;
+      margin-bottom:8px;
+    }
+    .stat-card span{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+    .stat-card p{
+      margin:0;
+      font-size:13px;
+      line-height:1.65;
+      color:#475569;
+    }
+    .panel{
+      padding:18px;
+    }
+    .panel-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .panel-head h3{
+      margin:0 0 6px;
+      font-size:20px;
+      letter-spacing:-0.03em;
+    }
+    .panel-head p{
+      margin:0;
+      max-width:820px;
+      font-size:13px;
+      line-height:1.7;
+      color:var(--muted);
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid rgba(148,163,184,.18);
+      color:#475569;
+      font-size:12px;
+      font-weight:600;
+    }
+    .panel-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .segmented{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px;
+      border-radius:999px;
+      background:#eef2f7;
+    }
+    .segmented button{
+      border:0;
+      background:transparent;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:700;
+      color:#475569;
+      cursor:pointer;
+    }
+    .segmented button.active{
+      background:#111827;
+      color:#fff;
+    }
+    .panel-content.is-hidden{
+      display:none;
+    }
+    .chart{
+      width:100%;
+      height:430px;
+    }
+    .table-wrap{
+      margin-top:14px;
+      overflow:auto;
+      border:1px solid rgba(148,163,184,.16);
+      border-radius:18px;
+      background:#fff;
+    }
+    .data-table{
+      width:100%;
+      min-width:820px;
+      border-collapse:collapse;
+      font-size:12px;
+    }
+    .data-table th,
+    .data-table td{
+      padding:10px 12px;
+      border-bottom:1px solid rgba(226,232,240,.9);
+      text-align:right;
+      white-space:nowrap;
+    }
+    .data-table th{
+      position:sticky;
+      top:0;
+      z-index:1;
+      background:#f8fafc;
+      color:#475569;
+      font-weight:700;
+    }
+    .data-table th:first-child,
+    .data-table td:first-child{
+      text-align:left;
+      position:sticky;
+      left:0;
+      z-index:1;
+      background:inherit;
+    }
+    .data-table th:first-child{
+      z-index:2;
+      background:#f8fafc;
+    }
+    .data-table tbody tr:nth-child(even) td{
+      background:#fcfdff;
+    }
+    .data-table tbody tr:hover td{
+      background:#f8fbff;
+    }
+    .notes{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+    .note-card{
+      padding:18px;
+    }
+    .note-card h4{
+      margin:0 0 8px;
+      font-size:16px;
+      letter-spacing:-0.02em;
+    }
+    .note-card p,
+    .note-card li{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+    .note-card ul{
+      margin:8px 0 0;
+      padding-left:18px;
+    }
+    .status{
+      padding:18px 20px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid rgba(148,163,184,.16);
+      color:#475569;
+      font-size:14px;
+    }
+    .status.error{
+      color:#9f1239;
+      border-color:rgba(190,24,93,.2);
+      background:#fff1f5;
+    }
+    @media (max-width: 1080px){
+      .stats,
+      .notes{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+    @media (max-width: 720px){
+      .hero,
+      .panel,
+      .note-card{
+        border-radius:20px;
+      }
+      .hero h2{
+        font-size:27px;
+      }
+      .hero-pills,
+      .stats,
+      .notes{
+        grid-template-columns:1fr;
+      }
+      .chart{
+        height:340px;
+      }
+    }
+  </style>
+</head>
+<body data-nav-page="data" data-page-title="Data 分析台" data-page-subtitle="基于国家统计局真实数据，把中国出生人口拆成年龄段进行 cohort 推算。" style="--page-max-width:1360px">
+  <div data-shared-nav-root></div>
+  <div data-shared-page-header-root></div>
+  <main class="page-shell__body">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-copy">
+          <span class="eyebrow">Official data only</span>
+          <h2>上图看建国以来出生人口，下图看年龄段 cohort 变化。</h2>
+          <p>
+            这版已经去掉演示数据，全部改成国家统计局公开口径。上图是 `1949-2025` 的中国出生人口原始序列；
+            下图把这些出生数据按年龄滚动累加，拆成学龄前、小学、初中、高中、大学生、职场、退休/银发几个段。
+            为了保持“只用真实数据、不做伪造补值”，下图横轴已经延长到 `2045`；
+            但不同年龄段能完整推到的最远年份不同，超出真实出生数据覆盖边界的部分会自动留空。
+          </p>
+        </div>
+        <div class="hero-pills">
+          <div class="pill">
+            <span class="pill-label">原始数据范围</span>
+            <span class="pill-value">1949-2025</span>
+            <span class="pill-note">建国以来出生人口</span>
+          </div>
+          <div class="pill">
+            <span class="pill-label">cohort 推算范围</span>
+            <span class="pill-value">2009-2045</span>
+            <span class="pill-note">向后推算 20 年</span>
+          </div>
+          <div class="pill">
+            <span class="pill-label">退休/银发口径</span>
+            <span class="pill-value">60+</span>
+            <span class="pill-note">聚合口径，未分男女</span>
+          </div>
+          <div class="pill">
+            <span class="pill-label">数据来源</span>
+            <span class="pill-value">NBS</span>
+            <span class="pill-note">国家统计局 National Data</span>
+          </div>
+        </div>
+      </div>
+      <div class="stats" id="summaryStats"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>建国以来中国出生人口</h3>
+          <p>这张图只展示出生人口原始数据，横轴是时间，纵轴单位是万人。数据覆盖 `1949-2025`，来自国家统计局公开的年末总人口与人口出生率，并按年均人口近似推算出生人口规模。</p>
+        </div>
+        <div class="panel-actions">
+          <span class="tag">原始序列</span>
+          <div class="segmented" id="birthTypeTabs" aria-label="出生图图形类型">
+            <button type="button" class="active" data-type="line">折线图</button>
+            <button type="button" data-type="bar">柱状图</button>
+          </div>
+          <div class="segmented" id="birthViewTabs" aria-label="出生图显示模式">
+            <button type="button" data-mode="both">都显示</button>
+            <button type="button" class="active" data-mode="chart">图表</button>
+            <button type="button" data-mode="table">表格</button>
+          </div>
+        </div>
+      </div>
+      <div id="birthChartWrap" class="panel-content">
+        <div id="birthChart" class="chart"></div>
+      </div>
+      <div id="birthTableWrap" class="table-wrap panel-content">
+        <table class="data-table" id="birthTable"></table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>按年龄段推算的人群变化</h3>
+          <p>这张图完全由上面的出生序列滚动推算得出。年龄段口径为：学龄前 `0-5`、小学 `6-11`、初中 `12-14`、高中 `15-17`、大学生 `18-22`、职场 `22-59`、退休/银发 `60+`。横轴延长到了 `2045`，但因为只使用 `1949-2025` 的真实出生数据，不同年龄段的可完整推算终点不同，算不到的位置会留空。</p>
+        </div>
+        <div class="panel-actions">
+          <span class="tag">cohort 推算</span>
+          <div class="segmented" id="cohortTypeTabs" aria-label="cohort图图形类型">
+            <button type="button" class="active" data-type="line">折线图</button>
+            <button type="button" data-type="bar">柱状图</button>
+          </div>
+          <div class="segmented" id="silverModeTabs" aria-label="银发推算模式">
+            <button type="button" class="active" data-mode="raw">原始 cohort</button>
+            <button type="button" data-mode="adjusted">简化生存率</button>
+          </div>
+          <div class="segmented" id="cohortViewTabs" aria-label="cohort显示模式">
+            <button type="button" data-mode="both">都显示</button>
+            <button type="button" class="active" data-mode="chart">图表</button>
+            <button type="button" data-mode="table">表格</button>
+          </div>
+        </div>
+      </div>
+      <div id="cohortChartWrap" class="panel-content">
+        <div id="cohortChart" class="chart"></div>
+      </div>
+      <div id="cohortTableWrap" class="table-wrap panel-content">
+        <table class="data-table" id="cohortTable"></table>
+      </div>
+    </section>
+
+    <section class="notes">
+      <article class="note-card">
+        <h4>这页怎么理解</h4>
+        <p>上图告诉你“新增人口供给”怎么变，下图告诉你这些出生人群在不同年龄阶段会怎样向后滚动。它很适合拿来分析教育、招聘、银发消费、住房和城市服务需求的时间差。</p>
+      </article>
+      <article class="note-card">
+        <h4>退休年龄说明</h4>
+        <p>中国法定退休年龄从 `2025-01-01` 起进入渐进延迟阶段，但这页目前没有按性别和身份拆分，所以这里先统一使用 `60+` 作为退休/银发的聚合分析口径。向后推算到 `2045` 时，这条线仍然可算，因为只需要已经发生过的出生 cohort。</p>
+      </article>
+      <article class="note-card">
+        <h4>如果你下一步要继续扩</h4>
+        <ul>
+          <li>可以继续加省份版或城市版</li>
+          <li>可以把小学、初中、高中再接招生和在校生口径做对照</li>
+          <li>可以把职场再分成 22-35、36-59</li>
+          <li>可以叠加教育部、高校毕业生、就业岗位数据</li>
+        </ul>
+      </article>
+    </section>
+
+    <div id="status" class="status">正在加载国家统计局数据...</div>
+  </main>
+
+  <script>
+    (function () {
+      const statusEl = document.getElementById('status');
+      const summaryStatsEl = document.getElementById('summaryStats');
+      const birthTableEl = document.getElementById('birthTable');
+      const cohortTableEl = document.getElementById('cohortTable');
+      const birthTypeTabsEl = document.getElementById('birthTypeTabs');
+      const cohortTypeTabsEl = document.getElementById('cohortTypeTabs');
+      const birthViewTabsEl = document.getElementById('birthViewTabs');
+      const cohortViewTabsEl = document.getElementById('cohortViewTabs');
+      const silverModeTabsEl = document.getElementById('silverModeTabs');
+      const birthChartWrapEl = document.getElementById('birthChartWrap');
+      const birthTableWrapEl = document.getElementById('birthTableWrap');
+      const cohortChartWrapEl = document.getElementById('cohortChartWrap');
+      const cohortTableWrapEl = document.getElementById('cohortTableWrap');
+      const birthChart = echarts.init(document.getElementById('birthChart'));
+      const cohortChart = echarts.init(document.getElementById('cohortChart'));
+      const cohortColumns = [
+        { key: 'preschoolWan', label: '学龄前', legendName: '学龄前儿童 0-5' },
+        { key: 'primaryWan', label: '小学', legendName: '小学 6-11' },
+        { key: 'juniorWan', label: '初中', legendName: '初中 12-14' },
+        { key: 'seniorWan', label: '高中', legendName: '高中 15-17' },
+        { key: 'k12Wan', label: 'K12', legendName: 'K12 6-17' },
+        { key: 'collegeWan', label: '大学生', legendName: '大学生 18-22' },
+        { key: 'age22Wan', label: '22岁 cohort', legendName: '22岁 cohort' },
+        { key: 'graduatesWan', label: '高校毕业生', legendName: '高校毕业生' },
+        { key: 'graduateConversionRate', label: '毕业转化率', legendName: '毕业转化率' },
+        { key: 'workforceWan', label: '职场', legendName: '职场 22-59' },
+        { key: 'silverWan', label: '退休/银发', legendName: '退休/银发 60+' }
+      ];
+      const state = {
+        cohortLegendSelected: Object.fromEntries(cohortColumns.map(function (column) {
+          return [column.legendName, true];
+        })),
+        lastLegendClickName: '',
+        lastLegendClickAt: 0,
+        silverMode: 'raw',
+        birthChartType: 'line',
+        cohortChartType: 'line',
+        birthViewMode: 'chart',
+        cohortViewMode: 'chart'
+      };
+
+      const colors = {
+        births: '#2563eb',
+        preschool: '#16a34a',
+        primary: '#2563eb',
+        junior: '#0ea5e9',
+        senior: '#7c3aed',
+        k12: '#1d4ed8',
+        college: '#d97706',
+        age22: '#0f766e',
+        graduates: '#dc2626',
+        conversion: '#ea580c',
+        workforce: '#9333ea',
+        silver: '#be123c'
+      };
+      const currentYear = new Date().getFullYear();
+
+      function axisStyle() {
+        return {
+          axisLine: { lineStyle: { color: '#cbd5e1' } },
+          axisTick: { show: false },
+          axisLabel: { color: '#64748b', fontSize: 11 },
+          splitLine: { lineStyle: { color: 'rgba(148,163,184,.16)' } }
+        };
+      }
+
+      function commonGrid() {
+        return { left: 50, right: 22, top: 42, bottom: 74 };
+      }
+
+      function buildTimeZoom(startValue) {
+        return [
+          {
+            type: 'inside',
+            xAxisIndex: 0,
+            filterMode: 'none',
+            startValue: startValue
+          },
+          {
+            type: 'slider',
+            xAxisIndex: 0,
+            height: 18,
+            bottom: 10,
+            brushSelect: false,
+            filterMode: 'none',
+            borderColor: 'rgba(148,163,184,.22)',
+            fillerColor: 'rgba(37,99,235,.14)',
+            backgroundColor: 'rgba(241,245,249,.9)',
+            moveHandleSize: 0,
+            startValue: startValue
+          }
+        ];
+      }
+
+      function buildCurrentYearMarkLine() {
+        return {
+          symbol: ['none', 'none'],
+          silent: true,
+          label: {
+            show: true,
+            formatter: `今年 ${currentYear}`,
+            color: '#0f172a',
+            fontSize: 11,
+            fontWeight: 700,
+            backgroundColor: 'rgba(255,255,255,.92)',
+            padding: [4, 6],
+            borderRadius: 999
+          },
+          lineStyle: {
+            type: 'dashed',
+            width: 1.5,
+            color: '#0f172a'
+          },
+          data: [{ xAxis: String(currentYear) }]
+        };
+      }
+
+      function formatWan(value) {
+        return `${Number(value).toLocaleString('zh-CN')} 万人`;
+      }
+
+      function formatCell(value, digits) {
+        if (value === null || value === undefined) {
+          return '-';
+        }
+        if (typeof value === 'number') {
+          return value.toLocaleString('zh-CN', {
+            minimumFractionDigits: digits || 0,
+            maximumFractionDigits: digits || 0
+          });
+        }
+        return String(value);
+      }
+
+      function getSilverValue(item) {
+        return state.silverMode === 'adjusted' ? item.silverAdjustedWan : item.silverWan;
+      }
+
+      function applyPanelMode(mode, chartWrapEl, tableWrapEl, chartInstance) {
+        chartWrapEl.classList.toggle('is-hidden', mode === 'table');
+        tableWrapEl.classList.toggle('is-hidden', mode === 'chart');
+        window.requestAnimationFrame(function () {
+          chartInstance.resize();
+        });
+      }
+
+      function bindViewTabs(tabsEl, stateKey, chartWrapEl, tableWrapEl, chartInstance) {
+        tabsEl.querySelectorAll('button').forEach(function (button) {
+          button.addEventListener('click', function () {
+            state[stateKey] = button.dataset.mode;
+            tabsEl.querySelectorAll('button').forEach(function (item) {
+              item.classList.toggle('active', item === button);
+            });
+            applyPanelMode(state[stateKey], chartWrapEl, tableWrapEl, chartInstance);
+          });
+        });
+      }
+
+      function bindTypeTabs(tabsEl, stateKey, rerender) {
+        tabsEl.querySelectorAll('button').forEach(function (button) {
+          button.addEventListener('click', function () {
+            state[stateKey] = button.dataset.type;
+            tabsEl.querySelectorAll('button').forEach(function (item) {
+              item.classList.toggle('active', item === button);
+            });
+            rerender();
+          });
+        });
+      }
+
+      function buildSeriesStyle(color, options) {
+        const config = options || {};
+        const isBar = config.chartType === 'bar';
+        const lineWidth = config.lineWidth || 3;
+        const lineType = config.lineType || 'solid';
+        return {
+          type: isBar ? 'bar' : 'line',
+          smooth: !isBar,
+          symbol: isBar ? 'none' : 'circle',
+          symbolSize: isBar ? 0 : (config.symbolSize || 5),
+          barMaxWidth: isBar ? 18 : undefined,
+          barGap: isBar ? '12%' : undefined,
+          lineStyle: isBar ? undefined : { width: lineWidth, color: color, type: lineType },
+          itemStyle: isBar ? { color: color, opacity: 0.88 } : { color: color },
+          areaStyle: !isBar && config.areaStops ? {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, config.areaStops)
+          } : undefined
+        };
+      }
+
+      function renderBirthTable(series) {
+        const header = `
+          <thead>
+            <tr>
+              <th>年份</th>
+              <th>出生人口(万人)</th>
+              <th>出生率(‰)</th>
+              <th>总人口(万人)</th>
+            </tr>
+          </thead>
+        `;
+        const body = `
+          <tbody>
+            ${series.map(function (item) {
+              return `
+                <tr>
+                  <td>${item.year}</td>
+                  <td>${formatCell(item.birthsWan, 1)}</td>
+                  <td>${formatCell(item.birthRatePerThousand, 2)}</td>
+                  <td>${formatCell(item.populationWan, 1)}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        `;
+        birthTableEl.innerHTML = header + body;
+      }
+
+      function renderCohortTable(series) {
+        const visibleColumns = cohortColumns.filter(function (column) {
+          return state.cohortLegendSelected[column.legendName] !== false;
+        });
+        const header = `
+          <thead>
+            <tr>
+              <th>年份</th>
+              ${visibleColumns.map(function (column) {
+                return `<th>${column.label}</th>`;
+              }).join('')}
+            </tr>
+          </thead>
+        `;
+        const body = `
+          <tbody>
+            ${series.map(function (item) {
+              return `
+                <tr>
+                  <td>${item.year}</td>
+                  ${visibleColumns.map(function (column) {
+                    const value = column.key === 'silverWan' ? getSilverValue(item) : item[column.key];
+                    const digits = column.key === 'graduateConversionRate' ? 1 : 1;
+                    const suffix = column.key === 'graduateConversionRate' ? '%' : '';
+                    return `<td>${formatCell(value, digits)}${suffix}</td>`;
+                  }).join('')}
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        `;
+        cohortTableEl.innerHTML = header + body;
+      }
+
+      function renderSummaryStats(birthSeries, cohortSeries) {
+        const first = birthSeries[0];
+        const last = birthSeries[birthSeries.length - 1];
+        const peak = birthSeries.reduce((max, item) => item.birthsWan > max.birthsWan ? item : max, birthSeries[0]);
+        const currentCohort = cohortSeries.find((item) => item.year === 2025) || cohortSeries[0];
+        const futureCohort = cohortSeries[cohortSeries.length - 1];
+        const silverLabel = state.silverMode === 'adjusted' ? '2045 银发修正值' : '2045 银发口径';
+        const silverValue = getSilverValue(futureCohort);
+        const silverNote = state.silverMode === 'adjusted'
+          ? '万人，按简化生存率向后推算 20 年'
+          : '万人，按 60+ 聚合口径向后推算 20 年';
+        const decline = (((last.birthsWan - first.birthsWan) / first.birthsWan) * 100).toFixed(1);
+
+        summaryStatsEl.innerHTML = `
+          <article class="stat-card">
+            <span>2025 出生人口</span>
+            <strong>${last.birthsWan}</strong>
+            <p>万人，较 1949 年 ${decline}%</p>
+          </article>
+          <article class="stat-card">
+            <span>建国以来峰值</span>
+            <strong>${peak.birthsWan}</strong>
+            <p>万人，出现在 ${peak.year} 年</p>
+          </article>
+          <article class="stat-card">
+            <span>2025 小学规模</span>
+            <strong>${currentCohort.primaryWan}</strong>
+            <p>万人，由 2014-2019 出生 cohort 滚动构成</p>
+          </article>
+          <article class="stat-card">
+            <span>${silverLabel}</span>
+            <strong>${silverValue}</strong>
+            <p>${silverNote}</p>
+          </article>
+        `;
+      }
+
+      function renderBirthChart(series) {
+        const isBar = state.birthChartType === 'bar';
+        const peakPoint = series.reduce(function (max, item) {
+          return item.birthsWan > max.birthsWan ? item : max;
+        }, series[0]);
+        const baseYears = series.map(function (item) {
+          return Number(item.year);
+        });
+        const years = baseYears.slice();
+        if (currentYear > years[years.length - 1]) {
+          years.push(currentYear);
+        }
+
+        function withCurrentYearPadding(values) {
+          const padded = values.slice();
+          if (years.length > values.length) {
+            padded.push(null);
+          }
+          return padded;
+        }
+
+        birthChart.setOption({
+          animationDuration: 500,
+          tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+              const header = `${params[0].axisValue}<br/>`;
+              return header + params.map(function (item) {
+                const suffix = item.seriesName === '出生率' ? '‰' : '万人';
+                return `${item.marker}${item.seriesName}: ${formatCell(item.value, item.seriesName === '出生率' ? 2 : 1)} ${suffix}`;
+              }).join('<br/>');
+            }
+          },
+          legend: {
+            top: 0,
+            textStyle: { color: '#475569', fontSize: 12 }
+          },
+          grid: commonGrid(),
+          dataZoom: buildTimeZoom('1980'),
+          xAxis: {
+            type: 'category',
+            boundaryGap: isBar,
+            data: years.map(function (year) {
+              return String(year);
+            }),
+            ...axisStyle()
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '人口(万人)',
+              nameTextStyle: { color: '#64748b', padding: [0, 0, 6, 0] },
+              ...axisStyle()
+            },
+            {
+              type: 'value',
+              name: '出生率(‰)',
+              nameTextStyle: { color: '#64748b', padding: [0, 0, 6, 0] },
+              ...axisStyle()
+            }
+          ],
+          series: [
+            Object.assign({
+              name: '出生人口',
+              markLine: buildCurrentYearMarkLine(),
+              data: withCurrentYearPadding(series.map((item) => item.birthsWan))
+            }, buildSeriesStyle(colors.births, {
+              chartType: state.birthChartType,
+              symbolSize: 6,
+              areaStops: [
+                  { offset: 0, color: 'rgba(37,99,235,.25)' },
+                  { offset: 1, color: 'rgba(37,99,235,0)' }
+                ],
+              lineWidth: 3
+            }), !isBar ? {
+              markPoint: {
+                symbolSize: 56,
+                label: { color: '#fff', fontSize: 11 },
+                itemStyle: { color: '#0f172a' },
+                data: [
+                  {
+                    name: '峰值',
+                    coord: [String(peakPoint.year), peakPoint.birthsWan],
+                    value: '峰值'
+                  }
+                ]
+              }
+            } : {}),
+            Object.assign({
+              name: '出生率',
+              yAxisIndex: 1,
+              data: withCurrentYearPadding(series.map((item) => item.birthRatePerThousand))
+            }, buildSeriesStyle('#f59e0b', {
+              chartType: state.birthChartType,
+              symbolSize: 4,
+              lineWidth: 2.5
+            })),
+            Object.assign({
+              name: '总人口',
+              data: withCurrentYearPadding(series.map((item) => item.populationWan))
+            }, buildSeriesStyle('#0f766e', {
+              chartType: state.birthChartType,
+              symbolSize: 4,
+              lineWidth: 2.5
+            }))
+          ]
+        });
+      }
+
+      function renderCohortChart(series) {
+        const isBar = state.cohortChartType === 'bar';
+        cohortChart.setOption({
+          animationDuration: 500,
+          tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+              const header = `${params[0].axisValue}<br/>`;
+              return header + params.map(function (item) {
+                const suffix = item.seriesName === '毕业转化率' ? '%' : '万人';
+                return `${item.marker}${item.seriesName}: ${formatCell(item.value, 1)} ${suffix}`;
+              }).join('<br/>');
+            }
+          },
+          legend: {
+            top: 0,
+            textStyle: { color: '#475569', fontSize: 12 }
+          },
+          grid: commonGrid(),
+          dataZoom: buildTimeZoom('1980'),
+          xAxis: {
+            type: 'category',
+            boundaryGap: isBar,
+            data: series.map((item) => String(item.year)),
+            ...axisStyle()
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '万人',
+              nameTextStyle: { color: '#64748b', padding: [0, 0, 6, 0] },
+              ...axisStyle()
+            },
+            {
+              type: 'value',
+              name: '转化率(%)',
+              nameTextStyle: { color: '#64748b', padding: [0, 0, 6, 0] },
+              ...axisStyle()
+            }
+          ],
+          series: [
+            Object.assign({
+              name: '学龄前儿童 0-5',
+              markLine: buildCurrentYearMarkLine(),
+              data: series.map((item) => item.preschoolWan)
+            }, buildSeriesStyle(colors.preschool, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 3
+            })),
+            Object.assign({
+              name: '小学 6-11',
+              data: series.map((item) => item.primaryWan)
+            }, buildSeriesStyle(colors.primary, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 3
+            })),
+            Object.assign({
+              name: '初中 12-14',
+              data: series.map((item) => item.juniorWan)
+            }, buildSeriesStyle(colors.junior, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 3
+            })),
+            Object.assign({
+              name: '高中 15-17',
+              data: series.map((item) => item.seniorWan)
+            }, buildSeriesStyle(colors.senior, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 3
+            })),
+            Object.assign({
+              name: 'K12 6-17',
+              data: series.map((item) => item.k12Wan)
+            }, buildSeriesStyle(colors.k12, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 3,
+              lineType: 'dashed'
+            })),
+            Object.assign({
+              name: '大学生 18-22',
+              data: series.map((item) => item.collegeWan)
+            }, buildSeriesStyle(colors.college, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 3
+            })),
+            Object.assign({
+              name: '22岁 cohort',
+              data: series.map((item) => item.age22Wan)
+            }, buildSeriesStyle(colors.age22, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 2.5
+            })),
+            Object.assign({
+              name: '高校毕业生',
+              data: series.map((item) => item.graduatesWan)
+            }, buildSeriesStyle(colors.graduates, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 2.5
+            })),
+            Object.assign({
+              name: '毕业转化率',
+              yAxisIndex: 1,
+              data: series.map((item) => item.graduateConversionRate)
+            }, buildSeriesStyle(colors.conversion, {
+              chartType: state.cohortChartType,
+              symbolSize: 4,
+              lineWidth: 2.5,
+              lineType: 'dotted'
+            })),
+            Object.assign({
+              name: '职场 22-59',
+              data: series.map((item) => item.workforceWan)
+            }, buildSeriesStyle(colors.workforce, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 3
+            })),
+            Object.assign({
+              name: '退休/银发 60+',
+              data: series.map((item) => getSilverValue(item))
+            }, buildSeriesStyle(colors.silver, {
+              chartType: state.cohortChartType,
+              symbolSize: 5,
+              lineWidth: 3
+            }))
+          ]
+        });
+      }
+
+      function showLoaded(data) {
+        statusEl.textContent = `已加载真实数据：${data.source.name}，最近更新 ${new Date(data.generatedAt).toLocaleString('zh-CN', { hour12: false })}`;
+      }
+
+      function showError(message) {
+        statusEl.classList.add('error');
+        statusEl.textContent = message;
+      }
+
+      fetch('/assets/data/china-birth-cohorts.json')
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          function rerenderBirthViews() {
+            renderBirthChart(data.birthSeries);
+          }
+
+          function rerenderCohortViews() {
+            renderSummaryStats(data.birthSeries, data.cohortSeries);
+            renderCohortChart(data.cohortSeries);
+            renderCohortTable(data.cohortSeries);
+          }
+
+          renderSummaryStats(data.birthSeries, data.cohortSeries);
+          renderBirthChart(data.birthSeries);
+          renderBirthTable(data.birthSeries);
+          rerenderCohortViews();
+          bindTypeTabs(birthTypeTabsEl, 'birthChartType', rerenderBirthViews);
+          bindTypeTabs(cohortTypeTabsEl, 'cohortChartType', rerenderCohortViews);
+          bindViewTabs(birthViewTabsEl, 'birthViewMode', birthChartWrapEl, birthTableWrapEl, birthChart);
+          bindViewTabs(cohortViewTabsEl, 'cohortViewMode', cohortChartWrapEl, cohortTableWrapEl, cohortChart);
+          applyPanelMode(state.birthViewMode, birthChartWrapEl, birthTableWrapEl, birthChart);
+          applyPanelMode(state.cohortViewMode, cohortChartWrapEl, cohortTableWrapEl, cohortChart);
+
+          silverModeTabsEl.querySelectorAll('button').forEach(function (button) {
+            button.addEventListener('click', function () {
+              state.silverMode = button.dataset.mode;
+              silverModeTabsEl.querySelectorAll('button').forEach(function (item) {
+                item.classList.toggle('active', item === button);
+              });
+              rerenderCohortViews();
+            });
+          });
+
+          cohortChart.on('legendselectchanged', function (event) {
+            const now = Date.now();
+            const isDoubleClick = state.lastLegendClickName === event.name && (now - state.lastLegendClickAt) < 320;
+            state.lastLegendClickName = event.name;
+            state.lastLegendClickAt = now;
+
+            if (isDoubleClick) {
+              const isolatedSelected = Object.fromEntries(cohortColumns.map(function (column) {
+                return [column.legendName, column.legendName === event.name];
+              }));
+              state.cohortLegendSelected = isolatedSelected;
+              cohortChart.setOption({
+                legend: {
+                  selected: isolatedSelected
+                }
+              });
+            } else {
+              state.cohortLegendSelected = Object.assign({}, event.selected);
+            }
+            renderCohortTable(data.cohortSeries);
+          });
+          showLoaded(data);
+          window.addEventListener('resize', function () {
+            birthChart.resize();
+            cohortChart.resize();
+          });
+        })
+        .catch(function (error) {
+          showError(`数据加载失败：${error.message}`);
+        });
+    })();
+  </script>
+</body>
+</html>
